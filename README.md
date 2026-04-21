@@ -59,8 +59,8 @@ The system follows an **event-driven architecture**, with three main categories:
 - Role: reasoning and text generation
 - Runtime: Ollama
 - Target models:
-    - `qwen3:8b` (recommended)
-    - `llama3.1:8b` (fallback)
+    - `llama3.1:8b` (recommended)
+    - `qwen3:8b` (fallback)
 
 ---
 
