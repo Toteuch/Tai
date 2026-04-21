@@ -2,7 +2,6 @@ package com.toteuch.tai.taiorchestrator.core;
 
 import com.toteuch.tai.taiorchestrator.services.llm.LlmClient;
 import com.toteuch.tai.taiorchestrator.services.llm.LlmGenerationResult;
-import com.toteuch.tai.taiorchestrator.services.llm.LlmMessage;
 import com.toteuch.tai.taiorchestrator.services.tts.TtsClient;
 import com.toteuch.tai.taiorchestrator.services.ui.UiClient;
 import com.toteuch.tai.taiorchestrator.session.ConversationTurn;
@@ -17,6 +16,9 @@ import com.toteuch.tai.taiorchestrator.state.SpeakingState;
 import com.toteuch.tai.taiorchestrator.state.StateStore;
 import com.toteuch.tai.taiorchestrator.state.ThinkingState;
 import com.toteuch.tai.taiorchestrator.support.ContextAssembler;
+import com.toteuch.tai.taiorchestrator.support.ConversationTraceLogger;
+import com.toteuch.tai.taiorchestrator.support.SystemPromptLoader;
+import com.toteuch.tai.taiorchestrator.support.TtsTextSanitizer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -25,9 +27,18 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class DefaultUserInputProcessorTest {
 
@@ -35,8 +46,11 @@ class DefaultUserInputProcessorTest {
     private SessionStore sessionStore;
     private UiClient uiClient;
     private ContextAssembler contextAssembler;
+    private SystemPromptLoader systemPromptLoader;
     private LlmClient llmClient;
     private TtsClient ttsClient;
+    private ConversationTraceLogger conversationTraceLogger;
+    private TtsTextSanitizer ttsTextSanitizer;
 
     private DefaultUserInputProcessor processor;
 
@@ -45,9 +59,13 @@ class DefaultUserInputProcessorTest {
         stateStore = new InMemoryStateStore();
         sessionStore = new InMemorySessionStore();
         uiClient = mock(UiClient.class);
-        contextAssembler = new ContextAssembler();
+        systemPromptLoader = mock(SystemPromptLoader.class);
+        when(systemPromptLoader.getSystemPrompt()).thenReturn("You are Tai.");
+        contextAssembler = new ContextAssembler(systemPromptLoader);
         llmClient = mock(LlmClient.class);
         ttsClient = mock(TtsClient.class);
+        conversationTraceLogger = mock(ConversationTraceLogger.class);
+        ttsTextSanitizer = new TtsTextSanitizer();
 
         processor = new DefaultUserInputProcessor(
             stateStore,
@@ -55,7 +73,9 @@ class DefaultUserInputProcessorTest {
             uiClient,
             contextAssembler,
             llmClient,
-            ttsClient
+            ttsClient,
+            conversationTraceLogger,
+            ttsTextSanitizer
         );
     }
 
@@ -220,7 +240,8 @@ class DefaultUserInputProcessorTest {
 
         processor.processUserText("session-1", "corr-new", "Second question", false);
 
-        ArgumentCaptor<List<LlmMessage>> captor = ArgumentCaptor.forClass(List.class);
+        @SuppressWarnings("rawtypes")
+        ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(llmClient).generateReply(eq("session-1"), eq("corr-new"), captor.capture());
 
         assertFalse(captor.getValue().isEmpty());

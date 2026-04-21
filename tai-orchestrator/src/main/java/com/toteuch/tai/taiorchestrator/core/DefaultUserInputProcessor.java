@@ -16,6 +16,8 @@ import com.toteuch.tai.taiorchestrator.state.SpeakingState;
 import com.toteuch.tai.taiorchestrator.state.StateStore;
 import com.toteuch.tai.taiorchestrator.state.ThinkingState;
 import com.toteuch.tai.taiorchestrator.support.ContextAssembler;
+import com.toteuch.tai.taiorchestrator.support.ConversationTraceLogger;
+import com.toteuch.tai.taiorchestrator.support.TtsTextSanitizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -35,6 +37,8 @@ public class DefaultUserInputProcessor implements UserInputProcessor {
     private final ContextAssembler contextAssembler;
     private final LlmClient llmClient;
     private final TtsClient ttsClient;
+    private final ConversationTraceLogger conversationTraceLogger;
+    private final TtsTextSanitizer ttsTextSanitizer;
 
     public DefaultUserInputProcessor(
         StateStore stateStore,
@@ -42,7 +46,9 @@ public class DefaultUserInputProcessor implements UserInputProcessor {
         UiClient uiClient,
         ContextAssembler contextAssembler,
         LlmClient llmClient,
-        TtsClient ttsClient
+        TtsClient ttsClient,
+        ConversationTraceLogger conversationTraceLogger,
+        TtsTextSanitizer ttsTextSanitizer
     ) {
         this.stateStore = stateStore;
         this.sessionStore = sessionStore;
@@ -50,6 +56,8 @@ public class DefaultUserInputProcessor implements UserInputProcessor {
         this.contextAssembler = contextAssembler;
         this.llmClient = llmClient;
         this.ttsClient = ttsClient;
+        this.conversationTraceLogger = conversationTraceLogger;
+        this.ttsTextSanitizer = ttsTextSanitizer;
     }
 
     @Override
@@ -61,6 +69,8 @@ public class DefaultUserInputProcessor implements UserInputProcessor {
     ) {
         AssistantState state = stateStore.get();
         SessionContext sessionContext = sessionStore.getOrCreate(sessionId);
+
+        conversationTraceLogger.logTurnStart(sessionId, correlationId, userText);
 
         markPreviousTurnAsInterruptedIfNeeded(sessionContext, correlationId);
         supersedePreviousExecutionIfNeeded(sessionContext, correlationId);
@@ -93,6 +103,7 @@ public class DefaultUserInputProcessor implements UserInputProcessor {
         uiClient.updateAssistantState(sessionId, state);
 
         List<LlmMessage> messages = contextAssembler.assemble(sessionContext, state, userText);
+        conversationTraceLogger.logLlmContext(sessionId, correlationId, messages);
         LlmGenerationResult result = llmClient.generateReply(sessionId, correlationId, messages);
 
         if (!isStillActiveExecution(sessionContext, correlationId)) {
@@ -133,17 +144,28 @@ public class DefaultUserInputProcessor implements UserInputProcessor {
             sessionContext.setCurrentExecution(null);
         }
 
+        conversationTraceLogger.logLlmReply(
+            sessionId,
+            correlationId,
+            result.modelName(),
+            result.generationDurationMs() != null ? result.generationDurationMs() : -1L,
+            result.responseText()
+        );
+
         uiClient.updateAssistantReply(sessionId, result.responseText());
 
         if (state.isTtsEnabled()) {
+            String sanitizedTtsText = ttsTextSanitizer.sanitize(result.responseText());
+
             state.setSpeakingState(SpeakingState.PREPARING);
             uiClient.updateAssistantState(sessionId, state);
-            ttsClient.speak(sessionId, correlationId, result.responseText());
+            ttsClient.speak(sessionId, correlationId, sanitizedTtsText);
         } else {
             state.setSpeakingState(SpeakingState.SILENT);
             state.setListeningState(ListeningState.IDLE);
             uiClient.updateAssistantState(sessionId, state);
         }
+        conversationTraceLogger.logTurnEnd(sessionId, correlationId, state.isTtsEnabled());
     }
 
     private void applyFailedLlmResult(
@@ -161,8 +183,17 @@ public class DefaultUserInputProcessor implements UserInputProcessor {
             sessionContext.setCurrentExecution(null);
         }
 
+        conversationTraceLogger.logLlmFailure(
+            sessionId,
+            correlationId,
+            result.errorCode(),
+            result.errorMessage()
+        );
+
         uiClient.showError(sessionId, result.errorMessage());
         uiClient.updateAssistantState(sessionId, state);
+
+        conversationTraceLogger.logTurnEnd(sessionId, correlationId, state.isTtsEnabled());
     }
 
     private void supersedePreviousExecutionIfNeeded(SessionContext sessionContext, String newCorrelationId) {

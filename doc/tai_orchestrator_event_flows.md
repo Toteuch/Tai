@@ -5,6 +5,7 @@
 This document describes the event flows handled by the Tai Orchestrator V1.
 
 The orchestrator follows an event-driven lifecycle:
+
 1. Input event received
 2. Internal processing events triggered
 3. External services called
@@ -100,14 +101,14 @@ The orchestrator follows an event-driven lifecycle:
 
 ## State Transitions Summary
 
-| Phase | Event | State Change |
-|------|------|-------------|
-| Input | STT Final | listening → processing |
-| Thinking | LLM Request | thinking → generating |
-| Thinking Done | LLM Response | thinking → idle |
-| Speaking Start | TTS Start | speaking → speaking |
-| Speaking End | TTS Done | speaking → silent |
-| Completion | Turn Completed | reset to idle |
+| Phase          | Event          | State Change           |
+|----------------|----------------|------------------------|
+| Input          | STT Final      | listening → processing |
+| Thinking       | LLM Request    | thinking → generating  |
+| Thinking Done  | LLM Response   | thinking → idle        |
+| Speaking Start | TTS Start      | speaking → speaking    |
+| Speaking End   | TTS Done       | speaking → silent      |
+| Completion     | Turn Completed | reset to idle          |
 
 ---
 

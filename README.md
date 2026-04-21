@@ -37,16 +37,19 @@ It is a **coordinated system of specialized components**:
 The system follows an **event-driven architecture**, with three main categories:
 
 ### 1. Event Producers
+
 - Microphone input
 - STT service
 - User interface interactions
 - Screen capture service
 
 ### 2. Decision Makers
+
 - Orchestrator (central logic)
 - LLM (reasoning and response generation)
 
 ### 3. Executors
+
 - TTS service
 - Avatar renderer
 - UI layer
@@ -56,6 +59,7 @@ The system follows an **event-driven architecture**, with three main categories:
 ## 🧩 Main Components
 
 ### 🧠 LLM Core
+
 - Role: reasoning and text generation
 - Runtime: Ollama
 - Target models:
@@ -65,6 +69,7 @@ The system follows an **event-driven architecture**, with three main categories:
 ---
 
 ### 🎤 Speech-to-Text (STT)
+
 - Converts voice input into text
 - Supports streaming transcription
 - Handles noise and partial recognition
@@ -72,6 +77,7 @@ The system follows an **event-driven architecture**, with three main categories:
 ---
 
 ### 🔊 Text-to-Speech (TTS)
+
 - Converts text into audio
 - Optimized for low latency
 - Provides timing data for lip sync
@@ -79,6 +85,7 @@ The system follows an **event-driven architecture**, with three main categories:
 ---
 
 ### 👤 3D Avatar System
+
 - VRM-based avatar rendering
 - Supports:
     - Idle animation
@@ -89,6 +96,7 @@ The system follows an **event-driven architecture**, with three main categories:
 ---
 
 ### 🖥️ Screen Vision Module
+
 - Triggered **on demand only**
 - Pipeline:
     - Screen capture
@@ -99,6 +107,7 @@ The system follows an **event-driven architecture**, with three main categories:
 ---
 
 ### 🎛️ User Interface
+
 - Real-time monitoring and control
 - Features:
     - Display STT transcription
@@ -114,6 +123,7 @@ The system follows an **event-driven architecture**, with three main categories:
 The orchestrator is the **central non-AI brain** of the system.
 
 ### Responsibilities:
+
 - Event routing
 - State management
 - Session handling
@@ -136,6 +146,7 @@ The orchestrator is the **central non-AI brain** of the system.
 ---
 
 ## 🧠 Assistant State Model
+
 - listening_state
 - speaking_state
 - thinking_state
@@ -153,6 +164,7 @@ The orchestrator is the **central non-AI brain** of the system.
 ## 🚀 Development Roadmap
 
 ### V1 — Voice Assistant (Core)
+
 - STT + LLM + TTS
 - Real-time subtitles
 - Basic UI controls
@@ -162,6 +174,7 @@ The orchestrator is the **central non-AI brain** of the system.
 ---
 
 ### V2 — 3D Avatar
+
 - VRM avatar rendering
 - Lip sync
 - Basic emotions
@@ -170,6 +183,7 @@ The orchestrator is the **central non-AI brain** of the system.
 ---
 
 ### V3 — Screen Vision
+
 - On-demand screen capture
 - OCR + structured analysis
 - LLM integration
@@ -177,6 +191,7 @@ The orchestrator is the **central non-AI brain** of the system.
 ---
 
 ### V4 — Specialization
+
 - Long-term memory
 - Fine-tuning (LoRA / RAG)
 - Domain-specific behaviors
@@ -201,6 +216,7 @@ The orchestrator is the **central non-AI brain** of the system.
 The LLM is intentionally **minimally restricted**.
 
 Content filtering is handled at the application level:
+
 - Optional obscenity filter
 - Configurable behavior policies
 - Runtime toggles via UI
@@ -209,15 +225,15 @@ Content filtering is handled at the application level:
 
 ## 🧰 Tech Stack (Planned)
 
-| Component     | Technology        |
-|--------------|------------------|
-| LLM Runtime  | Ollama           |
-| Orchestrator | Java / Kotlin    |
-| AI Services  | Python / C++     |
+| Component    | Technology              |
+|--------------|-------------------------|
+| LLM Runtime  | Ollama                  |
+| Orchestrator | Java / Kotlin           |
+| AI Services  | Python / C++            |
 | STT          | Whisper (or equivalent) |
-| TTS          | Piper / Kokoro   |
-| Avatar       | VRM + Three.js   |
-| UI           | Web-based frontend |
+| TTS          | Piper / Kokoro          |
+| Avatar       | VRM + Three.js          |
+| UI           | Web-based frontend      |
 
 ---
 
@@ -246,6 +262,7 @@ Content filtering is handled at the application level:
 🚧 Project in early design phase
 
 ### Next steps:
+
 - Set up Ollama and benchmark LLMs
 - Define event contracts
 - Implement orchestrator skeleton

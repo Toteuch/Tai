@@ -13,9 +13,9 @@ import java.time.Instant;
  * the assistant reply has been generated, and any optional TTS playback has finished
  * or has been intentionally skipped.</p>
  *
- * @param userText the final user message associated with the completed turn
+ * @param userText      the final user message associated with the completed turn
  * @param assistantText the final assistant reply associated with the completed turn
- * @param completedAt the timestamp at which the turn was considered complete
+ * @param completedAt   the timestamp at which the turn was considered complete
  */
 public record ConversationTurnCompletedEvent(
     String eventId,

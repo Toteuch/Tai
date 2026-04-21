@@ -1,8 +1,8 @@
 package com.toteuch.tai.taiorchestrator.events.inbound;
 
+import com.toteuch.tai.taiorchestrator.events.EventSource;
 import com.toteuch.tai.taiorchestrator.events.EventType;
 import com.toteuch.tai.taiorchestrator.events.TaiEvent;
-import com.toteuch.tai.taiorchestrator.events.EventSource;
 
 import java.time.Instant;
 
@@ -12,7 +12,7 @@ import java.time.Instant;
  * <p>This event confirms that the assistant has moved from reply preparation
  * to actual speech output. It is mainly used to update speaking state and UI.</p>
  *
- * @param text the text being spoken, if echoed back by the TTS service
+ * @param text    the text being spoken, if echoed back by the TTS service
  * @param voiceId the identifier of the voice used for playback, if available
  */
 public record TtsPlaybackStartedEvent(

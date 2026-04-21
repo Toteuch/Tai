@@ -13,7 +13,7 @@ import java.time.Instant;
  * <p>This event is mainly used to support barge-in behavior, where a new user input
  * takes priority over an ongoing spoken response.</p>
  *
- * @param reason the functional reason for the interruption
+ * @param reason                   the functional reason for the interruption
  * @param interruptedCorrelationId the correlation identifier of the interrupted reply flow
  */
 public record CurrentSpeechInterruptedEvent(

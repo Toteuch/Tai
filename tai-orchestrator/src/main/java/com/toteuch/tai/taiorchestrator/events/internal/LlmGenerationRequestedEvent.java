@@ -15,8 +15,8 @@ import java.util.List;
  * to model invocation. It carries the fully assembled prompt context and the
  * target model information required for generation.</p>
  *
- * @param messages the ordered message list sent to the LLM
- * @param model the target model name to use for generation
+ * @param messages  the ordered message list sent to the LLM
+ * @param model     the target model name to use for generation
  * @param requestId the technical identifier of the generation request
  */
 public record LlmGenerationRequestedEvent(

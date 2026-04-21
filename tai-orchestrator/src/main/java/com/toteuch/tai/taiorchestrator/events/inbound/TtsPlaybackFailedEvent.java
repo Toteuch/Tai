@@ -1,8 +1,8 @@
 package com.toteuch.tai.taiorchestrator.events.inbound;
 
+import com.toteuch.tai.taiorchestrator.events.EventSource;
 import com.toteuch.tai.taiorchestrator.events.EventType;
 import com.toteuch.tai.taiorchestrator.events.TaiEvent;
-import com.toteuch.tai.taiorchestrator.events.EventSource;
 
 import java.time.Instant;
 
@@ -13,7 +13,7 @@ import java.time.Instant;
  * without losing the already generated assistant text. The text reply may still
  * remain visible in the UI even if spoken playback fails.</p>
  *
- * @param errorCode a machine-readable error code describing the failure
+ * @param errorCode    a machine-readable error code describing the failure
  * @param errorMessage a human-readable error message describing the failure
  */
 public record TtsPlaybackFailedEvent(
