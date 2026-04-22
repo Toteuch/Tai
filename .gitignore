@@ -102,3 +102,12 @@ htmlcov/
 *.tmp
 *.swp
 *.swo
+
+# =========================
+
+# TTS models
+
+# =========================
+tai-tts/voices/*
+!tai-tts/voices/README.md
+tai-tts/output/

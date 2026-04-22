@@ -17,6 +17,7 @@ import com.toteuch.tai.taiorchestrator.state.StateStore;
 import com.toteuch.tai.taiorchestrator.state.ThinkingState;
 import com.toteuch.tai.taiorchestrator.support.ContextAssembler;
 import com.toteuch.tai.taiorchestrator.support.ConversationTraceLogger;
+import com.toteuch.tai.taiorchestrator.support.TtsTextPreprocessor;
 import com.toteuch.tai.taiorchestrator.support.TtsTextSanitizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ public class DefaultUserInputProcessor implements UserInputProcessor {
     private final TtsClient ttsClient;
     private final ConversationTraceLogger conversationTraceLogger;
     private final TtsTextSanitizer ttsTextSanitizer;
+    private final TtsTextPreprocessor ttsTextPreprocessor;
 
     public DefaultUserInputProcessor(
         StateStore stateStore,
@@ -48,7 +50,8 @@ public class DefaultUserInputProcessor implements UserInputProcessor {
         LlmClient llmClient,
         TtsClient ttsClient,
         ConversationTraceLogger conversationTraceLogger,
-        TtsTextSanitizer ttsTextSanitizer
+        TtsTextSanitizer ttsTextSanitizer,
+        TtsTextPreprocessor ttsTextPreprocessor
     ) {
         this.stateStore = stateStore;
         this.sessionStore = sessionStore;
@@ -58,6 +61,8 @@ public class DefaultUserInputProcessor implements UserInputProcessor {
         this.ttsClient = ttsClient;
         this.conversationTraceLogger = conversationTraceLogger;
         this.ttsTextSanitizer = ttsTextSanitizer;
+        this.ttsTextPreprocessor = ttsTextPreprocessor;
+        log.info("Injected TtsClient implementation: {}", ttsClient.getClass().getName());
     }
 
     @Override
@@ -156,10 +161,13 @@ public class DefaultUserInputProcessor implements UserInputProcessor {
 
         if (state.isTtsEnabled()) {
             String sanitizedTtsText = ttsTextSanitizer.sanitize(result.responseText());
+            String preparedTtsText = ttsTextPreprocessor.preprocess(sanitizedTtsText);
 
             state.setSpeakingState(SpeakingState.PREPARING);
             uiClient.updateAssistantState(sessionId, state);
-            ttsClient.speak(sessionId, correlationId, sanitizedTtsText);
+            log.info("Raw LLM text | sessionId={} correlationId={} text={}", sessionId, correlationId, result.responseText());
+            log.info("Prepared TTS text | sessionId={} correlationId={} text={}", sessionId, correlationId, preparedTtsText);
+            ttsClient.speak(sessionId, correlationId, preparedTtsText);
         } else {
             state.setSpeakingState(SpeakingState.SILENT);
             state.setListeningState(ListeningState.IDLE);
