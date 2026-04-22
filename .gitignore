@@ -111,3 +111,12 @@ htmlcov/
 tai-tts/voices/*
 !tai-tts/voices/README.md
 tai-tts/output/
+
+# =========================
+
+# STT
+
+# =========================
+tai-stt/samples/*.wav
+!tai-stt/samples/hello.wav
+!tai-stt/samples/hello-french.wav
