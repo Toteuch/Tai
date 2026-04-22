@@ -11,6 +11,8 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.TargetDataLine;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -69,10 +71,67 @@ public class MicrophoneCaptureService {
         Future<?> captureTask = executorService.submit(() -> {
             try (AudioInputStream audioInputStream = new AudioInputStream(line)) {
                 log.info("Microphone capture started | sessionId={} outputFile={}", sessionId, outputFile);
-                AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, outputFile.toFile());
+                long silenceStart = -1;
+                long recordingStart = System.currentTimeMillis();
+
+                byte[] buffer = new byte[properties.getBufferSize()];
+
+                try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+                    while (!Thread.currentThread().isInterrupted() && line.isOpen()) {
+
+                        int bytesRead = line.read(buffer, 0, buffer.length);
+                        if (bytesRead <= 0) continue;
+
+                        baos.write(buffer, 0, bytesRead);
+
+                        int level = calculateAudioLevel(buffer, bytesRead);
+
+                        long now = System.currentTimeMillis();
+
+                        if (level < properties.getSilenceThreshold()) {
+                            if (silenceStart < 0) {
+                                silenceStart = now;
+                            } else if ((now - silenceStart) > properties.getSilenceDurationMs()
+                                && (now - recordingStart) > properties.getMinRecordingMs()) {
+
+                                log.info("Silence detected, stopping recording | sessionId={}", sessionId);
+                                break;
+                            }
+                        } else {
+                            silenceStart = -1;
+                        }
+                    }
+
+                    byte[] audioData = baos.toByteArray();
+
+                    try (ByteArrayInputStream bais = new ByteArrayInputStream(audioData);
+                         AudioInputStream ais = new AudioInputStream(
+                             bais,
+                             format,
+                             audioData.length / format.getFrameSize())) {
+
+                        AudioSystem.write(ais, AudioFileFormat.Type.WAVE, outputFile.toFile());
+                    }
+                }
                 log.info("Microphone capture finished | sessionId={} outputFile={}", sessionId, outputFile);
             } catch (IOException e) {
                 log.error("Microphone capture failed | sessionId={} outputFile={}", sessionId, outputFile, e);
+            } finally {
+                try {
+                    line.stop();
+                } catch (Exception ignored) {
+                }
+                try {
+                    line.close();
+                } catch (Exception ignored) {
+                }
+
+                MicrophoneRecordingSession current = activeSessions.get(sessionId);
+                if (current != null) {
+                    current.deactivate();
+                    activeSessions.remove(sessionId, current);
+                }
             }
         });
 
@@ -150,9 +209,66 @@ public class MicrophoneCaptureService {
         }
     }
 
+    public MicrophoneStopResult startRecordingAndWaitForSilence(String sessionId) {
+        try {
+            Path outputFile = startRecording(sessionId);
+
+            MicrophoneRecordingSession session = activeSessions.get(sessionId);
+            if (session == null) {
+                return new MicrophoneStopResult(
+                    false,
+                    null,
+                    "MIC_SESSION_MISSING",
+                    "Recording session was not created for sessionId=" + sessionId
+                );
+            }
+
+            Future<?> captureTask = session.getCaptureTask();
+            if (captureTask != null) {
+                captureTask.get();
+            }
+
+            if (!Files.exists(outputFile)) {
+                return new MicrophoneStopResult(
+                    false,
+                    null,
+                    "MIC_OUTPUT_MISSING",
+                    "Recording finished but no WAV file was produced"
+                );
+            }
+
+            return new MicrophoneStopResult(
+                true,
+                outputFile,
+                null,
+                null
+            );
+
+        } catch (Exception e) {
+            log.error("Auto-process microphone capture failed | sessionId={}", sessionId, e);
+            return new MicrophoneStopResult(
+                false,
+                null,
+                "MIC_AUTO_PROCESS_ERROR",
+                e.getMessage()
+            );
+        }
+    }
+
     private Path buildOutputPath(String sessionId) {
         String fileName = "mic_" + sessionId + "_" + System.currentTimeMillis() + ".wav";
         return Path.of(properties.getOutputDir(), fileName);
+    }
+
+    private int calculateAudioLevel(byte[] buffer, int bytesRead) {
+        int max = 0;
+
+        for (int i = 0; i < bytesRead - 1; i += 2) {
+            int sample = (buffer[i + 1] << 8) | (buffer[i] & 0xff);
+            max = Math.max(max, Math.abs(sample));
+        }
+
+        return max;
     }
 
     @PreDestroy

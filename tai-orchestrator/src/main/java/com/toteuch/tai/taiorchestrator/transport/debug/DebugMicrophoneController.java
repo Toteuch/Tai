@@ -140,4 +140,67 @@ public class DebugMicrophoneController {
             null
         );
     }
+
+    @PostMapping("/debug/stt/mic/auto-process/start")
+    public DebugMicResponse startRecordingAutoProcess(
+        @RequestParam(value = "sessionId", required = false) String sessionId
+    ) {
+        String effectiveSessionId = (sessionId == null || sessionId.isBlank())
+            ? "test"
+            : sessionId;
+
+        MicrophoneStopResult stopResult = microphoneCaptureService.startRecordingAndWaitForSilence(effectiveSessionId);
+        if (!stopResult.success()) {
+            return new DebugMicResponse(
+                false,
+                effectiveSessionId,
+                false,
+                null,
+                null,
+                null,
+                null,
+                false,
+                stopResult.errorCode(),
+                stopResult.errorMessage()
+            );
+        }
+
+        SttResult sttResult = sttClient.transcribe(effectiveSessionId, stopResult.audioFile());
+        if (!sttResult.success()) {
+            return new DebugMicResponse(
+                false,
+                effectiveSessionId,
+                false,
+                stopResult.audioFile().toString(),
+                null,
+                sttResult.language(),
+                sttResult.languageProbability(),
+                false,
+                sttResult.errorCode(),
+                sttResult.errorMessage()
+            );
+        }
+
+        String correlationId = UUID.randomUUID().toString();
+
+        userInputProcessor.processUserText(
+            effectiveSessionId,
+            correlationId,
+            sttResult.text(),
+            false
+        );
+
+        return new DebugMicResponse(
+            true,
+            effectiveSessionId,
+            false,
+            stopResult.audioFile().toString(),
+            sttResult.text(),
+            sttResult.language(),
+            sttResult.languageProbability(),
+            true,
+            null,
+            null
+        );
+    }
 }
