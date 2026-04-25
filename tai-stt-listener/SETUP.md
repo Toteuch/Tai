@@ -9,16 +9,6 @@
 
 ---
 
-## Import in IntelliJ
-
-1. Add `tai-stt-listener/pom.xml` as a Maven project.
-2. Use JDK 21.
-3. Create a Spring Boot run configuration:
-   - Main class: `com.toteuch.tai.stt.listener.TaiSttListenerApplication`
-   - Working directory: `.../Tai/tai-stt-listener`
-
----
-
 ## Run with Maven
 
 From the module root:
@@ -37,13 +27,13 @@ curl http://localhost:8094/actuator/health
 
 ---
 
-## Test capture
+## Test capture + pre-gatekeeper
 
 ```bash
 curl -X POST http://localhost:8094/debug/mic/capture
 ```
 
-The generated WAV files are written to:
+Generated WAV files are written to:
 
 ```text
 input/
@@ -75,4 +65,10 @@ If silence captures take too long, lower:
 
 ```yaml
 tai.stt.capture.no-speech-timeout-ms
+```
+
+If claps/noises pass the pre-gatekeeper too often, raise:
+
+```yaml
+tai.stt.gatekeeper.min-voiced-ratio
 ```

@@ -17,6 +17,17 @@ tai:
       max-recording-ms: 15000
       no-speech-timeout-ms: 3000
 
+    gatekeeper:
+      allowed-languages:
+        - en
+        - fr
+      reject-audio-duration-ms: 250
+      suspicious-audio-duration-ms: 500
+      reject-average-energy-threshold: 15
+      suspicious-language-probability-threshold: 0.45
+      reject-suspicion-score: 2
+      min-voiced-ratio: 0.10
+
 management:
   endpoints:
     web:
