@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class ClarificationScenarioTest extends AbstractScenarioTest {
 
@@ -15,10 +14,9 @@ class ClarificationScenarioTest extends AbstractScenarioTest {
         String correlationId = "clarification-1";
         String clarification = "Huh? Can you say that again?";
 
-        when(llmClient.generateReply(eq(correlationId), anyList()))
-            .thenReturn(llmSuccess(clarification));
-
         publishSttUnintelligible(correlationId);
+        verify(llmClient).generateReply(eq(correlationId), anyList());
+        publishLlmSuccess(correlationId, clarification);
 
         verify(ttsClient).speak(correlationId, clarification);
 

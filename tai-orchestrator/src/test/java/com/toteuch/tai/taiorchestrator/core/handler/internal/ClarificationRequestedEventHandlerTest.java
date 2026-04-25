@@ -6,7 +6,6 @@ import com.toteuch.tai.taiorchestrator.events.inbound.llm.LlmResponseCompletedEv
 import com.toteuch.tai.taiorchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.taiorchestrator.events.internal.ClarificationRequestedEvent;
 import com.toteuch.tai.taiorchestrator.services.llm.LlmClient;
-import com.toteuch.tai.taiorchestrator.services.llm.LlmGenerationResult;
 import com.toteuch.tai.taiorchestrator.services.tts.TtsClient;
 import com.toteuch.tai.taiorchestrator.session.SessionContext;
 import com.toteuch.tai.taiorchestrator.session.ThinkingState;
@@ -19,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
 
@@ -29,18 +28,6 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
 
         TtsClient ttsClient = mock(TtsClient.class);
         LlmClient llmClient = mock(LlmClient.class);
-
-        when(llmClient.generateReply(eq("corr-1"), anyList()))
-            .thenReturn(new LlmGenerationResult(
-                true,
-                "Can you say that again?",
-                "tai-llama",
-                1,
-                2,
-                100L,
-                null,
-                null
-            ));
 
         ClarificationRequestedEventHandler handler = new ClarificationRequestedEventHandler(
             fixedSessionStore(context),
@@ -62,6 +49,9 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
         assertThat(context.getActiveTurn().isPersistInHistory()).isFalse();
         assertThat(context.getThinkingState()).isEqualTo(ThinkingState.GENERATING);
 
+        verify(llmClient).generateReply(eq("corr-1"), anyList());
+        publishLlmCompletedEvent("corr-1", "Can you say that again?");
+
         LlmResponseCompletedEvent published =
             eventPublisher.assertSingleEventPublished(LlmResponseCompletedEvent.class);
 
@@ -76,18 +66,6 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
         TtsClient ttsClient = mock(TtsClient.class);
         LlmClient llmClient = mock(LlmClient.class);
 
-        when(llmClient.generateReply(eq("corr-1"), anyList()))
-            .thenReturn(new LlmGenerationResult(
-                false,
-                null,
-                "tai-llama",
-                null,
-                null,
-                100L,
-                "LLM_ERROR",
-                "LLM failed"
-            ));
-
         ClarificationRequestedEventHandler handler = new ClarificationRequestedEventHandler(
             fixedSessionStore(context),
             eventPublisher,
@@ -101,6 +79,9 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
             "corr-1",
             EventSource.ORCHESTRATOR
         ));
+
+        verify(llmClient).generateReply(eq("corr-1"), anyList());
+        publishLlmFailedEvent("corr-1");
 
         LlmResponseFailedEvent published =
             eventPublisher.assertSingleEventPublished(LlmResponseFailedEvent.class);

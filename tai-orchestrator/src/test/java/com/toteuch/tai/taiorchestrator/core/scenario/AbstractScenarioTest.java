@@ -2,6 +2,8 @@ package com.toteuch.tai.taiorchestrator.core.scenario;
 
 import com.toteuch.tai.taiorchestrator.core.publisher.TaiEventPublisher;
 import com.toteuch.tai.taiorchestrator.events.EventSource;
+import com.toteuch.tai.taiorchestrator.events.inbound.llm.LlmResponseCompletedEvent;
+import com.toteuch.tai.taiorchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.taiorchestrator.events.inbound.stt.SttTranscriptAcceptedEvent;
 import com.toteuch.tai.taiorchestrator.events.inbound.stt.SttTranscriptNoiseEvent;
 import com.toteuch.tai.taiorchestrator.events.inbound.stt.SttTranscriptUnintelligibleEvent;
@@ -9,7 +11,6 @@ import com.toteuch.tai.taiorchestrator.events.inbound.tts.TtsPlaybackCompletedEv
 import com.toteuch.tai.taiorchestrator.events.inbound.tts.TtsPlaybackFailedEvent;
 import com.toteuch.tai.taiorchestrator.events.inbound.tts.TtsPlaybackStartedEvent;
 import com.toteuch.tai.taiorchestrator.services.llm.LlmClient;
-import com.toteuch.tai.taiorchestrator.services.llm.LlmGenerationResult;
 import com.toteuch.tai.taiorchestrator.services.tts.TtsClient;
 import com.toteuch.tai.taiorchestrator.session.SessionStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +35,29 @@ abstract class AbstractScenarioTest {
     @MockitoBean
     protected TtsClient ttsClient;
 
-    protected LlmGenerationResult llmSuccess(String text) {
-        return new LlmGenerationResult(true, text, MODEL_NAME, 10, 20, 100L, null, null);
+    protected void publishLlmSuccess(String correlationId, String text) {
+        eventPublisher.publish(new LlmResponseCompletedEvent(
+            UUID.randomUUID().toString(),
+            Instant.now(),
+            correlationId,
+            EventSource.LLM_SERVICE,
+            text,
+            MODEL_NAME,
+            10,
+            20,
+            100L
+        ));
     }
 
-    protected LlmGenerationResult llmFailure() {
-        return new LlmGenerationResult(false, null, MODEL_NAME, null, null, 100L, "LLM_ERROR", "LLM failed");
+    protected void publishLlmFailure(String correlationId) {
+        eventPublisher.publish(new LlmResponseFailedEvent(
+            UUID.randomUUID().toString(),
+            Instant.now(),
+            correlationId,
+            EventSource.LLM_SERVICE,
+            "LLM_ERROR",
+            "LLM failed"
+        ));
     }
 
     protected void publishSttAccepted(String correlationId, String text) {

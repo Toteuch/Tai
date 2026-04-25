@@ -3,7 +3,7 @@ package com.toteuch.tai.taiorchestrator.services.llm;
 import java.util.List;
 
 public interface LlmClient {
-    LlmGenerationResult generateReply(
+    void generateReply(
         String correlationId,
         List<LlmMessage> messages
     );

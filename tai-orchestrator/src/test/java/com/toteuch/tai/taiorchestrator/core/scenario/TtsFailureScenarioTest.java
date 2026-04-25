@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class TtsFailureScenarioTest extends AbstractScenarioTest {
 
@@ -15,11 +14,10 @@ class TtsFailureScenarioTest extends AbstractScenarioTest {
         String correlationId = "tts-failure-1";
         String reply = "Hi there.";
 
-        when(llmClient.generateReply(eq(correlationId), anyList()))
-            .thenReturn(llmSuccess(reply));
-
         publishSttAccepted(correlationId, "Hello Tai");
+        verify(llmClient).generateReply(eq(correlationId), anyList());
 
+        publishLlmSuccess(correlationId, reply);
         verify(ttsClient).speak(correlationId, reply);
 
         publishTtsStarted(correlationId, reply);

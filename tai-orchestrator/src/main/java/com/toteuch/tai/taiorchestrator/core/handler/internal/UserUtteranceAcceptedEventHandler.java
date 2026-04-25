@@ -2,13 +2,9 @@ package com.toteuch.tai.taiorchestrator.core.handler.internal;
 
 import com.toteuch.tai.taiorchestrator.core.EventHandler;
 import com.toteuch.tai.taiorchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.taiorchestrator.events.EventSource;
 import com.toteuch.tai.taiorchestrator.events.EventType;
-import com.toteuch.tai.taiorchestrator.events.inbound.llm.LlmResponseCompletedEvent;
-import com.toteuch.tai.taiorchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.taiorchestrator.events.internal.UserUtteranceAcceptedEvent;
 import com.toteuch.tai.taiorchestrator.services.llm.LlmClient;
-import com.toteuch.tai.taiorchestrator.services.llm.LlmGenerationResult;
 import com.toteuch.tai.taiorchestrator.services.llm.LlmMessage;
 import com.toteuch.tai.taiorchestrator.services.tts.TtsClient;
 import com.toteuch.tai.taiorchestrator.session.ConversationTurn;
@@ -22,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtteranceAcceptedEvent> {
@@ -75,30 +70,7 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
 
         List<LlmMessage> messages = contextAssembler.assemble(sessionContext, event.text(), false);
         sessionContext.setThinkingState(ThinkingState.GENERATING);
-
         perfLog.info("LLM generation called | correlationId={}", event.correlationId());
-        LlmGenerationResult result = llmClient.generateReply(sessionContext.getActiveTurn().getCorrelationId(), messages);
-        if (result.success()) {
-            eventPublisher.publish(new LlmResponseCompletedEvent(
-                UUID.randomUUID().toString(),
-                Instant.now(),
-                event.correlationId(),
-                EventSource.LLM_SERVICE,
-                result.responseText(),
-                result.modelName(),
-                result.inputTokens(),
-                result.outputTokens(),
-                result.generationDurationMs()
-            ));
-        } else {
-            eventPublisher.publish(new LlmResponseFailedEvent(
-                UUID.randomUUID().toString(),
-                Instant.now(),
-                event.correlationId(),
-                EventSource.LLM_SERVICE,
-                result.errorCode(),
-                result.errorMessage()
-            ));
-        }
+        llmClient.generateReply(sessionContext.getActiveTurn().getCorrelationId(), messages);
     }
 }

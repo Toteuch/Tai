@@ -6,7 +6,6 @@ import com.toteuch.tai.taiorchestrator.events.inbound.llm.LlmResponseCompletedEv
 import com.toteuch.tai.taiorchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.taiorchestrator.events.internal.UserUtteranceAcceptedEvent;
 import com.toteuch.tai.taiorchestrator.services.llm.LlmClient;
-import com.toteuch.tai.taiorchestrator.services.llm.LlmGenerationResult;
 import com.toteuch.tai.taiorchestrator.services.llm.LlmMessage;
 import com.toteuch.tai.taiorchestrator.services.tts.TtsClient;
 import com.toteuch.tai.taiorchestrator.session.SessionContext;
@@ -22,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
@@ -36,18 +36,6 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
 
         when(contextAssembler.assemble(eq(context), eq("Hello"), eq(false)))
             .thenReturn(List.of(new LlmMessage("user", "Hello")));
-
-        when(llmClient.generateReply(eq("corr-1"), anyList()))
-            .thenReturn(new LlmGenerationResult(
-                true,
-                "Hi",
-                "tai-llama",
-                1,
-                2,
-                100L,
-                null,
-                null
-            ));
 
         UserUtteranceAcceptedEventHandler handler = new UserUtteranceAcceptedEventHandler(
             fixedSessionStore(context),
@@ -70,6 +58,9 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
         assertThat(context.getActiveTurn().getUserMessage()).isEqualTo("Hello");
         assertThat(context.getThinkingState()).isEqualTo(ThinkingState.GENERATING);
 
+        verify(llmClient).generateReply(eq("corr-1"), anyList());
+        publishLlmCompletedEvent("corr-1", "Hi");
+
         LlmResponseCompletedEvent published =
             eventPublisher.assertSingleEventPublished(LlmResponseCompletedEvent.class);
 
@@ -88,18 +79,6 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
         when(contextAssembler.assemble(eq(context), eq("Hello"), eq(false)))
             .thenReturn(List.of(new LlmMessage("user", "Hello")));
 
-        when(llmClient.generateReply(eq("corr-1"), anyList()))
-            .thenReturn(new LlmGenerationResult(
-                false,
-                null,
-                "tai-llama",
-                null,
-                null,
-                100L,
-                "LLM_ERROR",
-                "LLM failed"
-            ));
-
         UserUtteranceAcceptedEventHandler handler = new UserUtteranceAcceptedEventHandler(
             fixedSessionStore(context),
             ttsClient,
@@ -115,6 +94,9 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
             EventSource.STT_SERVICE,
             "Hello"
         ));
+
+        verify(llmClient).generateReply(eq("corr-1"), anyList());
+        publishLlmFailedEvent("corr-1");
 
         LlmResponseFailedEvent published =
             eventPublisher.assertSingleEventPublished(LlmResponseFailedEvent.class);

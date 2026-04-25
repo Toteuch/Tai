@@ -11,7 +11,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class BargeInScenarioTest extends AbstractScenarioTest {
 
@@ -20,15 +19,12 @@ class BargeInScenarioTest extends AbstractScenarioTest {
         String firstCorrelationId = "barge-tts-speech-1";
         String clarificationCorrelationId = "barge-tts-speech-clarification";
 
-        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
-            .thenReturn(llmSuccess("First reply."));
-        when(llmClient.generateReply(eq(clarificationCorrelationId), anyList()))
-            .thenReturn(llmSuccess("Can you say that again?"));
-
         publishSttAccepted(firstCorrelationId, "First input");
+        publishLlmSuccess(firstCorrelationId, "First reply.");
         publishTtsStarted(firstCorrelationId, "First reply.");
 
         publishSttUnintelligible(clarificationCorrelationId);
+        publishLlmSuccess(clarificationCorrelationId, "Can you say that again?");
 
         verify(ttsClient).stop(firstCorrelationId);
         verify(ttsClient).speak(clarificationCorrelationId, "Can you say that again?");
@@ -51,16 +47,12 @@ class BargeInScenarioTest extends AbstractScenarioTest {
         String firstCorrelationId = "barge-tts-speech-1";
         String secondCorrelationId = "barge-tts-speech-2";
 
-        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
-            .thenReturn(llmSuccess("First reply."));
-        when(llmClient.generateReply(eq(secondCorrelationId), anyList()))
-            .thenReturn(llmSuccess("Second reply."));
-
         publishSttAccepted(firstCorrelationId, "First input");
+        publishLlmSuccess(firstCorrelationId, "First reply.");
         publishTtsStarted(firstCorrelationId, "First reply.");
 
         publishSttAccepted(secondCorrelationId, "Second input");
-
+        publishLlmSuccess(secondCorrelationId, "Second reply.");
         verify(ttsClient).stop(firstCorrelationId);
         verify(ttsClient).speak(secondCorrelationId, "Second reply.");
 
@@ -86,28 +78,14 @@ class BargeInScenarioTest extends AbstractScenarioTest {
         String firstCorrelationId = "barge-llm-1";
         String clarificationCorrelationId = "barge-llm-clarification";
 
-        CountDownLatch firstLlmStarted = new CountDownLatch(1);
-        CountDownLatch allowFirstLlmToFinish = new CountDownLatch(1);
-
-        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
-            .thenAnswer(invocation -> {
-                firstLlmStarted.countDown();
-                allowFirstLlmToFinish.await();
-                return llmSuccess("Late stale reply.");
-            });
-
-        when(llmClient.generateReply(eq(clarificationCorrelationId), anyList()))
-            .thenReturn(llmSuccess("Can you repeat that?"));
-
-        Thread firstTurn = new Thread(() -> publishSttAccepted(firstCorrelationId, "First input"));
-        firstTurn.start();
-
-        firstLlmStarted.await();
+        publishSttAccepted(firstCorrelationId, "First input");
+        verify(llmClient).generateReply(eq(firstCorrelationId), anyList());
 
         publishSttUnintelligible(clarificationCorrelationId);
+        verify(llmClient).generateReply(eq(clarificationCorrelationId), anyList());
 
-        allowFirstLlmToFinish.countDown();
-        firstTurn.join();
+        publishLlmSuccess(firstCorrelationId, "Late stale reply.");
+        publishLlmSuccess(clarificationCorrelationId, "Can you repeat that?");
 
         verify(ttsClient, never()).speak(eq(firstCorrelationId), anyString());
         verify(ttsClient).speak(clarificationCorrelationId, "Can you repeat that?");
@@ -134,25 +112,14 @@ class BargeInScenarioTest extends AbstractScenarioTest {
         CountDownLatch firstLlmStarted = new CountDownLatch(1);
         CountDownLatch allowFirstLlmToFinish = new CountDownLatch(1);
 
-        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
-            .thenAnswer(invocation -> {
-                firstLlmStarted.countDown();
-                allowFirstLlmToFinish.await();
-                return llmSuccess("Late stale reply.");
-            });
-
-        when(llmClient.generateReply(eq(secondCorrelationId), anyList()))
-            .thenReturn(llmSuccess("Second reply."));
-
-        Thread firstTurn = new Thread(() -> publishSttAccepted(firstCorrelationId, "First input"));
-        firstTurn.start();
-
-        firstLlmStarted.await();
+        publishSttAccepted(firstCorrelationId, "First input");
+        verify(llmClient).generateReply(eq(firstCorrelationId), anyList());
 
         publishSttAccepted(secondCorrelationId, "Second input");
+        verify(llmClient).generateReply(eq(secondCorrelationId), anyList());
 
-        allowFirstLlmToFinish.countDown();
-        firstTurn.join();
+        publishLlmSuccess(firstCorrelationId, "Late stale reply.");
+        publishLlmSuccess(secondCorrelationId, "Second reply.");
 
         verify(ttsClient, never()).speak(eq(firstCorrelationId), anyString());
         verify(ttsClient).speak(secondCorrelationId, "Second reply.");
@@ -180,16 +147,15 @@ class BargeInScenarioTest extends AbstractScenarioTest {
         String firstCorrelationId = "barge-tts-preparing-1";
         String clarificationCorrelationId = "barge-tts-preparing-clarification";
 
-        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
-            .thenReturn(llmSuccess("First reply."));
-        when(llmClient.generateReply(eq(clarificationCorrelationId), anyList()))
-            .thenReturn(llmSuccess("Say that again?"));
-
         publishSttAccepted(firstCorrelationId, "First input");
+        verify(llmClient).generateReply(eq(firstCorrelationId), anyList());
+        publishLlmSuccess(firstCorrelationId, "First reply.");
+        verify(ttsClient).speak(firstCorrelationId, "First reply.");
 
         publishSttUnintelligible(clarificationCorrelationId);
-
         verify(ttsClient).stop(firstCorrelationId);
+        verify(llmClient).generateReply(eq(clarificationCorrelationId), anyList());
+        publishLlmSuccess(clarificationCorrelationId, "Say that again?");
         verify(ttsClient).speak(clarificationCorrelationId, "Say that again?");
 
         publishTtsStarted(clarificationCorrelationId, "Say that again?");
@@ -211,16 +177,15 @@ class BargeInScenarioTest extends AbstractScenarioTest {
         String firstCorrelationId = "barge-tts-preparing-1";
         String secondCorrelationId = "barge-tts-preparing-2";
 
-        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
-            .thenReturn(llmSuccess("First reply."));
-        when(llmClient.generateReply(eq(secondCorrelationId), anyList()))
-            .thenReturn(llmSuccess("Second reply."));
-
         publishSttAccepted(firstCorrelationId, "First input");
+        verify(llmClient).generateReply(eq(firstCorrelationId), anyList());
+        publishLlmSuccess(firstCorrelationId, "First reply.");
+        verify(ttsClient).speak(firstCorrelationId, "First reply.");
 
         publishSttAccepted(secondCorrelationId, "Second input");
-
         verify(ttsClient).stop(firstCorrelationId);
+        verify(llmClient).generateReply(eq(secondCorrelationId), anyList());
+        publishLlmSuccess(secondCorrelationId, "Second reply.");
         verify(ttsClient).speak(secondCorrelationId, "Second reply.");
 
         publishTtsStarted(secondCorrelationId, "Second reply.");
