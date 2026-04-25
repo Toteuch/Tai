@@ -21,16 +21,10 @@ tai:
     prompt:
         system-file: classpath:prompts/tai-system-prompt.txt
     logs:
-        dir: ./tai-orchestrator/logs
+        dir: ./tai-orchestrator/logs # for logback-spring.xml
 #### Will be moved in dedicated modules ####
-    ollama:
-        base-url: http://localhost:11434
-        chat-path: /api/chat
-        model: tai-llama
-        stream: false
-        keep-alive: 30m
-        connect-timeout-ms: 3000
-        read-timeout-ms: 120000
+    llm:
+        base-url: http://localhost:8092
     tts:
         piper:
             enabled: true
