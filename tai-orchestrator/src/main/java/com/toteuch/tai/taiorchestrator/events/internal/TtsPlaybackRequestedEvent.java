@@ -13,7 +13,7 @@ import java.time.Instant;
  * <p>This event is created only when speech output is enabled and a valid assistant
  * reply has already been accepted.</p>
  *
- * @param text the reply text that should be spoken
+ * @param text    the reply text that should be spoken
  * @param voiceId the target voice identifier to use, if one is explicitly selected
  */
 public record TtsPlaybackRequestedEvent(

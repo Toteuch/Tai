@@ -1,13 +1,8 @@
 package com.toteuch.tai.taiorchestrator.services.llm;
 
-import com.toteuch.tai.taiorchestrator.events.EventSource;
-import com.toteuch.tai.taiorchestrator.events.inbound.LlmResponseCompletedEvent;
-import com.toteuch.tai.taiorchestrator.events.inbound.LlmResponseFailedEvent;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class MockLlmClient implements LlmClient {

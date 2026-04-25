@@ -1,8 +1,8 @@
 package com.toteuch.tai.taiorchestrator.events.inbound;
 
+import com.toteuch.tai.taiorchestrator.events.EventSource;
 import com.toteuch.tai.taiorchestrator.events.EventType;
 import com.toteuch.tai.taiorchestrator.events.TaiEvent;
-import com.toteuch.tai.taiorchestrator.events.EventSource;
 
 import java.time.Instant;
 
@@ -13,7 +13,7 @@ import java.time.Instant;
  * It is typically used to return the orchestrator to an idle speaking state
  * and finalize the turn lifecycle.</p>
  *
- * @param text the text that was spoken, if echoed back by the TTS service
+ * @param text       the text that was spoken, if echoed back by the TTS service
  * @param durationMs the playback duration in milliseconds, if available
  */
 public record TtsPlaybackCompletedEvent(

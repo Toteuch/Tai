@@ -1,8 +1,8 @@
 package com.toteuch.tai.taiorchestrator.events.inbound;
 
+import com.toteuch.tai.taiorchestrator.events.EventSource;
 import com.toteuch.tai.taiorchestrator.events.EventType;
 import com.toteuch.tai.taiorchestrator.events.TaiEvent;
-import com.toteuch.tai.taiorchestrator.events.EventSource;
 
 import java.time.Instant;
 
@@ -13,9 +13,9 @@ import java.time.Instant;
  * report the failure to the UI, and decide whether the failed request
  * can be retried or should be abandoned.</p>
  *
- * @param errorCode a machine-readable error code describing the failure
+ * @param errorCode    a machine-readable error code describing the failure
  * @param errorMessage a human-readable error message describing the failure
- * @param retryable indicates whether the failure may be retried safely
+ * @param retryable    indicates whether the failure may be retried safely
  */
 public record LlmResponseFailedEvent(
     String eventId,
