@@ -1,8 +1,0 @@
-fastapi>=0.118.3
-uvicorn[standard]>=0.38.0
-pydantic>=2.0.0
-PyYAML>=6.0.0
-requests>=2.31.0
-numpy>=1.26.0
-sounddevice>=0.4.6
-faster-whisper>=1.2.1
