@@ -1,10 +1,13 @@
 package com.toteuch.tai.taiorchestrator.services.llm.ollama;
 
 import com.toteuch.tai.taiorchestrator.services.llm.LlmClient;
-import com.toteuch.tai.taiorchestrator.services.llm.LlmGenerationResult;
 import com.toteuch.tai.taiorchestrator.services.llm.LlmMessage;
 import com.toteuch.tai.taiorchestrator.services.llm.ollama.dto.OllamaChatRequest;
 import com.toteuch.tai.taiorchestrator.services.llm.ollama.dto.OllamaChatResponse;
+import com.toteuch.tai.taiorchestrator.transport.LlmEventController;
+import com.toteuch.tai.taiorchestrator.transport.events.TransportEventSource;
+import com.toteuch.tai.taiorchestrator.transport.events.llm.LlmResponseCompletedEventRequest;
+import com.toteuch.tai.taiorchestrator.transport.events.llm.LlmResponseFailedEventRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
@@ -18,8 +21,10 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 @Primary
@@ -29,17 +34,20 @@ public class OllamaLlmClient implements LlmClient {
 
     private final RestTemplate restTemplate;
     private final OllamaProperties ollamaProperties;
+    private final LlmEventController llmEventController;
 
     public OllamaLlmClient(
         RestTemplate ollamaRestTemplate,
-        OllamaProperties ollamaProperties
+        OllamaProperties ollamaProperties,
+        LlmEventController llmEventController
     ) {
         this.restTemplate = ollamaRestTemplate;
         this.ollamaProperties = ollamaProperties;
+        this.llmEventController = llmEventController;
     }
 
     @Override
-    public LlmGenerationResult generateReply(
+    public void generateReply(
         String correlationId,
         List<LlmMessage> messages
     ) {
@@ -77,19 +85,20 @@ public class OllamaLlmClient implements LlmClient {
             OllamaChatResponse body = responseEntity.getBody();
 
             if (body == null) {
-                return failure(
-                    duration,
+                postFailure(
+                    correlationId,
                     "OLLAMA_EMPTY_RESPONSE",
-                    "Ollama returned an empty response body."
-                );
+                    "Ollama returned an empty response body.");
+                return;
             }
 
             if (body.getMessage() == null || body.getMessage().getContent() == null || body.getMessage().getContent().isBlank()) {
-                return failure(
-                    duration,
+                postFailure(
+                    correlationId,
                     "OLLAMA_EMPTY_MESSAGE",
                     "Ollama returned no assistant message content."
                 );
+                return;
             }
 
             String content = body.getMessage().getContent().trim();
@@ -99,17 +108,13 @@ public class OllamaLlmClient implements LlmClient {
                 body.getModel(),
                 duration);
 
-            return new LlmGenerationResult(
-                true,
+            postSuccess(
+                correlationId,
                 content,
-                body.getModel() != null ? body.getModel() : ollamaProperties.getModel(),
                 body.getPromptEvalCount(),
                 body.getEvalCount(),
-                duration,
-                null,
-                null
+                duration
             );
-
         } catch (HttpStatusCodeException e) {
             long duration = System.currentTimeMillis() - start;
 
@@ -119,12 +124,11 @@ public class OllamaLlmClient implements LlmClient {
                 e.getResponseBodyAsString(),
                 e);
 
-            return failure(
-                duration,
+            postFailure(
+                correlationId,
                 "OLLAMA_HTTP_ERROR",
                 "Ollama returned HTTP " + e.getStatusCode().value() + "."
             );
-
         } catch (ResourceAccessException e) {
             long duration = System.currentTimeMillis() - start;
 
@@ -132,8 +136,8 @@ public class OllamaLlmClient implements LlmClient {
                 correlationId,
                 e);
 
-            return failure(
-                duration,
+            postFailure(
+                correlationId,
                 "OLLAMA_CONNECTION_ERROR",
                 "Could not reach Ollama. Check that the local Ollama service is running."
             );
@@ -145,8 +149,8 @@ public class OllamaLlmClient implements LlmClient {
                 correlationId,
                 e);
 
-            return failure(
-                duration,
+            postFailure(
+                correlationId,
                 "OLLAMA_UNEXPECTED_ERROR",
                 e.getMessage() != null ? e.getMessage() : "Unexpected Ollama error."
             );
@@ -175,20 +179,36 @@ public class OllamaLlmClient implements LlmClient {
         );
     }
 
-    private LlmGenerationResult failure(
-        long durationMs,
-        String errorCode,
-        String errorMessage
+    private void postFailure(String correlationId, String errorCode, String errorMessage) {
+        LlmResponseFailedEventRequest response = new LlmResponseFailedEventRequest();
+        response.setEventId(UUID.randomUUID().toString());
+        response.setCreatedAt(Instant.now());
+        response.setSource(TransportEventSource.LLM_SERVICE);
+        response.setCorrelationId(correlationId);
+        response.setErrorCode(errorCode);
+        response.setErrorMessage(errorMessage);
+
+        llmEventController.onResponseFailed(response);
+    }
+
+    private void postSuccess(
+        String correlationId,
+        String responseText,
+        Integer inputTokens,
+        Integer outputTokens,
+        Long generationDurationMs
     ) {
-        return new LlmGenerationResult(
-            false,
-            null,
-            ollamaProperties.getModel(),
-            null,
-            null,
-            durationMs,
-            errorCode,
-            errorMessage
-        );
+        LlmResponseCompletedEventRequest response = new LlmResponseCompletedEventRequest();
+        response.setEventId(UUID.randomUUID().toString());
+        response.setCreatedAt(Instant.now());
+        response.setSource(TransportEventSource.LLM_SERVICE);
+        response.setCorrelationId(correlationId);
+        response.setResponseText(responseText);
+        response.setModelName(ollamaProperties.getModel());
+        response.setInputTokens(inputTokens);
+        response.setOutputTokens(outputTokens);
+        response.setGenerationDurationMs(generationDurationMs);
+
+        llmEventController.onResponseCompleted(response);
     }
 }

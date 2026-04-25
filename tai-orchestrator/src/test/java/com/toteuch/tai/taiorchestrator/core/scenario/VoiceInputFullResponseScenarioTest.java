@@ -16,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -28,10 +27,11 @@ class VoiceInputFullResponseScenarioTest extends AbstractScenarioTest {
         String userText = "Hello Tai";
         String assistantReply = "Hi! It is good to talk to you again.";
 
-        when(llmClient.generateReply(eq(correlationId), anyList()))
-            .thenReturn(llmSuccess(assistantReply));
-
         publishSttAccepted(correlationId, userText);
+
+        verify(llmClient).generateReply(eq(correlationId), anyList());
+
+        publishLlmSuccess(correlationId, assistantReply);
 
         verify(ttsClient).speak(correlationId, assistantReply);
 

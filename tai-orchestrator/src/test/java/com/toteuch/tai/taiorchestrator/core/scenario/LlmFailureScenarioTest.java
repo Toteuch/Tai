@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class LlmFailureScenarioTest extends AbstractScenarioTest {
 
@@ -16,10 +15,9 @@ class LlmFailureScenarioTest extends AbstractScenarioTest {
     void should_complete_turn_without_tts_when_llm_fails() {
         String correlationId = "llm-failure-1";
 
-        when(llmClient.generateReply(eq(correlationId), anyList()))
-            .thenReturn(llmFailure());
-
         publishSttAccepted(correlationId, "Hello Tai");
+        verify(llmClient).generateReply(eq(correlationId), anyList());
+        publishLlmFailure(correlationId);
 
         verify(ttsClient, never()).speak(anyString(), anyString());
 

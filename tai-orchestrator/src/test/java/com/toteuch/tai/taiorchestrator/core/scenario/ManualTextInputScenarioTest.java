@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class ManualTextInputScenarioTest extends AbstractScenarioTest {
 
@@ -21,9 +20,6 @@ class ManualTextInputScenarioTest extends AbstractScenarioTest {
         String userText = "Hello Tai";
         String reply = "Hi!";
 
-        when(llmClient.generateReply(eq(correlationId), anyList()))
-            .thenReturn(llmSuccess(reply));
-
         eventPublisher.publish(new UiManualTextInputReceivedEvent(
             UUID.randomUUID().toString(),
             Instant.now(),
@@ -31,6 +27,9 @@ class ManualTextInputScenarioTest extends AbstractScenarioTest {
             EventSource.UI,
             userText
         ));
+
+        verify(llmClient).generateReply(eq(correlationId), anyList());
+        publishLlmSuccess(correlationId, reply);
 
         verify(ttsClient).speak(correlationId, reply);
 
