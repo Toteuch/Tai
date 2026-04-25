@@ -1,0 +1,13 @@
+server:
+  host: 127.0.0.1
+  port: 8095
+
+whisper:
+  model-size: small
+  device: cpu
+  compute-type: int8
+  beam-size: 5
+  vad-filter: false
+
+storage:
+  temp-dir: ./tmp

@@ -28,7 +28,7 @@ public class TranscriptGatekeeper {
             return GatekeeperDecision.noise("AUDIO_TOO_SHORT");
         }
 
-        if (segment.peakEnergy() < gatekeeper.getRejectAverageEnergyThreshold()) {
+        if (segment.averageEnergy() < gatekeeper.getRejectAverageEnergyThreshold()) {
             return GatekeeperDecision.noise("AUDIO_TOO_WEAK");
         }
 

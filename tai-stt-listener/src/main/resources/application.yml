@@ -28,6 +28,13 @@ tai:
       reject-suspicion-score: 2
       min-voiced-ratio: 0.10
 
+    whisper:
+        base-url: http://localhost:8095
+        connect-timeout-ms: 3000
+        read-timeout-ms: 120000
+        transcribe-upload-path: /whisper/transcribe-upload
+        transcribe-raw-path: /whisper/transcribe-raw
+
 management:
   endpoints:
     web:

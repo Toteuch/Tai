@@ -4,27 +4,19 @@
 
 The **Tai STT Listener** is the Java microphone capture and gatekeeping module for Tai.
 
-This second step focuses on:
+This version connects the listener to the pure Whisper transcription service.
 
-- microphone capture
-- silence-based auto-stop
-- audio metrics
-- pre-gatekeeper decision before Whisper
-- final gatekeeper logic ready for Whisper integration
-- debug endpoint
-- health checks
-
-It does **not** call Whisper yet.  
-It does **not** publish STT callbacks to the orchestrator yet.
-
-Next steps:
+Current flow:
 
 ```text
-Step 1: Java capture listener ✅
-Step 2: Java gatekeeper ✅
-Step 3: Whisper transcription service
-Step 4: Orchestrator callbacks
+MicCapture
+  → PreFiltering (Gatekeeper)
+  → Whisper transcription
+  → PostFiltering (Gatekeeper)
+  → JSON debug result
 ```
+
+It still does **not** publish STT callbacks to the orchestrator. That is the next step.
 
 ---
 
@@ -35,17 +27,18 @@ DebugMicController
   ↓
 MicrophoneCaptureService
   ↓
-Java Sound TargetDataLine
+SpeechSegment metrics
   ↓
-WAV file + SpeechSegment metrics
+TranscriptGatekeeper.preEvaluateSegment()
   ↓
-TranscriptGatekeeper pre-filter
+HttpWhisperTranscriptionClient
+  ↓
+tai-stt-whisper /whisper/transcribe-upload
+  ↓
+TranscriptGatekeeper.evaluate()
+  ↓
+JSON result
 ```
-
-The `TranscriptGatekeeper` already exposes both:
-
-- `preEvaluateSegment(segment)` — before Whisper
-- `evaluate(segment, transcription)` — after Whisper
 
 ---
 
@@ -53,34 +46,70 @@ The `TranscriptGatekeeper` already exposes both:
 
 ### `POST /debug/mic/capture`
 
-Captures one microphone segment and returns the generated WAV path plus audio metrics and pre-gatekeeper decision.
+Captures one microphone segment and returns:
+
+- captured segment metrics
+- pre-gatekeeper decision
+- Whisper transcription result if pre-filter accepted the segment
+- final gatekeeper decision
 
 ```bash
-curl -X POST http://localhost:8094/debug/mic/capture
+curl -X POST "http://localhost:8094/debug/mic/capture?correlationId=test-1"
 ```
 
-If the segment can go to Whisper, `preGatekeeperDecision` is `null`.
-
-If the segment is rejected before Whisper:
+Example accepted response:
 
 ```json
 {
+  "success": true,
+  "correlationId": "test-1",
+  "segment": {
+    "audioFile": ".\\input\\mic_1777215691832.wav",
+    "durationMs": 2048,
+    "averageEnergy": 21.57,
+    "peakEnergy": 170.60,
+    "voicedRatio": 0.125,
+    "speechStarted": true,
+    "speechEnded": true
+  },
+  "preGatekeeperDecision": null,
+  "transcription": {
     "success": true,
-    "segment": {
-        "audioFile": "input/mic_1777168277609.wav",
-        "durationMs": 3072,
-        "averageEnergy": 0.4,
-        "peakEnergy": 1.2,
-        "voicedRatio": 0.0,
-        "speechStarted": false,
-        "speechEnded": false
-    },
-    "preGatekeeperDecision": {
-        "accepted": false,
-        "reason": "NO_SPEECH_DETECTED",
-        "suspicionScore": 999,
-        "rejectionCategory": "NOISE"
-    }
+    "correlationId": "test-1",
+    "text": "Ok",
+    "language": "en",
+    "languageProbability": 0.85,
+    "transcriptionDurationMs": 1200,
+    "modelName": "small",
+    "errorCode": null,
+    "errorMessage": null
+  },
+  "finalGatekeeperDecision": {
+    "accepted": true,
+    "reason": "ACCEPTED",
+    "suspicionScore": 0,
+    "rejectionCategory": "NONE"
+  }
+}
+```
+
+If pre-filter rejects the segment, Whisper is skipped:
+
+```json
+{
+  "preGatekeeperDecision": {
+    "accepted": false,
+    "reason": "NO_SPEECH_DETECTED",
+    "suspicionScore": 999,
+    "rejectionCategory": "NOISE"
+  },
+  "transcription": null,
+  "finalGatekeeperDecision": {
+    "accepted": false,
+    "reason": "NO_SPEECH_DETECTED",
+    "suspicionScore": 999,
+    "rejectionCategory": "NOISE"
+  }
 }
 ```
 
@@ -94,32 +123,19 @@ http://localhost:8094/docs
 
 ---
 
-## Gatekeeper decisions
+## Required services
 
-### Pre-filter decisions
+Start `tai-stt-whisper` before testing the full pipeline:
 
-Used before Whisper to avoid unnecessary transcription.
+```text
+http://localhost:8095
+```
 
-| Reason                    | Category | Meaning                       |
-|---------------------------|----------|-------------------------------|
-| `SEGMENT_MISSING`         | `NOISE`  | No segment was provided       |
-| `NO_SPEECH_DETECTED`      | `NOISE`  | Capture did not detect speech |
-| `AUDIO_TOO_SHORT`         | `NOISE`  | Segment is too short          |
-| `AUDIO_TOO_WEAK`          | `NOISE`  | Average energy is too low     |
-| `NOT_ENOUGH_VOICED_AUDIO` | `NOISE`  | Voiced ratio is too low       |
+The listener uploads the captured WAV to:
 
-### Final decisions
-
-Ready for the next step, after Whisper integration.
-
-| Reason                    | Category                    | Meaning                                     |
-|---------------------------|-----------------------------|---------------------------------------------|
-| `ACCEPTED`                | `NONE`                      | Transcript is valid                         |
-| `STT_FAILED`              | `NOISE`                     | Transcription failed                        |
-| `EMPTY_TRANSCRIPT`        | `NOISE` or `UNINTELLIGIBLE` | Empty transcription, depending on audio     |
-| `NO_ALPHANUMERIC_CONTENT` | `NOISE`                     | Transcript contains no useful characters    |
-| `UNSUPPORTED_LANGUAGE`    | `UNINTELLIGIBLE`            | Language is not allowed                     |
-| `SUSPICIOUS_SEGMENT`      | `UNINTELLIGIBLE`            | Suspicion score reached rejection threshold |
+```text
+POST /whisper/transcribe-upload
+```
 
 ---
 
@@ -127,44 +143,47 @@ Ready for the next step, after Whisper integration.
 
 ```yaml
 tai:
-    stt:
-        capture:
-            output-dir: ./input
-            sample-rate: 16000
-            sample-size-bits: 16
-            channels: 1
-            signed: true
-            big-endian: false
-            buffer-size: 4096
-            silence-threshold: 40
-            silence-duration-ms: 1200
-            min-recording-ms: 800
-            max-recording-ms: 15000
-            no-speech-timeout-ms: 3000
+  stt:
+    capture:
+      output-dir: ./input
+      sample-rate: 16000
+      sample-size-bits: 16
+      channels: 1
+      signed: true
+      big-endian: false
+      buffer-size: 4096
+      silence-threshold: 40
+      silence-duration-ms: 1200
+      min-recording-ms: 800
+      max-recording-ms: 15000
+      no-speech-timeout-ms: 3000
 
-        gatekeeper:
-            allowed-languages:
-                - en
-                - fr
-            reject-audio-duration-ms: 250
-            suspicious-audio-duration-ms: 500
-            reject-average-energy-threshold: 15
-            suspicious-language-probability-threshold: 0.45
-            reject-suspicion-score: 2
-            min-voiced-ratio: 0.15
+    gatekeeper:
+      allowed-languages:
+        - en
+        - fr
+      reject-audio-duration-ms: 250
+      suspicious-audio-duration-ms: 500
+      reject-average-energy-threshold: 15
+      suspicious-language-probability-threshold: 0.45
+      reject-suspicion-score: 2
+      min-voiced-ratio: 0.10
+
+    whisper:
+      base-url: http://localhost:8095
+      connect-timeout-ms: 3000
+      read-timeout-ms: 120000
+      transcribe-upload-path: /whisper/transcribe-upload
 ```
 
-### Gatekeeper properties
+### Whisper properties
 
-| Property                                                       | Description                                            |
-|----------------------------------------------------------------|--------------------------------------------------------|
-| `tai.stt.gatekeeper.allowed-languages`                         | Languages accepted by Tai                              |
-| `tai.stt.gatekeeper.reject-audio-duration-ms`                  | Rejects very short segments                            |
-| `tai.stt.gatekeeper.suspicious-audio-duration-ms`              | Adds suspicion for short but not rejected segments     |
-| `tai.stt.gatekeeper.reject-average-energy-threshold`           | Rejects weak audio                                     |
-| `tai.stt.gatekeeper.suspicious-language-probability-threshold` | Adds suspicion when language confidence is low         |
-| `tai.stt.gatekeeper.reject-suspicion-score`                    | Suspicion score threshold for rejection                |
-| `tai.stt.gatekeeper.min-voiced-ratio`                          | Minimum ratio of voiced chunks required before Whisper |
+| Property | Description |
+|---|---|
+| `tai.stt.whisper.base-url` | Base URL of the Whisper transcription service |
+| `tai.stt.whisper.connect-timeout-ms` | HTTP connection timeout |
+| `tai.stt.whisper.read-timeout-ms` | HTTP read timeout for transcription |
+| `tai.stt.whisper.transcribe-upload-path` | Upload endpoint used by the listener |
 
 ---
 
@@ -174,8 +193,4 @@ tai:
 GET /actuator/health
 ```
 
-Health component:
-
-| Component           | Meaning                                                               |
-|---------------------|-----------------------------------------------------------------------|
-| `microphoneCapture` | Checks whether the configured Java Sound microphone line is supported |
+Current health checks still cover local microphone capture only. Whisper health will be added later if needed.
