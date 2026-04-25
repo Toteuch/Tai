@@ -7,26 +7,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MicrophoneRecordingSession {
 
-    private final String sessionId;
+    private final String correlationId;
     private final Path outputFile;
     private final TargetDataLine line;
     private final Future<?> captureTask;
     private final AtomicBoolean active = new AtomicBoolean(true);
 
     public MicrophoneRecordingSession(
-        String sessionId,
+        String correlationId,
         Path outputFile,
         TargetDataLine line,
         Future<?> captureTask
     ) {
-        this.sessionId = sessionId;
+        this.correlationId = correlationId;
         this.outputFile = outputFile;
         this.line = line;
         this.captureTask = captureTask;
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public String getCorrelationId() {
+        return correlationId;
     }
 
     public Path getOutputFile() {

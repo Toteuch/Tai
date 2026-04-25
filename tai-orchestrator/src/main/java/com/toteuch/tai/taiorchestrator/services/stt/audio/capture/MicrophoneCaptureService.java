@@ -1,5 +1,6 @@
 package com.toteuch.tai.taiorchestrator.services.stt.audio.capture;
 
+import com.toteuch.tai.taiorchestrator.services.stt.SttClient;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,19 +33,24 @@ public class MicrophoneCaptureService {
     private final MicrophoneCaptureProperties properties;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final Map<String, MicrophoneRecordingSession> activeSessions = new ConcurrentHashMap<>();
+    private final SttClient sttClient;
 
-    public MicrophoneCaptureService(MicrophoneCaptureProperties properties) {
+    public MicrophoneCaptureService(
+        MicrophoneCaptureProperties properties,
+        SttClient sttClient
+    ) {
         this.properties = properties;
+        this.sttClient = sttClient;
     }
 
-    public boolean isRecording(String sessionId) {
-        MicrophoneRecordingSession session = activeSessions.get(sessionId);
+    public boolean isRecording(String correlationId) {
+        MicrophoneRecordingSession session = activeSessions.get(correlationId);
         return session != null && session.isActive();
     }
 
-    public Path startRecording(String sessionId) throws Exception {
-        if (isRecording(sessionId)) {
-            throw new IllegalStateException("A microphone recording is already active for sessionId=" + sessionId);
+    public Path startRecording(String correlationId) throws Exception {
+        if (isRecording(correlationId)) {
+            throw new IllegalStateException("A microphone recording is already active for correlationId=" + correlationId);
         }
 
         Files.createDirectories(Path.of(properties.getOutputDir()));
@@ -66,11 +72,11 @@ public class MicrophoneCaptureService {
         line.open(format);
         line.start();
 
-        Path outputFile = buildOutputPath(sessionId);
+        Path outputFile = buildOutputPath(correlationId);
 
         Future<?> captureTask = executorService.submit(() -> {
             try (AudioInputStream audioInputStream = new AudioInputStream(line)) {
-                log.debug("Microphone capture started | sessionId={} outputFile={}", sessionId, outputFile);
+                log.debug("Microphone capture started | correlationId={} outputFile={}", correlationId, outputFile);
                 long silenceStart = -1;
                 long recordingStart = System.currentTimeMillis();
 
@@ -95,7 +101,7 @@ public class MicrophoneCaptureService {
                             } else if ((now - silenceStart) > properties.getSilenceDurationMs()
                                 && (now - recordingStart) > properties.getMinRecordingMs()) {
 
-                                log.debug("Silence detected, stopping recording | sessionId={}", sessionId);
+                                log.debug("Silence detected, stopping recording | correlationId={}", correlationId);
                                 break;
                             }
                         } else {
@@ -114,9 +120,9 @@ public class MicrophoneCaptureService {
                         AudioSystem.write(ais, AudioFileFormat.Type.WAVE, outputFile.toFile());
                     }
                 }
-                log.debug("Microphone capture finished | sessionId={} outputFile={}", sessionId, outputFile);
+                log.debug("Microphone capture finished | correlationId={} outputFile={}", correlationId, outputFile);
             } catch (IOException e) {
-                log.error("Microphone capture failed | sessionId={} outputFile={}", sessionId, outputFile, e);
+                log.error("Microphone capture failed | correlationId={} outputFile={}", correlationId, outputFile, e);
             } finally {
                 try {
                     line.stop();
@@ -127,33 +133,33 @@ public class MicrophoneCaptureService {
                 } catch (Exception ignored) {
                 }
 
-                MicrophoneRecordingSession current = activeSessions.get(sessionId);
+                MicrophoneRecordingSession current = activeSessions.get(correlationId);
                 if (current != null) {
                     current.deactivate();
-                    activeSessions.remove(sessionId, current);
+                    activeSessions.remove(correlationId, current);
                 }
             }
         });
 
         MicrophoneRecordingSession session = new MicrophoneRecordingSession(
-            sessionId,
+            correlationId,
             outputFile,
             line,
             captureTask
         );
 
-        activeSessions.put(sessionId, session);
+        activeSessions.put(correlationId, session);
         return outputFile;
     }
 
-    public MicrophoneStopResult stopRecording(String sessionId) {
-        MicrophoneRecordingSession session = activeSessions.remove(sessionId);
+    public MicrophoneStopResult stopRecording(String correlationId) {
+        MicrophoneRecordingSession session = activeSessions.remove(correlationId);
         if (session == null) {
             return new MicrophoneStopResult(
                 false,
                 null,
                 "MIC_NOT_RECORDING",
-                "No active microphone recording for sessionId=" + sessionId
+                "No active microphone recording for correlationId=" + correlationId
             );
         }
 
@@ -199,7 +205,7 @@ public class MicrophoneCaptureService {
             );
 
         } catch (Exception e) {
-            log.error("Microphone stop failed | sessionId={}", sessionId, e);
+            log.error("Microphone stop failed | correlationId={}", correlationId, e);
             return new MicrophoneStopResult(
                 false,
                 null,
@@ -209,18 +215,14 @@ public class MicrophoneCaptureService {
         }
     }
 
-    public MicrophoneStopResult startRecordingAndWaitForSilence(String sessionId) {
+    public void startRecordingAndWaitForSilence(String correlationId) {
         try {
-            Path outputFile = startRecording(sessionId);
+            Path outputFile = startRecording(correlationId);
 
-            MicrophoneRecordingSession session = activeSessions.get(sessionId);
+            MicrophoneRecordingSession session = activeSessions.get(correlationId);
             if (session == null) {
-                return new MicrophoneStopResult(
-                    false,
-                    null,
-                    "MIC_SESSION_MISSING",
-                    "Recording session was not created for sessionId=" + sessionId
-                );
+                log.error("Recording session was not created for correlationId={}", correlationId);
+                return;
             }
 
             Future<?> captureTask = session.getCaptureTask();
@@ -229,34 +231,18 @@ public class MicrophoneCaptureService {
             }
 
             if (!Files.exists(outputFile)) {
-                return new MicrophoneStopResult(
-                    false,
-                    null,
-                    "MIC_OUTPUT_MISSING",
-                    "Recording finished but no WAV file was produced"
-                );
+                log.error("Recording finished but no WAV file was produced for correlationId={}", correlationId);
+                return;
             }
-
-            return new MicrophoneStopResult(
-                true,
-                outputFile,
-                null,
-                null
-            );
+            sttClient.transcribe(outputFile);
 
         } catch (Exception e) {
-            log.error("Auto-process microphone capture failed | sessionId={}", sessionId, e);
-            return new MicrophoneStopResult(
-                false,
-                null,
-                "MIC_AUTO_PROCESS_ERROR",
-                e.getMessage()
-            );
+            log.error("Auto-process microphone capture failed | correlationId={}", correlationId, e);
         }
     }
 
-    private Path buildOutputPath(String sessionId) {
-        String fileName = "mic_" + sessionId + "_" + System.currentTimeMillis() + ".wav";
+    private Path buildOutputPath(String correlationId) {
+        String fileName = "mic_" + correlationId + "_" + System.currentTimeMillis() + ".wav";
         return Path.of(properties.getOutputDir(), fileName);
     }
 
@@ -273,8 +259,8 @@ public class MicrophoneCaptureService {
 
     @PreDestroy
     public void shutdown() {
-        for (String sessionId : activeSessions.keySet()) {
-            stopRecording(sessionId);
+        for (String correlationId : activeSessions.keySet()) {
+            stopRecording(correlationId);
         }
         executorService.shutdownNow();
     }

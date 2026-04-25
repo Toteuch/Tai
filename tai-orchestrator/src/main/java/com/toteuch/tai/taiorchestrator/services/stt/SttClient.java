@@ -4,5 +4,5 @@ import java.nio.file.Path;
 
 public interface SttClient {
 
-    SttResult transcribe(String sessionId, Path audioFile);
+    void transcribe(Path audioFile);
 }
