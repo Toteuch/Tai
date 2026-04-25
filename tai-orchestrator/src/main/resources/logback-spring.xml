@@ -7,7 +7,7 @@
             <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level %logger{36} : %msg%n</pattern>
         </encoder>
     </appender>
-    
+
     <appender name="TAI_CONVERSATION_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>./tai-orchestrator/logs/tai-conversation.log</file>
         <append>true</append>
@@ -18,7 +18,7 @@
         </encoder>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>./tai-orchestrator/logs/tai-conversation.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>tai-conversation.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
             <maxHistory>14</maxHistory>
             <totalSizeCap>200MB</totalSizeCap>
