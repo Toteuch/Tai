@@ -41,6 +41,13 @@ public class TtsPlaybackFailedEventHandler implements EventHandler<TtsPlaybackFa
         perfLog.info("TTS speech failed | correlationId={}", event.correlationId());
         SessionContext sessionContext = sessionStore.get();
 
+        if (sessionContext.getActiveTurn() == null) {
+            decisionLog.info("{} ignored : no active turn | correlationId={}",
+                this.getClass().getSimpleName(),
+                event.correlationId());
+            return;
+        }
+
         if (!sessionContext.isStillActiveTurn(event.correlationId())) {
             decisionLog.info("{} ignored | correlationId={} activeTurnCorrelationId={}",
                 this.getClass().getSimpleName(),
