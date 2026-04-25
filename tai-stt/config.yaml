@@ -1,0 +1,44 @@
+server:
+  host: 127.0.0.1
+  port: 8091
+
+orchestrator:
+  base_url: http://localhost:8080
+  callbacks:
+    transcript_accepted: /events/stt/transcript-accepted
+    transcript_unintelligible: /events/stt/transcript-unintelligible
+    transcript_noise: /events/stt/transcript-noise
+    speech_started: /events/stt/speech-started
+
+whisper:
+  enabled: true
+  model_size: small
+  device: cpu
+  compute_type: int8
+
+capture:
+  output_dir: ./input
+  sample_rate: 16000
+  sample_size_bits: 16
+  channels: 1
+  signed: true
+  big_endian: false
+  buffer_size: 4096
+  silence_threshold: 40
+  silence_duration_ms: 1200
+  min_recording_ms: 800
+  max_recording_ms: 15000
+  no_speech_timeout_ms: 3000
+  capture:
+  min_peak_to_average_ratio_for_noise: 4.0
+
+gatekeeper:
+  allowed_languages:
+    - en
+    - fr
+  reject_audio_duration_ms: 250
+  suspicious_audio_duration_ms: 500
+  reject_average_energy_threshold: 40
+  suspicious_language_probability_threshold: 0.45
+  reject_suspicion_score: 2
+  min_voiced_ratio: 0.20
