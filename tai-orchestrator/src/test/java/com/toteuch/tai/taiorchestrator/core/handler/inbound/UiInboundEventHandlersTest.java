@@ -1,6 +1,9 @@
-package com.toteuch.tai.taiorchestrator.core.handler.inbound.ui;
+package com.toteuch.tai.taiorchestrator.core.handler.inbound;
 
 import com.toteuch.tai.taiorchestrator.core.handler.AbstractHandlerTest;
+import com.toteuch.tai.taiorchestrator.core.handler.inbound.ui.UiManualTextInputReceivedEventHandler;
+import com.toteuch.tai.taiorchestrator.core.handler.inbound.ui.UiObscenityFilterToggleChangedEventHandler;
+import com.toteuch.tai.taiorchestrator.core.handler.inbound.ui.UiTtsToggleChangedEventHandler;
 import com.toteuch.tai.taiorchestrator.events.EventSource;
 import com.toteuch.tai.taiorchestrator.events.inbound.ui.UiManualTextInputReceivedEvent;
 import com.toteuch.tai.taiorchestrator.events.inbound.ui.UiObscenityFilterToggleChangedEvent;
