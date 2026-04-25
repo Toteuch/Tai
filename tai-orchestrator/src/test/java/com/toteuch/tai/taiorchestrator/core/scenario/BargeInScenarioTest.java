@@ -1,0 +1,243 @@
+package com.toteuch.tai.taiorchestrator.core.scenario;
+
+import com.toteuch.tai.taiorchestrator.session.ConversationTurn;
+import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.CountDownLatch;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+class BargeInScenarioTest extends AbstractScenarioTest {
+
+    @Test
+    void should_handle_barge_in_during_tts_speech_from_stt_unintelligible_event() {
+        String firstCorrelationId = "barge-tts-speech-1";
+        String clarificationCorrelationId = "barge-tts-speech-clarification";
+
+        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
+            .thenReturn(llmSuccess("First reply."));
+        when(llmClient.generateReply(eq(clarificationCorrelationId), anyList()))
+            .thenReturn(llmSuccess("Can you say that again?"));
+
+        publishSttAccepted(firstCorrelationId, "First input");
+        publishTtsStarted(firstCorrelationId, "First reply.");
+
+        publishSttUnintelligible(clarificationCorrelationId);
+
+        verify(ttsClient).stop(firstCorrelationId);
+        verify(ttsClient).speak(clarificationCorrelationId, "Can you say that again?");
+
+        publishTtsStarted(clarificationCorrelationId, "Can you say that again?");
+        publishTtsCompleted(clarificationCorrelationId, "Can you say that again?");
+
+        assertThat(sessionStore.get().getTurns()).hasSize(1);
+
+        ConversationTurn interruptedTurn = sessionStore.get().getTurns().get(0);
+        assertThat(interruptedTurn.getCorrelationId()).isEqualTo(firstCorrelationId);
+        assertThat(interruptedTurn.isAssistantPlaybackStarted()).isTrue();
+        assertThat(interruptedTurn.isAssistantPlaybackInterrupted()).isTrue();
+
+        assertThat(sessionStore.get().getActiveTurn()).isNull();
+    }
+
+    @Test
+    void should_handle_barge_in_during_tts_speech_from_stt_accepted_event() {
+        String firstCorrelationId = "barge-tts-speech-1";
+        String secondCorrelationId = "barge-tts-speech-2";
+
+        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
+            .thenReturn(llmSuccess("First reply."));
+        when(llmClient.generateReply(eq(secondCorrelationId), anyList()))
+            .thenReturn(llmSuccess("Second reply."));
+
+        publishSttAccepted(firstCorrelationId, "First input");
+        publishTtsStarted(firstCorrelationId, "First reply.");
+
+        publishSttAccepted(secondCorrelationId, "Second input");
+
+        verify(ttsClient).stop(firstCorrelationId);
+        verify(ttsClient).speak(secondCorrelationId, "Second reply.");
+
+        publishTtsStarted(secondCorrelationId, "Second reply.");
+        publishTtsCompleted(secondCorrelationId, "Second reply.");
+
+        assertThat(sessionStore.get().getTurns()).hasSize(2);
+
+        ConversationTurn interruptedTurn = sessionStore.get().getTurns().get(0);
+        assertThat(interruptedTurn.getCorrelationId()).isEqualTo(firstCorrelationId);
+        assertThat(interruptedTurn.isAssistantPlaybackStarted()).isTrue();
+        assertThat(interruptedTurn.isAssistantPlaybackInterrupted()).isTrue();
+
+        ConversationTurn secondTurn = sessionStore.get().getTurns().get(1);
+        assertThat(secondTurn.getCorrelationId()).isEqualTo(secondCorrelationId);
+        assertThat(secondTurn.getAssistantMessage()).isEqualTo("Second reply.");
+
+        assertThat(sessionStore.get().getActiveTurn()).isNull();
+    }
+
+    @Test
+    void should_handle_barge_in_during_llm_generation_from_stt_unintelligible_event() throws Exception {
+        String firstCorrelationId = "barge-llm-1";
+        String clarificationCorrelationId = "barge-llm-clarification";
+
+        CountDownLatch firstLlmStarted = new CountDownLatch(1);
+        CountDownLatch allowFirstLlmToFinish = new CountDownLatch(1);
+
+        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
+            .thenAnswer(invocation -> {
+                firstLlmStarted.countDown();
+                allowFirstLlmToFinish.await();
+                return llmSuccess("Late stale reply.");
+            });
+
+        when(llmClient.generateReply(eq(clarificationCorrelationId), anyList()))
+            .thenReturn(llmSuccess("Can you repeat that?"));
+
+        Thread firstTurn = new Thread(() -> publishSttAccepted(firstCorrelationId, "First input"));
+        firstTurn.start();
+
+        firstLlmStarted.await();
+
+        publishSttUnintelligible(clarificationCorrelationId);
+
+        allowFirstLlmToFinish.countDown();
+        firstTurn.join();
+
+        verify(ttsClient, never()).speak(eq(firstCorrelationId), anyString());
+        verify(ttsClient).speak(clarificationCorrelationId, "Can you repeat that?");
+
+        publishTtsStarted(clarificationCorrelationId, "Can you repeat that?");
+        publishTtsCompleted(clarificationCorrelationId, "Can you repeat that?");
+
+        assertThat(sessionStore.get().getTurns()).hasSize(1);
+
+        ConversationTurn firstTurnInHistory = sessionStore.get().getTurns().get(0);
+        assertThat(firstTurnInHistory.getCorrelationId()).isEqualTo(firstCorrelationId);
+        assertThat(firstTurnInHistory.getUserMessage()).isEqualTo("First input");
+        assertThat(firstTurnInHistory.getAssistantMessage()).isNull();
+        assertThat(firstTurnInHistory.isSupersededBeforeAssistantReply()).isTrue();
+
+        assertThat(sessionStore.get().getActiveTurn()).isNull();
+    }
+
+    @Test
+    void should_handle_barge_in_during_llm_generation_from_stt_accepted_event() throws Exception {
+        String firstCorrelationId = "barge-llm-1";
+        String secondCorrelationId = "barge-llm-2";
+
+        CountDownLatch firstLlmStarted = new CountDownLatch(1);
+        CountDownLatch allowFirstLlmToFinish = new CountDownLatch(1);
+
+        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
+            .thenAnswer(invocation -> {
+                firstLlmStarted.countDown();
+                allowFirstLlmToFinish.await();
+                return llmSuccess("Late stale reply.");
+            });
+
+        when(llmClient.generateReply(eq(secondCorrelationId), anyList()))
+            .thenReturn(llmSuccess("Second reply."));
+
+        Thread firstTurn = new Thread(() -> publishSttAccepted(firstCorrelationId, "First input"));
+        firstTurn.start();
+
+        firstLlmStarted.await();
+
+        publishSttAccepted(secondCorrelationId, "Second input");
+
+        allowFirstLlmToFinish.countDown();
+        firstTurn.join();
+
+        verify(ttsClient, never()).speak(eq(firstCorrelationId), anyString());
+        verify(ttsClient).speak(secondCorrelationId, "Second reply.");
+
+        publishTtsStarted(secondCorrelationId, "Second reply.");
+        publishTtsCompleted(secondCorrelationId, "Second reply.");
+
+        assertThat(sessionStore.get().getTurns()).hasSize(2);
+
+        ConversationTurn firstTurnInHistory = sessionStore.get().getTurns().get(0);
+        assertThat(firstTurnInHistory.getCorrelationId()).isEqualTo(firstCorrelationId);
+        assertThat(firstTurnInHistory.getUserMessage()).isEqualTo("First input");
+        assertThat(firstTurnInHistory.getAssistantMessage()).isNull();
+        assertThat(firstTurnInHistory.isSupersededBeforeAssistantReply()).isTrue();
+
+        ConversationTurn secondTurn = sessionStore.get().getTurns().get(1);
+        assertThat(secondTurn.getCorrelationId()).isEqualTo(secondCorrelationId);
+        assertThat(secondTurn.getAssistantMessage()).isEqualTo("Second reply.");
+
+        assertThat(sessionStore.get().getActiveTurn()).isNull();
+    }
+
+    @Test
+    void should_handle_barge_in_during_tts_preparing_from_stt_unintelligible_event() {
+        String firstCorrelationId = "barge-tts-preparing-1";
+        String clarificationCorrelationId = "barge-tts-preparing-clarification";
+
+        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
+            .thenReturn(llmSuccess("First reply."));
+        when(llmClient.generateReply(eq(clarificationCorrelationId), anyList()))
+            .thenReturn(llmSuccess("Say that again?"));
+
+        publishSttAccepted(firstCorrelationId, "First input");
+
+        publishSttUnintelligible(clarificationCorrelationId);
+
+        verify(ttsClient).stop(firstCorrelationId);
+        verify(ttsClient).speak(clarificationCorrelationId, "Say that again?");
+
+        publishTtsStarted(clarificationCorrelationId, "Say that again?");
+        publishTtsCompleted(clarificationCorrelationId, "Say that again?");
+
+        assertThat(sessionStore.get().getTurns()).hasSize(1);
+
+        ConversationTurn interruptedTurn = sessionStore.get().getTurns().get(0);
+        assertThat(interruptedTurn.getCorrelationId()).isEqualTo(firstCorrelationId);
+        assertThat(interruptedTurn.getAssistantMessage()).isEqualTo("First reply.");
+        assertThat(interruptedTurn.isAssistantPlaybackStarted()).isFalse();
+        assertThat(interruptedTurn.isAssistantPlaybackInterrupted()).isTrue();
+
+        assertThat(sessionStore.get().getActiveTurn()).isNull();
+    }
+
+    @Test
+    void should_handle_barge_in_during_tts_preparing_from_stt_accepted_event() {
+        String firstCorrelationId = "barge-tts-preparing-1";
+        String secondCorrelationId = "barge-tts-preparing-2";
+
+        when(llmClient.generateReply(eq(firstCorrelationId), anyList()))
+            .thenReturn(llmSuccess("First reply."));
+        when(llmClient.generateReply(eq(secondCorrelationId), anyList()))
+            .thenReturn(llmSuccess("Second reply."));
+
+        publishSttAccepted(firstCorrelationId, "First input");
+
+        publishSttAccepted(secondCorrelationId, "Second input");
+
+        verify(ttsClient).stop(firstCorrelationId);
+        verify(ttsClient).speak(secondCorrelationId, "Second reply.");
+
+        publishTtsStarted(secondCorrelationId, "Second reply.");
+        publishTtsCompleted(secondCorrelationId, "Second reply.");
+
+        assertThat(sessionStore.get().getTurns()).hasSize(2);
+
+        ConversationTurn interruptedTurn = sessionStore.get().getTurns().get(0);
+        assertThat(interruptedTurn.getCorrelationId()).isEqualTo(firstCorrelationId);
+        assertThat(interruptedTurn.getAssistantMessage()).isEqualTo("First reply.");
+        assertThat(interruptedTurn.isAssistantPlaybackStarted()).isFalse();
+        assertThat(interruptedTurn.isAssistantPlaybackInterrupted()).isTrue();
+
+        ConversationTurn secondTurn = sessionStore.get().getTurns().get(1);
+        assertThat(secondTurn.getCorrelationId()).isEqualTo(secondCorrelationId);
+        assertThat(secondTurn.getAssistantMessage()).isEqualTo("Second reply.");
+
+        assertThat(sessionStore.get().getActiveTurn()).isNull();
+    }
+}

@@ -8,7 +8,6 @@ public record LlmGenerationResult(
     Integer outputTokens,
     Long generationDurationMs,
     String errorCode,
-    String errorMessage,
-    boolean retryable
+    String errorMessage
 ) {
 }

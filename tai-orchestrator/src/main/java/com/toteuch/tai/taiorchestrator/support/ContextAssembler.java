@@ -3,7 +3,6 @@ package com.toteuch.tai.taiorchestrator.support;
 import com.toteuch.tai.taiorchestrator.services.llm.LlmMessage;
 import com.toteuch.tai.taiorchestrator.session.ConversationTurn;
 import com.toteuch.tai.taiorchestrator.session.SessionContext;
-import com.toteuch.tai.taiorchestrator.state.AssistantState;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -18,16 +17,8 @@ public class ContextAssembler {
         this.systemPromptLoader = systemPromptLoader;
     }
 
-    public List<LlmMessage> assemble(SessionContext sessionContext, AssistantState state, String userText) {
+    public static List<LlmMessage> assemble(SessionContext sessionContext, boolean forLog) {
         List<LlmMessage> messages = new ArrayList<>();
-
-        messages.add(new LlmMessage("system", systemPromptLoader.getSystemPrompt()));
-
-        messages.add(new LlmMessage(
-            "system",
-            "Runtime state: ttsEnabled=" + state.isTtsEnabled()
-                + ", obscenityFilterEnabled=" + state.isObscenityFilterEnabled()
-        ));
 
         int fromIndex = Math.max(0, sessionContext.getTurns().size() - 6);
         List<ConversationTurn> recentTurns = sessionContext.getTurns().subList(fromIndex, sessionContext.getTurns().size());
@@ -49,10 +40,17 @@ public class ContextAssembler {
             }
 
             if (turn.isSupersededBeforeAssistantReply()) {
-                messages.add(new LlmMessage(
-                    "system",
-                    "The user's previous message was superseded by a newer one before you answered."
-                ));
+                if (forLog) {
+                    messages.add(new LlmMessage(
+                        "system",
+                        "PREVIOUS_USER_MESSAGE_SUPERSEDED"
+                    ));
+                } else {
+                    messages.add(new LlmMessage(
+                        "system",
+                        "The user's previous message was superseded by a newer one before you answered."
+                    ));
+                }
             }
 
             if (turn.getAssistantMessage() != null && !turn.getAssistantMessage().isBlank()) {
@@ -60,13 +58,26 @@ public class ContextAssembler {
             }
 
             if (turn.isAssistantPlaybackInterrupted()) {
-                messages.add(new LlmMessage(
-                    "system",
-                    "Your previous spoken reply was interrupted by the user before playback completed."
-                ));
+                if (forLog) {
+                    messages.add(new LlmMessage(
+                        "system",
+                        "ASSISTANT_PLAYBACK_INTERRUPTED"
+                    ));
+                } else {
+                    messages.add(new LlmMessage(
+                        "system",
+                        "Your previous spoken reply was interrupted by the user before playback completed."
+                    ));
+                }
             }
         }
+        return messages;
+    }
 
+    public List<LlmMessage> assemble(SessionContext sessionContext, String userText, boolean forLog) {
+        List<LlmMessage> messages = new ArrayList<>();
+        messages.add(new LlmMessage("system", systemPromptLoader.getSystemPrompt()));
+        messages.addAll(assemble(sessionContext, forLog));
         messages.add(new LlmMessage("user", userText));
         return messages;
     }

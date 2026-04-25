@@ -4,7 +4,6 @@ import java.util.List;
 
 public interface LlmClient {
     LlmGenerationResult generateReply(
-        String sessionId,
         String correlationId,
         List<LlmMessage> messages
     );

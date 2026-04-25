@@ -1,5 +1,8 @@
 package com.toteuch.tai.taiorchestrator.session;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Instant;
 
 /**
@@ -26,24 +29,29 @@ import java.time.Instant;
  * </p>
  */
 public class ConversationTurn {
+    private static final Logger contextLog = LoggerFactory.getLogger("tai.context");
 
     private final String correlationId;
     private final Instant createdAt;
-
-    private String userMessage;
+    private final String userMessage;
+    private final boolean persistInHistory;
     private String assistantMessage;
-
     private boolean assistantReplyGenerated;
     private boolean assistantPlaybackStarted;
     private boolean assistantPlaybackCompleted;
-    private boolean assistantPlaybackInterrupted;
-
     private boolean supersededBeforeAssistantReply;
+    private boolean assistantPlaybackInterrupted;
+    private String supersededByCorrelationId;
 
-    public ConversationTurn(String correlationId, String userMessage, Instant createdAt) {
+
+    public ConversationTurn(String correlationId, String userMessage, Instant createdAt, boolean persistInHistory) {
+        contextLog.info("New conversation turn | correlationId={} persistInHistory={}",
+            correlationId, persistInHistory);
+        contextLog.debug("userMessage={}", userMessage);
         this.correlationId = correlationId;
         this.userMessage = userMessage;
         this.createdAt = createdAt;
+        this.persistInHistory = persistInHistory;
     }
 
     public String getCorrelationId() {
@@ -58,15 +66,15 @@ public class ConversationTurn {
         return userMessage;
     }
 
-    public void setUserMessage(String userMessage) {
-        this.userMessage = userMessage;
-    }
-
     public String getAssistantMessage() {
         return assistantMessage;
     }
 
     public void setAssistantMessage(String assistantMessage) {
+        contextLog.info("Adding assistant message to turn | correlationId={}", correlationId);
+        if (contextLog.isDebugEnabled()) {
+            contextLog.debug("correlationId={} assistantMessage={}", correlationId, assistantMessage);
+        }
         this.assistantMessage = assistantMessage;
     }
 
@@ -75,6 +83,9 @@ public class ConversationTurn {
     }
 
     public void setAssistantReplyGenerated(boolean assistantReplyGenerated) {
+        contextLog.debug("correlationId={} assistantReplyGenerated={}",
+            correlationId,
+            assistantReplyGenerated);
         this.assistantReplyGenerated = assistantReplyGenerated;
     }
 
@@ -83,6 +94,9 @@ public class ConversationTurn {
     }
 
     public void setAssistantPlaybackStarted(boolean assistantPlaybackStarted) {
+        contextLog.debug("correlationId={} assistantPlaybackStarted={}",
+            correlationId,
+            assistantPlaybackStarted);
         this.assistantPlaybackStarted = assistantPlaybackStarted;
     }
 
@@ -91,6 +105,9 @@ public class ConversationTurn {
     }
 
     public void setAssistantPlaybackCompleted(boolean assistantPlaybackCompleted) {
+        contextLog.debug("correlationId={} assistantPlaybackCompleted={}",
+            correlationId,
+            assistantPlaybackCompleted);
         this.assistantPlaybackCompleted = assistantPlaybackCompleted;
     }
 
@@ -99,6 +116,9 @@ public class ConversationTurn {
     }
 
     public void setAssistantPlaybackInterrupted(boolean assistantPlaybackInterrupted) {
+        contextLog.debug("correlationId={} assistantPlaybackInterrupted={}",
+            correlationId,
+            assistantPlaybackInterrupted);
         this.assistantPlaybackInterrupted = assistantPlaybackInterrupted;
     }
 
@@ -107,6 +127,24 @@ public class ConversationTurn {
     }
 
     public void setSupersededBeforeAssistantReply(boolean supersededBeforeAssistantReply) {
+        contextLog.debug("correlationId={} supersededBeforeAssistantReply={}",
+            correlationId,
+            supersededBeforeAssistantReply);
         this.supersededBeforeAssistantReply = supersededBeforeAssistantReply;
+    }
+
+    public String getSupersededByCorrelationId() {
+        return supersededByCorrelationId;
+    }
+
+    public void setSupersededByCorrelationId(String supersededByCorrelationId) {
+        contextLog.debug("correlationId={} supersededByCorrelationId={}",
+            correlationId,
+            supersededByCorrelationId);
+        this.supersededByCorrelationId = supersededByCorrelationId;
+    }
+
+    public boolean isPersistInHistory() {
+        return persistInHistory;
     }
 }

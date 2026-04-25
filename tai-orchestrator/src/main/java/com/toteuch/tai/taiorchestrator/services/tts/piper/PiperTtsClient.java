@@ -1,17 +1,16 @@
 package com.toteuch.tai.taiorchestrator.services.tts.piper;
 
+import com.toteuch.tai.taiorchestrator.core.publisher.TaiEventPublisher;
 import com.toteuch.tai.taiorchestrator.events.EventSource;
-import com.toteuch.tai.taiorchestrator.events.inbound.TtsPlaybackCompletedEvent;
-import com.toteuch.tai.taiorchestrator.events.inbound.TtsPlaybackFailedEvent;
-import com.toteuch.tai.taiorchestrator.events.inbound.TtsPlaybackStartedEvent;
+import com.toteuch.tai.taiorchestrator.events.inbound.tts.TtsPlaybackCompletedEvent;
+import com.toteuch.tai.taiorchestrator.events.inbound.tts.TtsPlaybackFailedEvent;
+import com.toteuch.tai.taiorchestrator.events.inbound.tts.TtsPlaybackStartedEvent;
 import com.toteuch.tai.taiorchestrator.services.tts.TtsClient;
 import com.toteuch.tai.taiorchestrator.services.tts.audio.JavaAudioPlaybackService;
 import com.toteuch.tai.taiorchestrator.services.tts.audio.WavPlaybackHandle;
-import com.toteuch.tai.taiorchestrator.support.TtsSentenceSplitter;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
@@ -35,8 +34,7 @@ public class PiperTtsClient implements TtsClient {
     private static final Logger log = LoggerFactory.getLogger(PiperTtsClient.class);
 
     private final PiperTtsProperties properties;
-    private final ApplicationEventPublisher eventPublisher;
-    private final TtsSentenceSplitter ttsSentenceSplitter;
+    private final TaiEventPublisher eventPublisher;
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final Map<String, Process> activeProcesses = new ConcurrentHashMap<>();
@@ -46,43 +44,38 @@ public class PiperTtsClient implements TtsClient {
 
     public PiperTtsClient(
         PiperTtsProperties properties,
-        ApplicationEventPublisher eventPublisher,
-        JavaAudioPlaybackService audioPlaybackService,
-        TtsSentenceSplitter ttsSentenceSplitter
+        TaiEventPublisher eventPublisher,
+        JavaAudioPlaybackService audioPlaybackService
     ) {
-        log.info("PiperTtsClient initialized");
+        log.debug("PiperTtsClient initialized");
         this.properties = properties;
         this.eventPublisher = eventPublisher;
         this.audioPlaybackService = audioPlaybackService;
-        this.ttsSentenceSplitter = ttsSentenceSplitter;
     }
 
     @Override
-    public void speak(String sessionId, String correlationId, String text) {
-        log.info("PiperTtsClient speak called | sessionId={} correlationId={} text={}", sessionId, correlationId, text);
-        log.info("Current JVM working directory: {}", System.getProperty("user.dir"));
-        stop(sessionId);
+    public void speak(String correlationId, String text) {
+        log.debug("PiperTtsClient speak called | correlationId={} text={}", correlationId, text);
+        stop(correlationId);
 
         Future<?> future = executorService.submit(() -> {
 
             try {
-                Path outputFile = buildOutputPath(sessionId, correlationId);
-
+                Path outputFile = buildOutputPath(correlationId);
                 try {
                     Files.createDirectories(Path.of(properties.getOutputDir()));
-
-                    log.info("Piper TTS config | executable={} model={} config={} outputDir={} segmentationMode={}",
+                    log.debug("Piper TTS config | executable={} model={} config={} outputDir={} segmentationMode={}",
                         properties.getExecutable(),
                         properties.getModel(),
                         properties.getConfig(),
                         properties.getOutputDir(),
                         properties.getSegmentationMode());
 
-                    synthesizeToWav(sessionId, outputFile, text);
+                    synthesizeToWav(correlationId, outputFile, text);
 
-                    publishStarted(sessionId, correlationId, text);
-                    long durationMs = playWav(sessionId, outputFile);
-                    publishCompleted(sessionId, correlationId, text, durationMs);
+                    publishStarted(correlationId, text);
+                    long durationMs = playWav(correlationId, outputFile);
+                    publishCompleted(correlationId, text, durationMs);
 
                 } finally {
                     try {
@@ -94,20 +87,20 @@ public class PiperTtsClient implements TtsClient {
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                log.info("Piper TTS interrupted | sessionId={} correlationId={}", sessionId, correlationId);
+                log.debug("Piper TTS interrupted | correlationId={}", correlationId);
 
             } catch (Exception e) {
-                log.error("Piper TTS failed | sessionId={} correlationId={}", sessionId, correlationId, e);
-                publishFailed(sessionId, correlationId, "PIPER_TTS_ERROR", e.getMessage());
+                log.error("Piper TTS failed | correlationId={}", correlationId, e);
+                publishFailed(correlationId, "PIPER_TTS_ERROR", e.getMessage());
 
             } finally {
-                activeProcesses.remove(sessionId);
-                activeTasks.remove(sessionId);
-                activePlaybackHandles.remove(sessionId);
+                activeProcesses.remove(correlationId);
+                activeTasks.remove(correlationId);
+                activePlaybackHandles.remove(correlationId);
             }
         });
 
-        activeTasks.put(sessionId, future);
+        activeTasks.put(correlationId, future);
     }
 
     @Override
@@ -128,7 +121,7 @@ public class PiperTtsClient implements TtsClient {
         }
     }
 
-    private void synthesizeToWav(String sessionId, Path outputFile, String text) throws Exception {
+    private void synthesizeToWav(String correlationId, Path outputFile, String text) throws Exception {
         ProcessBuilder processBuilder = new ProcessBuilder(
             properties.getExecutable(),
             "--model", properties.getModel(),
@@ -138,10 +131,10 @@ public class PiperTtsClient implements TtsClient {
 
         processBuilder.redirectErrorStream(true);
 
-        log.info("Starting Piper process | command={}", processBuilder.command());
+        log.debug("Starting Piper process | command={}", processBuilder.command());
 
         Process process = processBuilder.start();
-        activeProcesses.put(sessionId, process);
+        activeProcesses.put(correlationId, process);
 
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
             writer.write(text);
@@ -150,15 +143,15 @@ public class PiperTtsClient implements TtsClient {
 
         try {
             int exitCode = process.waitFor();
-            log.info("Piper process finished | exitCode={} outputFile={}", exitCode, outputFile);
-            log.info("Generated WAV exists={} size={}",
+            log.debug("Piper process finished | exitCode={} outputFile={}", exitCode, outputFile);
+            log.debug("Generated WAV exists={} size={}",
                 Files.exists(outputFile),
                 Files.exists(outputFile) ? Files.size(outputFile) : -1);
             if (exitCode != 0) {
                 throw new IllegalStateException("Piper exited with code " + exitCode);
             }
         } finally {
-            activeProcesses.remove(sessionId, process);
+            activeProcesses.remove(correlationId, process);
         }
     }
 
@@ -173,16 +166,10 @@ public class PiperTtsClient implements TtsClient {
         }
     }
 
-    private Path buildOutputPath(String sessionId, String correlationId, int segmentIndex) {
-        String fileName = "tts_" + sessionId + "_" + correlationId + "_" + segmentIndex + ".wav";
-        return Path.of(properties.getOutputDir(), fileName);
-    }
-
-    private void publishStarted(String sessionId, String correlationId, String text) {
-        eventPublisher.publishEvent(new TtsPlaybackStartedEvent(
+    private void publishStarted(String correlationId, String text) {
+        eventPublisher.publish(new TtsPlaybackStartedEvent(
             UUID.randomUUID().toString(),
             Instant.now(),
-            sessionId,
             correlationId,
             EventSource.TTS_SERVICE,
             text,
@@ -190,11 +177,10 @@ public class PiperTtsClient implements TtsClient {
         ));
     }
 
-    private void publishCompleted(String sessionId, String correlationId, String text, long durationMs) {
-        eventPublisher.publishEvent(new TtsPlaybackCompletedEvent(
+    private void publishCompleted(String correlationId, String text, long durationMs) {
+        eventPublisher.publish(new TtsPlaybackCompletedEvent(
             UUID.randomUUID().toString(),
             Instant.now(),
-            sessionId,
             correlationId,
             EventSource.TTS_SERVICE,
             text,
@@ -202,11 +188,10 @@ public class PiperTtsClient implements TtsClient {
         ));
     }
 
-    private void publishFailed(String sessionId, String correlationId, String errorCode, String errorMessage) {
-        eventPublisher.publishEvent(new TtsPlaybackFailedEvent(
+    private void publishFailed(String correlationId, String errorCode, String errorMessage) {
+        eventPublisher.publish(new TtsPlaybackFailedEvent(
             UUID.randomUUID().toString(),
             Instant.now(),
-            sessionId,
             correlationId,
             EventSource.TTS_SERVICE,
             errorCode,
@@ -214,8 +199,8 @@ public class PiperTtsClient implements TtsClient {
         ));
     }
 
-    private Path buildOutputPath(String sessionId, String correlationId) {
-        String fileName = "tts_" + sessionId + "_" + correlationId + ".wav";
+    private Path buildOutputPath(String correlationId) {
+        String fileName = "tts_" + correlationId + ".wav";
         return Path.of(properties.getOutputDir(), fileName);
     }
 
