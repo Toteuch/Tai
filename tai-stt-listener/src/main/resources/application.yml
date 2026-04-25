@@ -1,0 +1,33 @@
+server:
+  port: 8094
+
+tai:
+  stt:
+    capture:
+      output-dir: ./tai-stt-listener/input
+      sample-rate: 16000
+      sample-size-bits: 16
+      channels: 1
+      signed: true
+      big-endian: false
+      buffer-size: 4096
+      silence-threshold: 40
+      silence-duration-ms: 1200
+      min-recording-ms: 800
+      max-recording-ms: 15000
+      no-speech-timeout-ms: 3000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /docs
+  api-docs:
+    path: /v3/api-docs

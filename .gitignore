@@ -116,7 +116,4 @@ htmlcov/
 # STT
 
 # =========================
-tai-stt/samples/*.wav
-!tai-stt/samples/hello.wav
-!tai-stt/samples/hello-french.wav
-tai-stt/input/
+**/input/
