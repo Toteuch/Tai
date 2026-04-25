@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -20,7 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 @Component
-@Primary
 public class SlowMockTtsClient implements TtsClient {
 
     private static final Logger log = LoggerFactory.getLogger(SlowMockTtsClient.class);
@@ -37,6 +35,7 @@ public class SlowMockTtsClient implements TtsClient {
         @Value("${tai.mock.tts.voice-id:slow-mock-voice}") String voiceId,
         ApplicationEventPublisher eventPublisher
     ) {
+        log.info("SlowMockTtsClient initialized");
         this.playbackDelayMs = playbackDelayMs;
         this.voiceId = voiceId;
         this.eventPublisher = eventPublisher;

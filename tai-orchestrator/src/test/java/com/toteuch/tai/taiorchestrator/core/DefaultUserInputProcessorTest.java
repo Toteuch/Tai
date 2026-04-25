@@ -18,6 +18,7 @@ import com.toteuch.tai.taiorchestrator.state.ThinkingState;
 import com.toteuch.tai.taiorchestrator.support.ContextAssembler;
 import com.toteuch.tai.taiorchestrator.support.ConversationTraceLogger;
 import com.toteuch.tai.taiorchestrator.support.SystemPromptLoader;
+import com.toteuch.tai.taiorchestrator.support.TtsTextPreprocessor;
 import com.toteuch.tai.taiorchestrator.support.TtsTextSanitizer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +52,7 @@ class DefaultUserInputProcessorTest {
     private TtsClient ttsClient;
     private ConversationTraceLogger conversationTraceLogger;
     private TtsTextSanitizer ttsTextSanitizer;
+    private TtsTextPreprocessor ttsTextPreprocessor;
 
     private DefaultUserInputProcessor processor;
 
@@ -66,6 +68,7 @@ class DefaultUserInputProcessorTest {
         ttsClient = mock(TtsClient.class);
         conversationTraceLogger = mock(ConversationTraceLogger.class);
         ttsTextSanitizer = new TtsTextSanitizer();
+        ttsTextPreprocessor = new TtsTextPreprocessor();
 
         processor = new DefaultUserInputProcessor(
             stateStore,
@@ -75,7 +78,8 @@ class DefaultUserInputProcessorTest {
             llmClient,
             ttsClient,
             conversationTraceLogger,
-            ttsTextSanitizer
+            ttsTextSanitizer,
+            ttsTextPreprocessor
         );
     }
 
