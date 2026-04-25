@@ -1,4 +1,4 @@
-package com.toteuch.tai.taiorchestrator.transport.stt;
+package com.toteuch.tai.taiorchestrator.transport;
 
 import com.toteuch.tai.taiorchestrator.core.publisher.TaiEventPublisher;
 import com.toteuch.tai.taiorchestrator.transport.events.stt.SttSpeechStartedEventRequest;
@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/internal/events/stt")
-public class InternalSttEventController {
+@RequestMapping("/events/stt")
+public class SttEventController {
 
     private final TaiEventPublisher eventPublisher;
     private final SttTransportEventMapper mapper;
 
-    public InternalSttEventController(
+    public SttEventController(
         TaiEventPublisher eventPublisher,
         SttTransportEventMapper mapper
     ) {
