@@ -1,13 +1,13 @@
 package com.toteuch.tai.taiorchestrator.services.tts.piper;
 
-import com.toteuch.tai.taiorchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.taiorchestrator.events.EventSource;
-import com.toteuch.tai.taiorchestrator.events.inbound.tts.TtsPlaybackCompletedEvent;
-import com.toteuch.tai.taiorchestrator.events.inbound.tts.TtsPlaybackFailedEvent;
-import com.toteuch.tai.taiorchestrator.events.inbound.tts.TtsPlaybackStartedEvent;
 import com.toteuch.tai.taiorchestrator.services.tts.TtsClient;
 import com.toteuch.tai.taiorchestrator.services.tts.audio.JavaAudioPlaybackService;
 import com.toteuch.tai.taiorchestrator.services.tts.audio.WavPlaybackHandle;
+import com.toteuch.tai.taiorchestrator.transport.TtsEventController;
+import com.toteuch.tai.taiorchestrator.transport.events.TransportEventSource;
+import com.toteuch.tai.taiorchestrator.transport.events.tts.TtsPlaybackCompletedEventRequest;
+import com.toteuch.tai.taiorchestrator.transport.events.tts.TtsPlaybackFailedEventRequest;
+import com.toteuch.tai.taiorchestrator.transport.events.tts.TtsPlaybackStartedEventRequest;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class PiperTtsClient implements TtsClient {
     private static final Logger log = LoggerFactory.getLogger(PiperTtsClient.class);
 
     private final PiperTtsProperties properties;
-    private final TaiEventPublisher eventPublisher;
+    private final TtsEventController eventController;
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final Map<String, Process> activeProcesses = new ConcurrentHashMap<>();
@@ -44,12 +44,12 @@ public class PiperTtsClient implements TtsClient {
 
     public PiperTtsClient(
         PiperTtsProperties properties,
-        TaiEventPublisher eventPublisher,
+        TtsEventController eventController,
         JavaAudioPlaybackService audioPlaybackService
     ) {
         log.debug("PiperTtsClient initialized");
         this.properties = properties;
-        this.eventPublisher = eventPublisher;
+        this.eventController = eventController;
         this.audioPlaybackService = audioPlaybackService;
     }
 
@@ -73,9 +73,9 @@ public class PiperTtsClient implements TtsClient {
 
                     synthesizeToWav(correlationId, outputFile, text);
 
-                    publishStarted(correlationId, text);
+                    postStarted(correlationId, text);
                     long durationMs = playWav(correlationId, outputFile);
-                    publishCompleted(correlationId, text, durationMs);
+                    postCompleted(correlationId, text, durationMs);
 
                 } finally {
                     try {
@@ -91,7 +91,7 @@ public class PiperTtsClient implements TtsClient {
 
             } catch (Exception e) {
                 log.error("Piper TTS failed | correlationId={}", correlationId, e);
-                publishFailed(correlationId, "PIPER_TTS_ERROR", e.getMessage());
+                postFailed(correlationId, "PIPER_TTS_ERROR", e.getMessage());
 
             } finally {
                 activeProcesses.remove(correlationId);
@@ -166,37 +166,40 @@ public class PiperTtsClient implements TtsClient {
         }
     }
 
-    private void publishStarted(String correlationId, String text) {
-        eventPublisher.publish(new TtsPlaybackStartedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            correlationId,
-            EventSource.TTS_SERVICE,
-            text,
-            properties.getVoiceId()
-        ));
+    private void postStarted(String correlationId, String text) {
+        TtsPlaybackStartedEventRequest response = new TtsPlaybackStartedEventRequest();
+        response.setEventId(UUID.randomUUID().toString());
+        response.setCreatedAt(Instant.now());
+        response.setCorrelationId(correlationId);
+        response.setSource(TransportEventSource.TTS_SERVICE);
+        response.setText(text);
+        response.setVoiceId(properties.getVoiceId());
+
+        eventController.onPlaybackStarted(response);
     }
 
-    private void publishCompleted(String correlationId, String text, long durationMs) {
-        eventPublisher.publish(new TtsPlaybackCompletedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            correlationId,
-            EventSource.TTS_SERVICE,
-            text,
-            durationMs
-        ));
+    private void postCompleted(String correlationId, String text, long durationMs) {
+        TtsPlaybackCompletedEventRequest response = new TtsPlaybackCompletedEventRequest();
+        response.setEventId(UUID.randomUUID().toString());
+        response.setCreatedAt(Instant.now());
+        response.setCorrelationId(correlationId);
+        response.setSource(TransportEventSource.TTS_SERVICE);
+        response.setText(text);
+        response.setSpeechDurationMs(durationMs);
+
+        eventController.onPlaybackCompleted(response);
     }
 
-    private void publishFailed(String correlationId, String errorCode, String errorMessage) {
-        eventPublisher.publish(new TtsPlaybackFailedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            correlationId,
-            EventSource.TTS_SERVICE,
-            errorCode,
-            errorMessage
-        ));
+    private void postFailed(String correlationId, String errorCode, String errorMessage) {
+        TtsPlaybackFailedEventRequest response = new TtsPlaybackFailedEventRequest();
+        response.setEventId(UUID.randomUUID().toString());
+        response.setCreatedAt(Instant.now());
+        response.setCorrelationId(correlationId);
+        response.setSource(TransportEventSource.TTS_SERVICE);
+        response.setErrorCode(errorCode);
+        response.setErrorMessage(errorMessage);
+
+        eventController.onPlaybackFailed(response);
     }
 
     private Path buildOutputPath(String correlationId) {
