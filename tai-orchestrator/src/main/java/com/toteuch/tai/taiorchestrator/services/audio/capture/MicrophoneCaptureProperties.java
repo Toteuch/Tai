@@ -12,6 +12,9 @@ public class MicrophoneCaptureProperties {
     private boolean signed = true;
     private boolean bigEndian = false;
     private int bufferSize = 4096;
+    private int silenceThreshold = 500;
+    private int silenceDurationMs = 1200;
+    private int minRecordingMs = 800;
 
     public String getOutputDir() {
         return outputDir;
@@ -67,5 +70,29 @@ public class MicrophoneCaptureProperties {
 
     public void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
+    }
+
+    public int getSilenceThreshold() {
+        return silenceThreshold;
+    }
+
+    public void setSilenceThreshold(int silenceThreshold) {
+        this.silenceThreshold = silenceThreshold;
+    }
+
+    public int getSilenceDurationMs() {
+        return silenceDurationMs;
+    }
+
+    public void setSilenceDurationMs(int silenceDurationMs) {
+        this.silenceDurationMs = silenceDurationMs;
+    }
+
+    public int getMinRecordingMs() {
+        return minRecordingMs;
+    }
+
+    public void setMinRecordingMs(int minRecordingMs) {
+        this.minRecordingMs = minRecordingMs;
     }
 }
