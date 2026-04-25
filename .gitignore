@@ -1,0 +1,104 @@
+# =========================
+
+# IntelliJ / JetBrains
+
+# =========================
+
+.idea/
+*.iml
+out/
+
+# =========================
+
+# Java / JVM
+
+# =========================
+
+target/
+build/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# Maven
+
+.mvn/
+dependency-reduced-pom.xml
+
+# Gradle
+
+.gradle/
+
+# =========================
+
+# Python
+
+# =========================
+
+**pycache**/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# =========================
+
+# Logs & runtime files
+
+# =========================
+
+*.log
+logs/
+
+# =========================
+
+# OS files
+
+# =========================
+
+.DS_Store
+Thumbs.db
+
+# =========================
+
+# Environment / secrets
+
+# =========================
+
+.env
+.env.*
+*.env
+
+# =========================
+
+# Coverage / testing
+
+# =========================
+
+.coverage
+coverage/
+htmlcov/
+
+# =========================
+
+# Misc
+
+# =========================
+
+*.tmp
+*.swp
+*.swo
