@@ -36,12 +36,7 @@ public interface TaiEvent {
      * Timestamp at which the event occurred.
      */
     Instant occurredAt();
-
-    /**
-     * Identifier of the current assistant session.
-     */
-    String sessionId();
-
+    
     /**
      * Identifier used to correlate events belonging to the same logical operation
      * or conversation turn.

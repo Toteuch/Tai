@@ -57,7 +57,7 @@ public class WhisperSttClient implements SttClient {
 
             processBuilder.redirectErrorStream(true);
 
-            log.info("Calling Whisper STT | sessionId={} audioFile={} model={} device={} computeType={}",
+            log.debug("Calling Whisper STT | sessionId={} audioFile={} model={} device={} computeType={}",
                 sessionId,
                 audioFile,
                 properties.getModelSize(),
@@ -73,7 +73,7 @@ public class WhisperSttClient implements SttClient {
 
             int exitCode = process.waitFor();
 
-            log.info("Whisper STT finished | sessionId={} exitCode={} rawOutput={}",
+            log.debug("Whisper STT finished | sessionId={} exitCode={} rawOutput={}",
                 sessionId,
                 exitCode,
                 output);

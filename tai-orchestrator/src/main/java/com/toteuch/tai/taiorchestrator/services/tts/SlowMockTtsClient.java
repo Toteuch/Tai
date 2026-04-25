@@ -1,8 +1,8 @@
 package com.toteuch.tai.taiorchestrator.services.tts;
 
 import com.toteuch.tai.taiorchestrator.events.EventSource;
-import com.toteuch.tai.taiorchestrator.events.inbound.TtsPlaybackCompletedEvent;
-import com.toteuch.tai.taiorchestrator.events.inbound.TtsPlaybackStartedEvent;
+import com.toteuch.tai.taiorchestrator.events.inbound.tts.TtsPlaybackCompletedEvent;
+import com.toteuch.tai.taiorchestrator.events.inbound.tts.TtsPlaybackStartedEvent;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,55 +35,54 @@ public class SlowMockTtsClient implements TtsClient {
         @Value("${tai.mock.tts.voice-id:slow-mock-voice}") String voiceId,
         ApplicationEventPublisher eventPublisher
     ) {
-        log.info("SlowMockTtsClient initialized");
+        log.debug("SlowMockTtsClient initialized");
         this.playbackDelayMs = playbackDelayMs;
         this.voiceId = voiceId;
         this.eventPublisher = eventPublisher;
     }
 
     @Override
-    public void speak(String sessionId, String correlationId, String text) {
-        log.info("SlowMockTtsClient speak requested | sessionId={} correlationId={} delayMs={}",
-            sessionId, correlationId, playbackDelayMs);
+    public void speak(String correlationId, String text) {
+        log.debug("SlowMockTtsClient speak requested | correlationId={} delayMs={}",
+            correlationId, playbackDelayMs);
 
-        stop(sessionId);
+        stop(correlationId);
 
         Future<?> future = executorService.submit(() -> {
             try {
-                publishStarted(sessionId, correlationId, text);
+                publishStarted(correlationId, text);
 
                 Thread.sleep(playbackDelayMs);
 
-                publishCompleted(sessionId, correlationId, text, playbackDelayMs);
+                publishCompleted(correlationId, text, playbackDelayMs);
 
-                log.info("SlowMockTtsClient playback completed | sessionId={} correlationId={}",
-                    sessionId, correlationId);
+                log.debug("SlowMockTtsClient playback completed | correlationId={}",
+                    correlationId);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                log.info("SlowMockTtsClient playback interrupted | sessionId={} correlationId={}",
-                    sessionId, correlationId);
+                log.debug("SlowMockTtsClient playback interrupted | correlationId={}",
+                    correlationId);
             } finally {
-                activeSessions.remove(sessionId);
+                activeSessions.remove(correlationId);
             }
         });
 
-        activeSessions.put(sessionId, future);
+        activeSessions.put(correlationId, future);
     }
 
     @Override
-    public void stop(String sessionId) {
-        Future<?> future = activeSessions.remove(sessionId);
+    public void stop(String correlationId) {
+        Future<?> future = activeSessions.remove(correlationId);
         if (future != null) {
             boolean cancelled = future.cancel(true);
-            log.info("SlowMockTtsClient stop requested | sessionId={} cancelled={}", sessionId, cancelled);
+            log.debug("SlowMockTtsClient stop requested | correlationId={} cancelled={}", correlationId, cancelled);
         }
     }
 
-    private void publishStarted(String sessionId, String correlationId, String text) {
+    private void publishStarted(String correlationId, String text) {
         TtsPlaybackStartedEvent event = new TtsPlaybackStartedEvent(
             UUID.randomUUID().toString(),
             Instant.now(),
-            sessionId,
             correlationId,
             EventSource.TTS_SERVICE,
             text,
@@ -93,11 +92,10 @@ public class SlowMockTtsClient implements TtsClient {
         eventPublisher.publishEvent(event);
     }
 
-    private void publishCompleted(String sessionId, String correlationId, String text, long durationMs) {
+    private void publishCompleted(String correlationId, String text, long durationMs) {
         TtsPlaybackCompletedEvent event = new TtsPlaybackCompletedEvent(
             UUID.randomUUID().toString(),
             Instant.now(),
-            sessionId,
             correlationId,
             EventSource.TTS_SERVICE,
             text,

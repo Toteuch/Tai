@@ -1,37 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+    <timestamp key="startupTimestamp" datePattern="yyyyMMdd-HHmmss"/>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level %logger{36} : %msg%n</pattern>
-        </encoder>
-    </appender>
+    <property name="LOG_DIR" value="tai-orchestrator/logs"/>
+    <property name="CONVERSATION_LOG_FILE" value="${LOG_DIR}/${startupTimestamp}-conversation.log"/>
+    <springProperty name="TAI_CONVERSATION_LEVEL" source="logging.level.tai.conversation" defaultValue="INFO"/>
+    <springProperty name="ROOT_LEVEL" source="logging.level.root" defaultValue="INFO"/>
 
-    <appender name="TAI_CONVERSATION_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>./logs/tai-conversation.log</file>
-        <append>true</append>
-        <immediateFlush>true</immediateFlush>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
+    <appender name="CONVERSATION_FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${CONVERSATION_LOG_FILE}</file>
+        <append>false</append>
         <encoder>
             <pattern>%msg%n</pattern>
+            <charset>UTF-8</charset>
         </encoder>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>./logs/tai-conversation.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize>
-            <maxHistory>14</maxHistory>
-            <totalSizeCap>200MB</totalSizeCap>
-        </rollingPolicy>
     </appender>
 
-    <logger name="tai.conversation" level="INFO" additivity="false">
-        <appender-ref ref="TAI_CONVERSATION_FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-
-    <root level="INFO">
+    <!-- Default console logging -->
+    <root level="%{ROOT_LEVEL}">
         <appender-ref ref="CONSOLE"/>
     </root>
+
+    <!-- Conversation logs only go to dedicated file, not console -->
+    <logger name="tai.conversation" level="%{TAI_CONVERSATION_LEVEL}" additivity="false">
+        <appender-ref ref="CONVERSATION_FILE"/>
+    </logger>
 
 </configuration>

@@ -83,7 +83,7 @@ class OllamaLlmClientTest {
             new LlmMessage("user", "Hello")
         );
 
-        LlmGenerationResult result = ollamaLlmClient.generateReply("session-1", "corr-1", messages);
+        LlmGenerationResult result = ollamaLlmClient.generateReply("corr-1", messages);
 
         assertTrue(result.success());
         assertEquals("Hey Toteuch. I am here.", result.responseText());
@@ -108,7 +108,7 @@ class OllamaLlmClientTest {
             new LlmMessage("user", "Hello")
         );
 
-        LlmGenerationResult result = ollamaLlmClient.generateReply("session-1", "corr-1", messages);
+        LlmGenerationResult result = ollamaLlmClient.generateReply("corr-1", messages);
 
         assertFalse(result.success());
         assertEquals("OLLAMA_EMPTY_RESPONSE", result.errorCode());
@@ -138,7 +138,7 @@ class OllamaLlmClientTest {
             new LlmMessage("user", "Hello")
         );
 
-        LlmGenerationResult result = ollamaLlmClient.generateReply("session-1", "corr-1", messages);
+        LlmGenerationResult result = ollamaLlmClient.generateReply("corr-1", messages);
 
         assertFalse(result.success());
         assertEquals("OLLAMA_EMPTY_MESSAGE", result.errorCode());
@@ -159,7 +159,7 @@ class OllamaLlmClientTest {
             new LlmMessage("user", "Hello")
         );
 
-        LlmGenerationResult result = ollamaLlmClient.generateReply("session-1", "corr-1", messages);
+        LlmGenerationResult result = ollamaLlmClient.generateReply("corr-1", messages);
 
         assertFalse(result.success());
         assertEquals("OLLAMA_HTTP_ERROR", result.errorCode());
@@ -180,7 +180,7 @@ class OllamaLlmClientTest {
             new LlmMessage("user", "Hello")
         );
 
-        LlmGenerationResult result = ollamaLlmClient.generateReply("session-1", "corr-1", messages);
+        LlmGenerationResult result = ollamaLlmClient.generateReply("corr-1", messages);
 
         assertFalse(result.success());
         assertEquals("OLLAMA_CONNECTION_ERROR", result.errorCode());

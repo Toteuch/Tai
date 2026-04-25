@@ -9,7 +9,6 @@ public class MockLlmClient implements LlmClient {
 
     @Override
     public LlmGenerationResult generateReply(
-        String sessionId,
         String correlationId,
         List<LlmMessage> messages
     ) {

@@ -40,7 +40,6 @@ public class OllamaLlmClient implements LlmClient {
 
     @Override
     public LlmGenerationResult generateReply(
-        String sessionId,
         String correlationId,
         List<LlmMessage> messages
     ) {
@@ -54,11 +53,18 @@ public class OllamaLlmClient implements LlmClient {
 
             HttpEntity<OllamaChatRequest> entity = new HttpEntity<>(request, headers);
 
-            log.info("Calling Ollama | sessionId={} correlationId={} model={} url={}",
-                sessionId,
+            log.debug("Calling Ollama with {} messages in context | correlationId={} model={} url={}",
+                messages.size(),
                 correlationId,
                 ollamaProperties.getModel(),
                 ollamaProperties.getChatUrl());
+            for (int i = 0; i < messages.size(); i++) {
+                LlmMessage message = messages.get(i);
+                if (message.role().equals("system") && message.content().startsWith("You are Tai.")) {
+                    log.debug("SYSTEM PROMPT");
+                }
+                if (i > 0) log.debug(message.toString());
+            }
 
             ResponseEntity<OllamaChatResponse> responseEntity = restTemplate.exchange(
                 ollamaProperties.getChatUrl(),
@@ -90,8 +96,7 @@ public class OllamaLlmClient implements LlmClient {
 
             String content = body.getMessage().getContent().trim();
 
-            log.info("Ollama reply received | sessionId={} correlationId={} model={} durationMs={}",
-                sessionId,
+            log.debug("Ollama reply received | correlationId={} model={} durationMs={}",
                 correlationId,
                 body.getModel(),
                 duration);
@@ -111,8 +116,7 @@ public class OllamaLlmClient implements LlmClient {
         } catch (HttpStatusCodeException e) {
             long duration = System.currentTimeMillis() - start;
 
-            log.error("Ollama HTTP error | sessionId={} correlationId={} status={} body={}",
-                sessionId,
+            log.error("Ollama HTTP error | correlationId={} status={} body={}",
                 correlationId,
                 e.getStatusCode(),
                 e.getResponseBodyAsString(),
@@ -128,8 +132,7 @@ public class OllamaLlmClient implements LlmClient {
         } catch (ResourceAccessException e) {
             long duration = System.currentTimeMillis() - start;
 
-            log.error("Ollama connection error | sessionId={} correlationId={}",
-                sessionId,
+            log.error("Ollama connection error | correlationId={}",
                 correlationId,
                 e);
 
@@ -143,8 +146,7 @@ public class OllamaLlmClient implements LlmClient {
         } catch (Exception e) {
             long duration = System.currentTimeMillis() - start;
 
-            log.error("Unexpected Ollama error | sessionId={} correlationId={}",
-                sessionId,
+            log.error("Unexpected Ollama error | correlationId={}",
                 correlationId,
                 e);
 

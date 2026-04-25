@@ -20,15 +20,14 @@ public class SlowMockLlmClient implements LlmClient {
 
     @Override
     public LlmGenerationResult generateReply(
-        String sessionId,
         String correlationId,
         List<LlmMessage> messages
     ) {
         long start = System.currentTimeMillis();
 
         try {
-            log.info("SlowMockLlmClient started | sessionId={} correlationId={} delayMs={}",
-                sessionId, correlationId, delayMs);
+            log.debug("SlowMockLlmClient started | correlationId={} delayMs={}",
+                correlationId, delayMs);
 
             Thread.sleep(delayMs);
 
@@ -41,8 +40,8 @@ public class SlowMockLlmClient implements LlmClient {
 
             long duration = System.currentTimeMillis() - start;
 
-            log.info("SlowMockLlmClient completed | sessionId={} correlationId={} durationMs={}",
-                sessionId, correlationId, duration);
+            log.debug("SlowMockLlmClient completed | correlationId={} durationMs={}",
+                correlationId, duration);
 
             return new LlmGenerationResult(
                 true,
@@ -60,8 +59,8 @@ public class SlowMockLlmClient implements LlmClient {
 
             long duration = System.currentTimeMillis() - start;
 
-            log.warn("SlowMockLlmClient interrupted | sessionId={} correlationId={} durationMs={}",
-                sessionId, correlationId, duration);
+            log.warn("SlowMockLlmClient interrupted | correlationId={} durationMs={}",
+                correlationId, duration);
 
             return new LlmGenerationResult(
                 false,
@@ -77,8 +76,8 @@ public class SlowMockLlmClient implements LlmClient {
         } catch (Exception e) {
             long duration = System.currentTimeMillis() - start;
 
-            log.error("SlowMockLlmClient failed | sessionId={} correlationId={} durationMs={}",
-                sessionId, correlationId, duration, e);
+            log.error("SlowMockLlmClient failed | correlationId={} durationMs={}",
+                correlationId, duration, e);
 
             return new LlmGenerationResult(
                 false,
