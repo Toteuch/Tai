@@ -80,8 +80,7 @@ public class OllamaLlmClient implements LlmClient {
                 return failure(
                     duration,
                     "OLLAMA_EMPTY_RESPONSE",
-                    "Ollama returned an empty response body.",
-                    false
+                    "Ollama returned an empty response body."
                 );
             }
 
@@ -89,8 +88,7 @@ public class OllamaLlmClient implements LlmClient {
                 return failure(
                     duration,
                     "OLLAMA_EMPTY_MESSAGE",
-                    "Ollama returned no assistant message content.",
-                    false
+                    "Ollama returned no assistant message content."
                 );
             }
 
@@ -109,8 +107,7 @@ public class OllamaLlmClient implements LlmClient {
                 body.getEvalCount(),
                 duration,
                 null,
-                null,
-                false
+                null
             );
 
         } catch (HttpStatusCodeException e) {
@@ -125,8 +122,7 @@ public class OllamaLlmClient implements LlmClient {
             return failure(
                 duration,
                 "OLLAMA_HTTP_ERROR",
-                "Ollama returned HTTP " + e.getStatusCode().value() + ".",
-                false
+                "Ollama returned HTTP " + e.getStatusCode().value() + "."
             );
 
         } catch (ResourceAccessException e) {
@@ -139,8 +135,7 @@ public class OllamaLlmClient implements LlmClient {
             return failure(
                 duration,
                 "OLLAMA_CONNECTION_ERROR",
-                "Could not reach Ollama. Check that the local Ollama service is running.",
-                true
+                "Could not reach Ollama. Check that the local Ollama service is running."
             );
 
         } catch (Exception e) {
@@ -153,8 +148,7 @@ public class OllamaLlmClient implements LlmClient {
             return failure(
                 duration,
                 "OLLAMA_UNEXPECTED_ERROR",
-                e.getMessage() != null ? e.getMessage() : "Unexpected Ollama error.",
-                false
+                e.getMessage() != null ? e.getMessage() : "Unexpected Ollama error."
             );
         }
     }
@@ -184,8 +178,7 @@ public class OllamaLlmClient implements LlmClient {
     private LlmGenerationResult failure(
         long durationMs,
         String errorCode,
-        String errorMessage,
-        boolean retryable
+        String errorMessage
     ) {
         return new LlmGenerationResult(
             false,
@@ -195,8 +188,7 @@ public class OllamaLlmClient implements LlmClient {
             null,
             durationMs,
             errorCode,
-            errorMessage,
-            retryable
+            errorMessage
         );
     }
 }

@@ -51,8 +51,7 @@ public class SlowMockLlmClient implements LlmClient {
                 null,
                 duration,
                 null,
-                null,
-                false
+                null
             );
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -70,8 +69,7 @@ public class SlowMockLlmClient implements LlmClient {
                 null,
                 duration,
                 "LLM_INTERRUPTED",
-                "Slow mock LLM generation was interrupted.",
-                true
+                "Slow mock LLM generation was interrupted."
             );
         } catch (Exception e) {
             long duration = System.currentTimeMillis() - start;
@@ -87,8 +85,7 @@ public class SlowMockLlmClient implements LlmClient {
                 null,
                 duration,
                 "LLM_ERROR",
-                e.getMessage(),
-                false
+                e.getMessage()
             );
         }
     }

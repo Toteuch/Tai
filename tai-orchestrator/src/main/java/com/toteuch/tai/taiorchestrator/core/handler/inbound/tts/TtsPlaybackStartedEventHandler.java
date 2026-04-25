@@ -45,6 +45,7 @@ public class TtsPlaybackStartedEventHandler implements EventHandler<TtsPlaybackS
                 this.getClass().getSimpleName(),
                 event.correlationId(),
                 sessionContext.getActiveTurn().getCorrelationId());
+            return;
         }
 
         eventPublisher.publish(new AssistantSpeechStartedEvent(

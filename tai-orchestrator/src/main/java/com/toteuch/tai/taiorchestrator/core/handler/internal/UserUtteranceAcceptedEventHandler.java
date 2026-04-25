@@ -101,28 +101,4 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
             ));
         }
     }
-
-    private void supersedePreviousTurnIfNeeded(SessionContext sessionContext, String newCorrelationId) {
-        ConversationTurn activeTurn = sessionContext.getActiveTurn();
-        if (activeTurn == null) {
-            return;
-        }
-
-        if (newCorrelationId.equals(activeTurn.getCorrelationId())) {
-            return;
-        }
-
-        boolean noAssistantReplyYet = !activeTurn.isAssistantReplyGenerated();
-        boolean assistantWasSpeaking = activeTurn.isAssistantPlaybackStarted() && !activeTurn.isAssistantPlaybackCompleted();
-
-        if (noAssistantReplyYet) {
-            activeTurn.setSupersededBeforeAssistantReply(true);
-            activeTurn.setSupersededByCorrelationId(newCorrelationId);
-        }
-
-        if (assistantWasSpeaking) {
-            activeTurn.setAssistantPlaybackInterrupted(true);
-            activeTurn.setSupersededByCorrelationId(newCorrelationId);
-        }
-    }
 }

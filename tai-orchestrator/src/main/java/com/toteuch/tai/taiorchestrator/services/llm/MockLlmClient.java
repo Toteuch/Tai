@@ -22,8 +22,7 @@ public class MockLlmClient implements LlmClient {
                 null,
                 50L,
                 null,
-                null,
-                false
+                null
             );
         } catch (Exception e) {
             return new LlmGenerationResult(
@@ -34,8 +33,7 @@ public class MockLlmClient implements LlmClient {
                 null,
                 null,
                 "LLM_ERROR",
-                e.getMessage(),
-                false
+                e.getMessage()
             );
         }
     }

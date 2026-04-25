@@ -1,0 +1,44 @@
+package com.toteuch.tai.taiorchestrator.core.handler.internal;
+
+import com.toteuch.tai.taiorchestrator.core.handler.AbstractHandlerTest;
+import com.toteuch.tai.taiorchestrator.events.EventSource;
+import com.toteuch.tai.taiorchestrator.events.internal.AssistantSpeechFailedEvent;
+import com.toteuch.tai.taiorchestrator.events.internal.ConversationTurnCompletedEvent;
+import com.toteuch.tai.taiorchestrator.session.SessionContext;
+import com.toteuch.tai.taiorchestrator.session.SpeakingState;
+import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class AssistantSpeechFailedEventHandlerTest extends AbstractHandlerTest {
+
+    @Test
+    void should_set_speaking_silent_and_publish_turn_completed() {
+        SessionContext context = new SessionContext();
+        context.setSpeakingState(SpeakingState.SPEAKING);
+
+        AssistantSpeechFailedEventHandler handler = new AssistantSpeechFailedEventHandler(
+            fixedSessionStore(context),
+            eventPublisher
+        );
+
+        handler.handle(new AssistantSpeechFailedEvent(
+            UUID.randomUUID().toString(),
+            Instant.now(),
+            "corr-1",
+            EventSource.TTS_SERVICE,
+            "TTS_ERROR",
+            "TTS failed"
+        ));
+
+        assertThat(context.getSpeakingState()).isEqualTo(SpeakingState.SILENT);
+
+        ConversationTurnCompletedEvent published =
+            eventPublisher.assertSingleEventPublished(ConversationTurnCompletedEvent.class);
+
+        assertThat(published.correlationId()).isEqualTo("corr-1");
+    }
+}

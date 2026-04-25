@@ -1,0 +1,108 @@
+package com.toteuch.tai.taiorchestrator.core.handler.inbound;
+
+
+import com.toteuch.tai.taiorchestrator.core.handler.AbstractHandlerTest;
+import com.toteuch.tai.taiorchestrator.core.handler.inbound.stt.SttSpeechStartedEventHandler;
+import com.toteuch.tai.taiorchestrator.core.handler.inbound.stt.SttTranscriptAcceptedEventHandler;
+import com.toteuch.tai.taiorchestrator.core.handler.inbound.stt.SttTranscriptNoiseEventHandler;
+import com.toteuch.tai.taiorchestrator.core.handler.inbound.stt.SttTranscriptUnintelligibleEventHandler;
+import com.toteuch.tai.taiorchestrator.events.EventSource;
+import com.toteuch.tai.taiorchestrator.events.inbound.stt.SttTranscriptAcceptedEvent;
+import com.toteuch.tai.taiorchestrator.events.inbound.stt.SttTranscriptNoiseEvent;
+import com.toteuch.tai.taiorchestrator.events.inbound.stt.SttTranscriptUnintelligibleEvent;
+import com.toteuch.tai.taiorchestrator.events.internal.ClarificationRequestedEvent;
+import com.toteuch.tai.taiorchestrator.events.internal.UserUtteranceAcceptedEvent;
+import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class SttInboundEventHandlersTest extends AbstractHandlerTest {
+
+    @Test
+    void accepted_transcript_should_publish_user_utterance_accepted_event() {
+        SttTranscriptAcceptedEventHandler handler = new SttTranscriptAcceptedEventHandler(eventPublisher);
+
+        handler.handle(new SttTranscriptAcceptedEvent(
+            UUID.randomUUID().toString(),
+            Instant.now(),
+            "corr-1",
+            EventSource.STT_SERVICE,
+            "Hello Tai",
+            "en",
+            0.98,
+            1400L,
+            600.0,
+            "ACCEPTED",
+            0
+        ));
+
+        UserUtteranceAcceptedEvent published =
+            eventPublisher.assertSingleEventPublished(UserUtteranceAcceptedEvent.class);
+
+        assertThat(published.correlationId()).isEqualTo("corr-1");
+        assertThat(published.source()).isEqualTo(EventSource.ORCHESTRATOR);
+        assertThat(published.text()).isEqualTo("Hello Tai");
+    }
+
+    @Test
+    void unintelligible_transcript_should_publish_clarification_requested_event() {
+        SttTranscriptUnintelligibleEventHandler handler =
+            new SttTranscriptUnintelligibleEventHandler(eventPublisher);
+
+        handler.handle(new SttTranscriptUnintelligibleEvent(
+            UUID.randomUUID().toString(),
+            Instant.now(),
+            "corr-2",
+            EventSource.STT_SERVICE,
+            "fi",
+            0.42,
+            1200L,
+            500.0,
+            "UNSUPPORTED_LANGUAGE",
+            3
+        ));
+
+        ClarificationRequestedEvent published =
+            eventPublisher.assertSingleEventPublished(ClarificationRequestedEvent.class);
+
+        assertThat(published.correlationId()).isEqualTo("corr-2");
+        assertThat(published.source()).isEqualTo(EventSource.ORCHESTRATOR);
+    }
+
+    @Test
+    void noise_transcript_should_publish_no_event() {
+        SttTranscriptNoiseEventHandler handler = new SttTranscriptNoiseEventHandler();
+
+        handler.handle(new SttTranscriptNoiseEvent(
+            UUID.randomUUID().toString(),
+            Instant.now(),
+            "corr-3",
+            EventSource.STT_SERVICE,
+            500L,
+            70.0,
+            "NOISE",
+            999
+        ));
+
+        eventPublisher.assertNoEventPublished();
+    }
+
+    @Test
+    void speech_started_should_publish_no_event_for_now() {
+        SttSpeechStartedEventHandler handler = new SttSpeechStartedEventHandler();
+
+        handler.handle(new com.toteuch.tai.taiorchestrator.events.inbound.stt.SttSpeechStartedEvent(
+            UUID.randomUUID().toString(),
+            Instant.now(),
+            "corr-4",
+            EventSource.STT_SERVICE,
+            10L,
+            50.0
+        ));
+
+        eventPublisher.assertNoEventPublished();
+    }
+}
