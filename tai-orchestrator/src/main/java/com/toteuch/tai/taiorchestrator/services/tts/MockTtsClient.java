@@ -10,16 +10,16 @@ public class MockTtsClient implements TtsClient {
     private static final Logger log = LoggerFactory.getLogger(MockTtsClient.class);
 
     public MockTtsClient() {
-        log.info("MockTtsClient initialized");
+        log.debug("MockTtsClient initialized");
     }
 
     @Override
-    public void speak(String sessionId, String correlationId, String text) {
-        log.info("Mock TTS speak | sessionId={} correlationId={} text={}", sessionId, correlationId, text);
+    public void speak(String correlationId, String text) {
+        log.debug("Mock TTS speak | correlationId={} text={}", correlationId, text);
     }
 
     @Override
-    public void stop(String sessionId) {
-        log.info("Mock TTS stop | sessionId={}", sessionId);
+    public void stop(String correlationId) {
+        log.debug("Mock TTS stop | correlationId={}", correlationId);
     }
 }

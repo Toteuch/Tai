@@ -18,7 +18,6 @@ import java.time.Instant;
 public record AssistantReplyAcceptedEvent(
     String eventId,
     Instant occurredAt,
-    String sessionId,
     String correlationId,
     EventSource source,
     String replyText

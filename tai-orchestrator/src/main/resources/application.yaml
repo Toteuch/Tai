@@ -1,0 +1,75 @@
+spring:
+    application:
+        name: tai-orchestrator
+    main:
+        allow-circular-references: true
+logging:
+    level:
+        root: INFO
+        org:
+            springframework: WARN
+            hibernate: WARN
+        # Global Tai domains
+        tai:
+            error: ERROR
+            conversation: DEBUG
+            context: DEBUG
+            decision: INFO
+            performance: INFO
+            trace: TRACE
+tai:
+    prompt:
+        system-file: classpath:prompts/tai-system-prompt.txt
+    mock:
+        llm:
+            delay-ms: 4000
+        tts:
+            playback-delay-ms: 6000
+            voice-id: slow-mock-voice
+#### Will be moved in dedicated modules ####
+    ollama:
+        base-url: http://localhost:11434
+        chat-path: /api/chat
+        model: tai-llama
+        stream: false
+        keep-alive: 30m
+        connect-timeout-ms: 3000
+        read-timeout-ms: 120000
+    tts:
+        piper:
+            enabled: true
+            executable: ./tai-tts/.venv/Scripts/piper.exe
+            model: ./tai-tts/voices/en_GB-alba-medium.onnx
+            config: ./tai-tts/voices/en_GB-alba-medium.onnx.json
+            output-dir: ./tai-tts/output
+            voice-id: en_GB-alba-medium
+    stt:
+        whisper:
+            enabled: true
+            python-executable: ./tai-stt/.venv/Scripts/python.exe
+            script-path: ./tai-stt/scripts/transcribe_file.py
+            model-size: small
+            device: cpu
+            compute-type: int8
+        capture:
+            output-dir: ./tai-stt/input
+            sample-rate: 16000
+            sample-size-bits: 16
+            channels: 1
+            signed: true
+            big-endian: false
+            buffer-size: 4096
+            silence-threshold: 500
+            silence-duration-ms: 1200
+            min-recording-ms: 800
+        vad:
+            speech-threshold: 500
+            silence-duration-ms: 1200
+            min-speech-duration-ms: 300
+            sample-rate: 16000
+        gatekeeper:
+            reject-audio-duration-ms: 250
+            suspicious-audio-duration-ms: 500
+            reject-average-energy-threshold: 150
+            suspicious-language-probability-threshold: 0.45
+            reject-suspicion-score: 2

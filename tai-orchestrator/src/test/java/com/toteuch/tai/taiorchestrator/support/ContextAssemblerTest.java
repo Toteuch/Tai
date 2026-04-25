@@ -3,7 +3,6 @@ package com.toteuch.tai.taiorchestrator.support;
 import com.toteuch.tai.taiorchestrator.services.llm.LlmMessage;
 import com.toteuch.tai.taiorchestrator.session.ConversationTurn;
 import com.toteuch.tai.taiorchestrator.session.SessionContext;
-import com.toteuch.tai.taiorchestrator.state.AssistantState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,25 +28,24 @@ class ContextAssemblerTest {
 
     @Test
     void shouldNotDuplicateCurrentUserPromptWhenActiveTurnAlreadyExistsInSession() {
-        SessionContext sessionContext = new SessionContext("session-1");
+        SessionContext sessionContext = new SessionContext();
 
-        ConversationTurn previousTurn = new ConversationTurn("corr-old", "Hello Tai", Instant.now());
+        ConversationTurn previousTurn = new ConversationTurn("corr-old", "Hello Tai", Instant.now(), true);
         previousTurn.setAssistantMessage("Hey.");
         previousTurn.setAssistantReplyGenerated(true);
         previousTurn.setAssistantPlaybackStarted(true);
         previousTurn.setAssistantPlaybackCompleted(true);
         sessionContext.addTurn(previousTurn);
 
-        ConversationTurn activeTurn = new ConversationTurn("corr-current", "Explain RAM briefly", Instant.now());
+        ConversationTurn activeTurn = new ConversationTurn("corr-current", "Explain RAM briefly", Instant.now(), true);
         sessionContext.addTurn(activeTurn);
         sessionContext.setActiveTurn(activeTurn);
 
-        AssistantState state = new AssistantState();
 
         List<LlmMessage> messages = contextAssembler.assemble(
             sessionContext,
-            state,
-            "Explain RAM briefly"
+            "Explain RAM briefly",
+            false
         );
 
         long currentPromptCount = messages.stream()
@@ -60,25 +58,23 @@ class ContextAssemblerTest {
 
     @Test
     void shouldKeepPreviousConversationHistoryWhileAddingCurrentPromptOnce() {
-        SessionContext sessionContext = new SessionContext("session-1");
+        SessionContext sessionContext = new SessionContext();
 
-        ConversationTurn previousTurn = new ConversationTurn("corr-old", "What is RAM?", Instant.now());
+        ConversationTurn previousTurn = new ConversationTurn("corr-old", "What is RAM?", Instant.now(), true);
         previousTurn.setAssistantMessage("RAM is short-term memory.");
         previousTurn.setAssistantReplyGenerated(true);
         previousTurn.setAssistantPlaybackStarted(true);
         previousTurn.setAssistantPlaybackCompleted(true);
         sessionContext.addTurn(previousTurn);
 
-        ConversationTurn activeTurn = new ConversationTurn("corr-current", "Explain RAM briefly", Instant.now());
+        ConversationTurn activeTurn = new ConversationTurn("corr-current", "Explain RAM briefly", Instant.now(), true);
         sessionContext.addTurn(activeTurn);
         sessionContext.setActiveTurn(activeTurn);
 
-        AssistantState state = new AssistantState();
-
         List<LlmMessage> messages = contextAssembler.assemble(
             sessionContext,
-            state,
-            "Explain RAM briefly"
+            "Explain RAM briefly",
+            false
         );
 
         assertTrue(messages.stream().anyMatch(m ->
@@ -99,19 +95,17 @@ class ContextAssemblerTest {
 
     @Test
     void shouldIncludeInterruptionSystemNoteForSupersededTurn() {
-        SessionContext sessionContext = new SessionContext("session-1");
+        SessionContext sessionContext = new SessionContext();
 
-        ConversationTurn supersededTurn = new ConversationTurn("corr-old", "Hello", Instant.now());
+        ConversationTurn supersededTurn = new ConversationTurn("corr-old", "Hello", Instant.now(), true);
         supersededTurn.setSupersededBeforeAssistantReply(true);
         sessionContext.addTurn(supersededTurn);
 
-        ConversationTurn activeTurn = new ConversationTurn("corr-current", "Stop", Instant.now());
+        ConversationTurn activeTurn = new ConversationTurn("corr-current", "Stop", Instant.now(), true);
         sessionContext.addTurn(activeTurn);
         sessionContext.setActiveTurn(activeTurn);
 
-        AssistantState state = new AssistantState();
-
-        List<LlmMessage> messages = contextAssembler.assemble(sessionContext, state, "Stop");
+        List<LlmMessage> messages = contextAssembler.assemble(sessionContext, "Stop", false);
 
         assertTrue(messages.stream().anyMatch(m ->
             "system".equals(m.role())
@@ -121,22 +115,20 @@ class ContextAssemblerTest {
 
     @Test
     void shouldIncludePlaybackInterruptedSystemNoteForInterruptedAssistantReply() {
-        SessionContext sessionContext = new SessionContext("session-1");
+        SessionContext sessionContext = new SessionContext();
 
-        ConversationTurn interruptedTurn = new ConversationTurn("corr-old", "Tell me something", Instant.now());
+        ConversationTurn interruptedTurn = new ConversationTurn("corr-old", "Tell me something", Instant.now(), true);
         interruptedTurn.setAssistantMessage("Here is something interesting.");
         interruptedTurn.setAssistantReplyGenerated(true);
         interruptedTurn.setAssistantPlaybackStarted(true);
         interruptedTurn.setAssistantPlaybackInterrupted(true);
         sessionContext.addTurn(interruptedTurn);
 
-        ConversationTurn activeTurn = new ConversationTurn("corr-current", "No, wait", Instant.now());
+        ConversationTurn activeTurn = new ConversationTurn("corr-current", "No, wait", Instant.now(), true);
         sessionContext.addTurn(activeTurn);
         sessionContext.setActiveTurn(activeTurn);
 
-        AssistantState state = new AssistantState();
-
-        List<LlmMessage> messages = contextAssembler.assemble(sessionContext, state, "No, wait");
+        List<LlmMessage> messages = contextAssembler.assemble(sessionContext, "No, wait", false);
 
         assertTrue(messages.stream().anyMatch(m ->
             "system".equals(m.role())

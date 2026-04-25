@@ -1,0 +1,8 @@
+package com.toteuch.tai.taiorchestrator.transport.events;
+
+public enum TransportEventType {
+    STT_SPEECH_STARTED,
+    STT_TRANSCRIPT_ACCEPTED,
+    STT_TRANSCRIPT_UNINTELLIGIBLE,
+    STT_TRANSCRIPT_NOISE
+}

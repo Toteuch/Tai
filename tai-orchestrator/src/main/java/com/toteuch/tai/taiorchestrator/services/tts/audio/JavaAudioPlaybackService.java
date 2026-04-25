@@ -21,7 +21,7 @@ public class JavaAudioPlaybackService {
     private static final Logger log = LoggerFactory.getLogger(JavaAudioPlaybackService.class);
 
     public long playBlocking(Path wavPath, WavPlaybackHandle handle) throws Exception {
-        log.info("JavaAudioPlaybackService playing wav={}", wavPath.toAbsolutePath());
+        log.debug("JavaAudioPlaybackService playing wav={}", wavPath.toAbsolutePath());
 
         try (
             AudioInputStream originalStream = AudioSystem.getAudioInputStream(new BufferedInputStream(java.nio.file.Files.newInputStream(wavPath)))
