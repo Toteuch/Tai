@@ -20,12 +20,6 @@ logging:
 tai:
     prompt:
         system-file: classpath:prompts/tai-system-prompt.txt
-    mock:
-        llm:
-            delay-ms: 4000
-        tts:
-            playback-delay-ms: 6000
-            voice-id: slow-mock-voice
 #### Will be moved in dedicated modules ####
     ollama:
         base-url: http://localhost:11434
