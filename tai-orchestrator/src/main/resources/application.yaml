@@ -11,8 +11,8 @@ logging:
             hibernate: WARN
         # Global Tai domains
         tai:
-            error: ERROR
-            conversation: DEBUG
+            error: WARN
+            conversation: DEBUG #INFO for less detailed history
             context: DEBUG
             decision: INFO
             performance: INFO

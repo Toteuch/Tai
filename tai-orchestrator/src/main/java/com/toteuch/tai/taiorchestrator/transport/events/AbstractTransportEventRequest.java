@@ -5,10 +5,8 @@ import java.time.Instant;
 public abstract class AbstractTransportEventRequest {
 
     private String eventId;
-    private TransportEventType eventType;
-    private Instant timestamp;
+    private Instant createdAt;
     private TransportEventSource source;
-    private String version;
     private String correlationId;
 
     public String getEventId() {
@@ -19,20 +17,12 @@ public abstract class AbstractTransportEventRequest {
         this.eventId = eventId;
     }
 
-    public TransportEventType getEventType() {
-        return eventType;
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
-    public void setEventType(TransportEventType eventType) {
-        this.eventType = eventType;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
     public TransportEventSource getSource() {
@@ -41,14 +31,6 @@ public abstract class AbstractTransportEventRequest {
 
     public void setSource(TransportEventSource source) {
         this.source = source;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     public String getCorrelationId() {
