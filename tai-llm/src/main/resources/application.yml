@@ -1,0 +1,42 @@
+server:
+  port: 8092
+
+tai:
+  llm:
+    async:
+      core-pool-size: 1
+      max-pool-size: 2
+      queue-capacity: 50
+    orchestrator:
+      base-url: http://localhost:8080
+      connect-timeout-ms: 3000
+      read-timeout-ms: 10000
+      callbacks:
+        response-completed-path: /events/llm/response-completed
+        response-failed-path: /events/llm/response-failed
+    ollama:
+      base-url: http://localhost:11434
+      chat-path: /api/chat
+      tags-path: /api/tags
+      model: tai-llama
+      stream: false
+      keep-alive: 24h
+      warm-up-on-startup: true
+      warm-up-prompt: "Say ready."
+      connect-timeout-ms: 3000
+      read-timeout-ms: 120000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /docs
+  api-docs:
+    path: /v3/api-docs
