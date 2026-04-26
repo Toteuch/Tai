@@ -6,7 +6,6 @@ import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent
 import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.ClarificationRequestedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
-import com.toteuch.tai.orchestrator.services.tts.TtsClient;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
 import org.junit.jupiter.api.Test;
@@ -26,13 +25,10 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
     void should_create_non_persistent_turn_call_llm_and_publish_completed_event() {
         SessionContext context = new SessionContext();
 
-        TtsClient ttsClient = mock(TtsClient.class);
         LlmClient llmClient = mock(LlmClient.class);
 
         ClarificationRequestedEventHandler handler = new ClarificationRequestedEventHandler(
             fixedSessionStore(context),
-            eventPublisher,
-            ttsClient,
             llmClient
         );
 
@@ -63,13 +59,10 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
     void should_publish_failed_event_when_clarification_llm_generation_fails() {
         SessionContext context = new SessionContext();
 
-        TtsClient ttsClient = mock(TtsClient.class);
         LlmClient llmClient = mock(LlmClient.class);
 
         ClarificationRequestedEventHandler handler = new ClarificationRequestedEventHandler(
             fixedSessionStore(context),
-            eventPublisher,
-            ttsClient,
             llmClient
         );
 

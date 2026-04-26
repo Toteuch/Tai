@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 @Service
 public class SpeechSegmentRecorder {
@@ -51,7 +52,19 @@ public class SpeechSegmentRecorder {
         }
     }
 
-    public SpeechSegment recordNextSegment(TargetDataLine microphone, BooleanSupplier running) {
+    public SpeechSegment recordNextSegment(
+        TargetDataLine microphone,
+        BooleanSupplier running
+    ) {
+        return recordNextSegment(microphone, running, ignored -> {
+        });
+    }
+
+    public SpeechSegment recordNextSegment(
+        TargetDataLine microphone,
+        BooleanSupplier running,
+        Consumer<SpeechStartedSignal> onSpeechStarted
+    ) {
         SttListenerProperties.Capture capture = properties.getCapture();
         AudioFormat audioFormat = audioFormat(capture);
 
@@ -95,6 +108,11 @@ public class SpeechSegmentRecorder {
                         energies.add(energy);
 
                         log.info("Speech segment started | energy={}", energy);
+
+                        onSpeechStarted.accept(new SpeechStartedSignal(
+                            energy,
+                            energy
+                        ));
                     }
 
                     continue;

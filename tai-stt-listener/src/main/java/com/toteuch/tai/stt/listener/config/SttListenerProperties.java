@@ -321,6 +321,7 @@ public class SttListenerProperties {
             private String transcriptAcceptedPath = "/events/stt/transcript-accepted";
             private String transcriptUnintelligiblePath = "/events/stt/transcript-unintelligible";
             private String transcriptNoisePath = "/events/stt/transcript-noise";
+            private String speechStartedPath = "/events/stt/speech-started";
 
             public String getTranscriptAcceptedPath() {
                 return transcriptAcceptedPath;
@@ -345,6 +346,14 @@ public class SttListenerProperties {
             public void setTranscriptNoisePath(String transcriptNoisePath) {
                 this.transcriptNoisePath = transcriptNoisePath;
             }
+
+            public String getSpeechStartedPath() {
+                return speechStartedPath;
+            }
+
+            public void setSpeechStartedPath(String speechStartedPath) {
+                this.speechStartedPath = speechStartedPath;
+            }
         }
     }
 
@@ -352,7 +361,8 @@ public class SttListenerProperties {
         private boolean autoStart = false;
         private boolean continueOnError = true;
         private boolean deleteAudioAfterProcessing = true;
-        private boolean publishFinalCallbacks = false;
+        private boolean publishFinalCallbacks = true;
+        private boolean publishSpeechStartedCallbacks = true;
 
         public boolean isAutoStart() {
             return autoStart;
@@ -384,6 +394,14 @@ public class SttListenerProperties {
 
         public void setPublishFinalCallbacks(boolean publishFinalCallbacks) {
             this.publishFinalCallbacks = publishFinalCallbacks;
+        }
+
+        public boolean isPublishSpeechStartedCallbacks() {
+            return publishSpeechStartedCallbacks;
+        }
+
+        public void setPublishSpeechStartedCallbacks(boolean publishSpeechStartedCallbacks) {
+            this.publishSpeechStartedCallbacks = publishSpeechStartedCallbacks;
         }
     }
 }

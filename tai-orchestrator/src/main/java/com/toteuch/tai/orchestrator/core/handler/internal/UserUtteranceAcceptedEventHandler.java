@@ -1,12 +1,10 @@
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
 import com.toteuch.tai.orchestrator.core.EventHandler;
-import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.internal.UserUtteranceAcceptedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
 import com.toteuch.tai.orchestrator.services.llm.LlmMessage;
-import com.toteuch.tai.orchestrator.services.tts.TtsClient;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
@@ -24,21 +22,15 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
     private static final Logger perfLog = LoggerFactory.getLogger("tai.performance");
 
     private final SessionStore sessionStore;
-    private final TtsClient ttsClient;
-    private final TaiEventPublisher eventPublisher;
     private final ContextAssembler contextAssembler;
     private final LlmClient llmClient;
 
     public UserUtteranceAcceptedEventHandler(
         SessionStore sessionStore,
-        TtsClient ttsClient,
-        TaiEventPublisher eventPublisher,
         ContextAssembler contextAssembler,
         LlmClient llmClient
     ) {
         this.sessionStore = sessionStore;
-        this.ttsClient = ttsClient;
-        this.eventPublisher = eventPublisher;
         this.contextAssembler = contextAssembler;
         this.llmClient = llmClient;
     }
@@ -52,18 +44,6 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
     public void handle(UserUtteranceAcceptedEvent event) {
 
         SessionContext sessionContext = sessionStore.get();
-
-        if (sessionContext.bargeIn(event.correlationId())) {
-            String previousCorrelationId = sessionContext.getActiveTurn().getCorrelationId();
-            sessionContext.addTurn(sessionContext.getActiveTurn());
-            sessionContext.setActiveTurn(null);
-
-            perfLog.info("TTS stop speech called | correlationId={} activeTurnCorrelationId={}",
-                event.correlationId(),
-                previousCorrelationId
-            );
-            ttsClient.stop(previousCorrelationId);
-        }
 
         String normalizedText = normalizeTaiName(event.text());
 

@@ -96,36 +96,11 @@ public class SessionContext {
 
     public boolean isStillActiveTurn(String correlationId) {
         try {
-            return getActiveTurn().getCorrelationId().equals(correlationId);
+            return activeTurn.getCorrelationId().equals(correlationId);
         } catch (NullPointerException npe) {
             // No active turn
             return false;
         }
-    }
-
-    public boolean bargeIn(String newCorrelationId) {
-        if (activeTurn != null
-            && !isStillActiveTurn(newCorrelationId)) {
-            if (ttsEnabled
-                && (speakingState == SpeakingState.SPEAKING
-                || speakingState == SpeakingState.PREPARING)) {
-                contextLog.info("Barge-in detected during assistant speech | correlationId={} interruptedCorrelationId={}",
-                    newCorrelationId,
-                    activeTurn.getCorrelationId()
-                );
-                activeTurn.setAssistantPlaybackInterrupted(true);
-                setSpeakingState(SpeakingState.SILENT);
-            } else if (thinkingState == ThinkingState.GENERATING) {
-                contextLog.info("Barge-in detected during assistant thinking | correlationId={} interruptedCorrelationId={}",
-                    newCorrelationId,
-                    activeTurn.getCorrelationId()
-                );
-                setThinkingState(ThinkingState.IDLE);
-                activeTurn.setSupersededBeforeAssistantReply(true);
-            }
-            return true;
-        }
-        return false;
     }
 
     private void logConversation(ConversationTurn turn) {

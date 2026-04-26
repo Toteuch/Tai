@@ -43,11 +43,13 @@ tai:
             transcript-accepted-path: /events/stt/transcript-accepted
             transcript-unintelligible-path: /events/stt/transcript-unintelligible
             transcript-noise-path: /events/stt/transcript-noise
+            speech-started-path: /events/stt/speech-started
     listener:
         auto-start: false
         continue-on-error: true
         delete-audio-after-processing: true
         publish-final-callbacks: true
+        publish-speech-started-callbacks: true
 
 management:
   endpoints:
