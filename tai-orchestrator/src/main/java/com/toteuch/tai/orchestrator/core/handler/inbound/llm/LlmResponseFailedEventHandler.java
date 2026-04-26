@@ -8,12 +8,11 @@ import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantReplyFailedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
+import java.time.Instant;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Component
 public class LlmResponseFailedEventHandler implements EventHandler<LlmResponseFailedEvent> {
@@ -23,7 +22,8 @@ public class LlmResponseFailedEventHandler implements EventHandler<LlmResponseFa
     private final SessionStore sessionStore;
     private final TaiEventPublisher eventPublisher;
 
-    public LlmResponseFailedEventHandler(SessionStore sessionStore, TaiEventPublisher eventPublisher) {
+    public LlmResponseFailedEventHandler(
+            SessionStore sessionStore, TaiEventPublisher eventPublisher) {
         this.sessionStore = sessionStore;
         this.eventPublisher = eventPublisher;
     }
@@ -39,20 +39,21 @@ public class LlmResponseFailedEventHandler implements EventHandler<LlmResponseFa
         SessionContext sessionContext = sessionStore.get();
 
         if (!sessionContext.isStillActiveTurn(event.correlationId())) {
-            decisionLog.info("{} ignored | correlationId={} activeTurnCorrelationId={}",
-                this.getClass().getSimpleName(),
-                event.correlationId(),
-                sessionContext.getActiveTurn().getCorrelationId());
+            decisionLog.info(
+                    "{} ignored | correlationId={} activeTurnCorrelationId={}",
+                    this.getClass().getSimpleName(),
+                    event.correlationId(),
+                    sessionContext.getActiveTurn().getCorrelationId());
             return;
         }
 
-        eventPublisher.publish(new AssistantReplyFailedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            event.correlationId(),
-            EventSource.LLM_SERVICE,
-            event.errorCode(),
-            event.errorMessage()
-        ));
+        eventPublisher.publish(
+                new AssistantReplyFailedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        event.correlationId(),
+                        EventSource.LLM_SERVICE,
+                        event.errorCode(),
+                        event.errorMessage()));
     }
 }

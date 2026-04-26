@@ -16,5 +16,4 @@ public class TaiOrchestratorApplication {
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
     }
-
 }

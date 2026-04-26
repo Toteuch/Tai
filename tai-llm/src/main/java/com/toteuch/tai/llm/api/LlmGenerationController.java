@@ -19,7 +19,8 @@ public class LlmGenerationController {
     @PostMapping("/generate-reply")
     @ResponseStatus(HttpStatus.ACCEPTED)
     @Operation(summary = "Start asynchronous LLM generation")
-    public LlmGenerationAcceptedResponse generateReply(@Valid @RequestBody LlmGenerationRequest request) {
+    public LlmGenerationAcceptedResponse generateReply(
+            @Valid @RequestBody LlmGenerationRequest request) {
         service.generateReplyAsync(request);
         return new LlmGenerationAcceptedResponse(true, request.correlationId());
     }

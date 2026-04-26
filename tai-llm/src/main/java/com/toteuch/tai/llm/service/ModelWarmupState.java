@@ -1,9 +1,8 @@
 package com.toteuch.tai.llm.service;
 
-import org.springframework.stereotype.Component;
-
 import java.time.Instant;
 import java.util.concurrent.atomic.*;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ModelWarmupState {

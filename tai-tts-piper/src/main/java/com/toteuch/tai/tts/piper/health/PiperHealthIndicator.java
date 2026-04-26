@@ -11,20 +11,21 @@ public class PiperHealthIndicator implements HealthIndicator {
     private final PiperSynthesisService piperSynthesisService;
     private final TtsPiperProperties properties;
 
-    public PiperHealthIndicator(PiperSynthesisService piperSynthesisService, TtsPiperProperties properties) {
+    public PiperHealthIndicator(
+            PiperSynthesisService piperSynthesisService, TtsPiperProperties properties) {
         this.piperSynthesisService = piperSynthesisService;
         this.properties = properties;
     }
 
     @Override
     public Health health() {
-        Health.Builder builder = piperSynthesisService.isPiperConfigured() ? Health.up() : Health.down();
+        Health.Builder builder =
+                piperSynthesisService.isPiperConfigured() ? Health.up() : Health.down();
 
-        return builder
-            .withDetail("executable", properties.getPiper().getExecutable())
-            .withDetail("model", properties.getPiper().getModel())
-            .withDetail("config", properties.getPiper().getConfig())
-            .withDetail("voiceId", properties.getPiper().getVoiceId())
-            .build();
+        return builder.withDetail("executable", properties.getPiper().getExecutable())
+                .withDetail("model", properties.getPiper().getModel())
+                .withDetail("config", properties.getPiper().getConfig())
+                .withDetail("voiceId", properties.getPiper().getVoiceId())
+                .build();
     }
 }

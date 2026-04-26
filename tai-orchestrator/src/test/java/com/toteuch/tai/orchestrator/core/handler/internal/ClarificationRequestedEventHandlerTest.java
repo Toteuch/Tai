@@ -1,5 +1,11 @@
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent;
@@ -8,16 +14,9 @@ import com.toteuch.tai.orchestrator.events.internal.ClarificationRequestedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import org.junit.jupiter.api.Test;
 
 class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
 
@@ -27,17 +26,15 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
 
         LlmClient llmClient = mock(LlmClient.class);
 
-        ClarificationRequestedEventHandler handler = new ClarificationRequestedEventHandler(
-            fixedSessionStore(context),
-            llmClient
-        );
+        ClarificationRequestedEventHandler handler =
+                new ClarificationRequestedEventHandler(fixedSessionStore(context), llmClient);
 
-        handler.handle(new ClarificationRequestedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            "corr-1",
-            EventSource.ORCHESTRATOR
-        ));
+        handler.handle(
+                new ClarificationRequestedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        "corr-1",
+                        EventSource.ORCHESTRATOR));
 
         assertThat(context.getActiveTurn()).isNotNull();
         assertThat(context.getActiveTurn().getCorrelationId()).isEqualTo("corr-1");
@@ -49,7 +46,7 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
         publishLlmCompletedEvent("corr-1", "Can you say that again?");
 
         LlmResponseCompletedEvent published =
-            eventPublisher.assertSingleEventPublished(LlmResponseCompletedEvent.class);
+                eventPublisher.assertSingleEventPublished(LlmResponseCompletedEvent.class);
 
         assertThat(published.correlationId()).isEqualTo("corr-1");
         assertThat(published.responseText()).isEqualTo("Can you say that again?");
@@ -61,23 +58,21 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
 
         LlmClient llmClient = mock(LlmClient.class);
 
-        ClarificationRequestedEventHandler handler = new ClarificationRequestedEventHandler(
-            fixedSessionStore(context),
-            llmClient
-        );
+        ClarificationRequestedEventHandler handler =
+                new ClarificationRequestedEventHandler(fixedSessionStore(context), llmClient);
 
-        handler.handle(new ClarificationRequestedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            "corr-1",
-            EventSource.ORCHESTRATOR
-        ));
+        handler.handle(
+                new ClarificationRequestedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        "corr-1",
+                        EventSource.ORCHESTRATOR));
 
         verify(llmClient).generateReply(eq("corr-1"), anyList());
         publishLlmFailedEvent("corr-1");
 
         LlmResponseFailedEvent published =
-            eventPublisher.assertSingleEventPublished(LlmResponseFailedEvent.class);
+                eventPublisher.assertSingleEventPublished(LlmResponseFailedEvent.class);
 
         assertThat(published.correlationId()).isEqualTo("corr-1");
         assertThat(published.errorCode()).isEqualTo("LLM_ERROR");

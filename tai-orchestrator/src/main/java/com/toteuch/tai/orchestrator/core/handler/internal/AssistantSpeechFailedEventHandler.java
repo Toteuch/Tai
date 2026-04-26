@@ -9,12 +9,11 @@ import com.toteuch.tai.orchestrator.events.internal.ConversationTurnCompletedEve
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
+import java.time.Instant;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Component
 public class AssistantSpeechFailedEventHandler implements EventHandler<AssistantSpeechFailedEvent> {
@@ -26,13 +25,10 @@ public class AssistantSpeechFailedEventHandler implements EventHandler<Assistant
     private final TaiEventPublisher eventPublisher;
 
     public AssistantSpeechFailedEventHandler(
-        SessionStore sessionStore,
-        TaiEventPublisher eventPublisher
-    ) {
+            SessionStore sessionStore, TaiEventPublisher eventPublisher) {
         this.sessionStore = sessionStore;
         this.eventPublisher = eventPublisher;
     }
-
 
     @Override
     public EventType supports() {
@@ -42,19 +38,19 @@ public class AssistantSpeechFailedEventHandler implements EventHandler<Assistant
     @Override
     public void handle(AssistantSpeechFailedEvent event) {
         SessionContext sessionContext = sessionStore.get();
-        errorLog.error("TTS speech failed | correlationId={} errorCode={} errorMessage={}",
-            event.correlationId(),
-            event.errorCode(),
-            event.errorMessage()
-        );
+        errorLog.error(
+                "TTS speech failed | correlationId={} errorCode={} errorMessage={}",
+                event.correlationId(),
+                event.errorCode(),
+                event.errorMessage());
 
         sessionContext.setSpeakingState(SpeakingState.SILENT);
 
-        eventPublisher.publish(new ConversationTurnCompletedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            event.correlationId(),
-            EventSource.ORCHESTRATOR
-        ));
+        eventPublisher.publish(
+                new ConversationTurnCompletedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        event.correlationId(),
+                        EventSource.ORCHESTRATOR));
     }
 }

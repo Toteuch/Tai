@@ -6,12 +6,11 @@ import com.toteuch.tai.stt.listener.gatekeeper.GatekeeperDecision;
 import com.toteuch.tai.stt.listener.gatekeeper.TranscriptGatekeeper;
 import com.toteuch.tai.stt.listener.transcription.TranscriptionResult;
 import com.toteuch.tai.stt.listener.transcription.WhisperTranscriptionClient;
+import java.nio.file.Files;
+import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import java.nio.file.Files;
-import java.time.Instant;
 
 @Service
 public class SttPipelineService {
@@ -22,10 +21,9 @@ public class SttPipelineService {
     private final SttListenerProperties properties;
 
     public SttPipelineService(
-        TranscriptGatekeeper gatekeeper,
-        WhisperTranscriptionClient whisperClient,
-        SttListenerProperties properties
-    ) {
+            TranscriptGatekeeper gatekeeper,
+            WhisperTranscriptionClient whisperClient,
+            SttListenerProperties properties) {
         this.gatekeeper = gatekeeper;
         this.whisperClient = whisperClient;
         this.properties = properties;
@@ -37,30 +35,16 @@ public class SttPipelineService {
 
             if (preDecision != null) {
                 return new SttPipelineResult(
-                    correlationId,
-                    segment,
-                    preDecision,
-                    null,
-                    preDecision,
-                    Instant.now()
-                );
+                        correlationId, segment, preDecision, null, preDecision, Instant.now());
             }
 
-            TranscriptionResult transcription = whisperClient.transcribe(
-                correlationId,
-                segment.audioFile()
-            );
+            TranscriptionResult transcription =
+                    whisperClient.transcribe(correlationId, segment.audioFile());
 
             GatekeeperDecision finalDecision = gatekeeper.evaluate(segment, transcription);
 
             return new SttPipelineResult(
-                correlationId,
-                segment,
-                null,
-                transcription,
-                finalDecision,
-                Instant.now()
-            );
+                    correlationId, segment, null, transcription, finalDecision, Instant.now());
         } finally {
             if (properties.getListener().isDeleteAudioAfterProcessing()) {
                 deleteCapturedWav(correlationId, segment);
@@ -76,17 +60,15 @@ public class SttPipelineService {
         try {
             Files.deleteIfExists(segment.audioFile());
             log.debug(
-                "Deleted captured WAV | correlationId={} file={}",
-                correlationId,
-                segment.audioFile().toAbsolutePath()
-            );
+                    "Deleted captured WAV | correlationId={} file={}",
+                    correlationId,
+                    segment.audioFile().toAbsolutePath());
         } catch (Exception e) {
             log.warn(
-                "Failed to delete captured WAV | correlationId={} file={}",
-                correlationId,
-                segment.audioFile().toAbsolutePath(),
-                e
-            );
+                    "Failed to delete captured WAV | correlationId={} file={}",
+                    correlationId,
+                    segment.audioFile().toAbsolutePath(),
+                    e);
         }
     }
 }

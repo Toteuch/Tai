@@ -1,5 +1,12 @@
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.internal.UserSpeechStartedEvent;
@@ -8,17 +15,9 @@ import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import org.junit.jupiter.api.Test;
 
 public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
 
@@ -28,18 +27,15 @@ public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
 
         TtsClient ttsClient = mock(TtsClient.class);
 
+        UserSpeechStartedEventHandler handler =
+                new UserSpeechStartedEventHandler(fixedSessionStore(context), ttsClient);
 
-        UserSpeechStartedEventHandler handler = new UserSpeechStartedEventHandler(
-            fixedSessionStore(context),
-            ttsClient
-        );
-
-        handler.handle(new UserSpeechStartedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            "corr-1",
-            EventSource.ORCHESTRATOR
-        ));
+        handler.handle(
+                new UserSpeechStartedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        "corr-1",
+                        EventSource.ORCHESTRATOR));
 
         verify(ttsClient, never()).stop(anyString());
     }
@@ -47,7 +43,8 @@ public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
     @Test
     void should_stop_tts_if_barged_in() {
         SessionContext context = new SessionContext();
-        ConversationTurn activeTurn = new ConversationTurn("corr-1", "Hello Tai", Instant.now(), true);
+        ConversationTurn activeTurn =
+                new ConversationTurn("corr-1", "Hello Tai", Instant.now(), true);
         activeTurn.setAssistantMessage("Hello Toteuch");
         activeTurn.setAssistantReplyGenerated(true);
         activeTurn.setAssistantPlaybackStarted(true);
@@ -56,18 +53,15 @@ public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
 
         TtsClient ttsClient = mock(TtsClient.class);
 
+        UserSpeechStartedEventHandler handler =
+                new UserSpeechStartedEventHandler(fixedSessionStore(context), ttsClient);
 
-        UserSpeechStartedEventHandler handler = new UserSpeechStartedEventHandler(
-            fixedSessionStore(context),
-            ttsClient
-        );
-
-        handler.handle(new UserSpeechStartedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            "corr-2",
-            EventSource.ORCHESTRATOR
-        ));
+        handler.handle(
+                new UserSpeechStartedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        "corr-2",
+                        EventSource.ORCHESTRATOR));
 
         verify(ttsClient).stop(eq("corr-1"));
         assertThat(context.getActiveTurn()).isNull();
@@ -86,7 +80,8 @@ public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
     @Test
     void should_stop_preparing_tts_if_barged_in() {
         SessionContext context = new SessionContext();
-        ConversationTurn activeTurn = new ConversationTurn("corr-1", "Hello Tai", Instant.now(), true);
+        ConversationTurn activeTurn =
+                new ConversationTurn("corr-1", "Hello Tai", Instant.now(), true);
         activeTurn.setAssistantMessage("Hello Toteuch");
         activeTurn.setAssistantReplyGenerated(true);
         context.setActiveTurn(activeTurn);
@@ -94,18 +89,15 @@ public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
 
         TtsClient ttsClient = mock(TtsClient.class);
 
+        UserSpeechStartedEventHandler handler =
+                new UserSpeechStartedEventHandler(fixedSessionStore(context), ttsClient);
 
-        UserSpeechStartedEventHandler handler = new UserSpeechStartedEventHandler(
-            fixedSessionStore(context),
-            ttsClient
-        );
-
-        handler.handle(new UserSpeechStartedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            "corr-2",
-            EventSource.ORCHESTRATOR
-        ));
+        handler.handle(
+                new UserSpeechStartedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        "corr-2",
+                        EventSource.ORCHESTRATOR));
 
         verify(ttsClient).stop(eq("corr-1"));
         assertThat(context.getActiveTurn()).isNull();
@@ -130,18 +122,15 @@ public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
 
         TtsClient ttsClient = mock(TtsClient.class);
 
+        UserSpeechStartedEventHandler handler =
+                new UserSpeechStartedEventHandler(fixedSessionStore(context), ttsClient);
 
-        UserSpeechStartedEventHandler handler = new UserSpeechStartedEventHandler(
-            fixedSessionStore(context),
-            ttsClient
-        );
-
-        handler.handle(new UserSpeechStartedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            "corr-2",
-            EventSource.ORCHESTRATOR
-        ));
+        handler.handle(
+                new UserSpeechStartedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        "corr-2",
+                        EventSource.ORCHESTRATOR));
 
         verify(ttsClient, never()).stop(anyString());
         assertThat(context.getActiveTurn()).isNull();
@@ -157,5 +146,4 @@ public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
         assertThat(historizedTurn.isSupersededBeforeAssistantReply()).isEqualTo(true);
         assertThat(historizedTurn.getSupersededByCorrelationId()).isEqualTo("corr-2");
     }
-
 }

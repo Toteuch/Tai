@@ -12,26 +12,24 @@ public class LlmTransportEventMapper extends AbstractTransportEventMapper {
 
     public TaiEvent toEvent(LlmResponseCompletedEventRequest req) {
         return new LlmResponseCompletedEvent(
-            safeId(req.getEventId()),
-            safeTime(req.getCreatedAt()),
-            safeCorrelation(req.getCorrelationId()),
-            EventSource.LLM_SERVICE,
-            req.getResponseText(),
-            req.getModelName(),
-            req.getInputTokens(),
-            req.getOutputTokens(),
-            req.getGenerationDurationMs()
-        );
+                safeId(req.getEventId()),
+                safeTime(req.getCreatedAt()),
+                safeCorrelation(req.getCorrelationId()),
+                EventSource.LLM_SERVICE,
+                req.getResponseText(),
+                req.getModelName(),
+                req.getInputTokens(),
+                req.getOutputTokens(),
+                req.getGenerationDurationMs());
     }
 
     public TaiEvent toEvent(LlmResponseFailedEventRequest req) {
         return new LlmResponseFailedEvent(
-            safeId(req.getEventId()),
-            safeTime(req.getCreatedAt()),
-            safeCorrelation(req.getCorrelationId()),
-            EventSource.LLM_SERVICE,
-            req.getErrorCode(),
-            req.getErrorMessage()
-        );
+                safeId(req.getEventId()),
+                safeTime(req.getCreatedAt()),
+                safeCorrelation(req.getCorrelationId()),
+                EventSource.LLM_SERVICE,
+                req.getErrorCode(),
+                req.getErrorMessage());
     }
 }

@@ -16,10 +16,7 @@ public class TtsEventController {
     private final TaiEventPublisher eventPublisher;
     private final TtsTransportEventMapper mapper;
 
-    public TtsEventController(
-        TaiEventPublisher eventPublisher,
-        TtsTransportEventMapper mapper
-    ) {
+    public TtsEventController(TaiEventPublisher eventPublisher, TtsTransportEventMapper mapper) {
         this.eventPublisher = eventPublisher;
         this.mapper = mapper;
     }

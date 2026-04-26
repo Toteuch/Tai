@@ -1,16 +1,15 @@
 package com.toteuch.tai.tts.piper.service;
 
 import com.toteuch.tai.tts.piper.config.TtsPiperProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PiperSynthesisService {
@@ -29,25 +28,32 @@ public class PiperSynthesisService {
 
             Path outputFile = outputDir.resolve("tts_" + correlationId + ".wav");
 
-            List<String> command = List.of(
-                properties.getPiper().getExecutable(),
-                "--model", properties.getPiper().getModel(),
-                "--config", properties.getPiper().getConfig(),
-                "--output_file", outputFile.toString()
-            );
+            List<String> command =
+                    List.of(
+                            properties.getPiper().getExecutable(),
+                            "--model",
+                            properties.getPiper().getModel(),
+                            "--config",
+                            properties.getPiper().getConfig(),
+                            "--output_file",
+                            outputFile.toString());
 
-            log.info("Starting Piper process | correlationId={} command={}", correlationId, command);
+            log.info(
+                    "Starting Piper process | correlationId={} command={}", correlationId, command);
 
-            Process process = new ProcessBuilder(command)
-                .redirectErrorStream(true)
-                .start();
+            Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
 
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8))) {
+            try (BufferedWriter writer =
+                    new BufferedWriter(
+                            new OutputStreamWriter(
+                                    process.getOutputStream(), StandardCharsets.UTF_8))) {
                 writer.write(text);
                 writer.newLine();
             }
 
-            boolean completed = process.waitFor(properties.getPiper().getProcessTimeoutMs(), TimeUnit.MILLISECONDS);
+            boolean completed =
+                    process.waitFor(
+                            properties.getPiper().getProcessTimeoutMs(), TimeUnit.MILLISECONDS);
             if (!completed) {
                 process.destroyForcibly();
                 throw new IllegalStateException("Piper process timed out");
@@ -59,7 +65,8 @@ public class PiperSynthesisService {
             }
 
             if (!Files.exists(outputFile) || Files.size(outputFile) == 0) {
-                throw new IllegalStateException("Piper output file missing or empty: " + outputFile);
+                throw new IllegalStateException(
+                        "Piper output file missing or empty: " + outputFile);
             }
 
             return outputFile;
@@ -70,7 +77,7 @@ public class PiperSynthesisService {
 
     public boolean isPiperConfigured() {
         return Files.exists(Paths.get(properties.getPiper().getExecutable()))
-            && Files.exists(Paths.get(properties.getPiper().getModel()))
-            && Files.exists(Paths.get(properties.getPiper().getConfig()));
+                && Files.exists(Paths.get(properties.getPiper().getModel()))
+                && Files.exists(Paths.get(properties.getPiper().getConfig()));
     }
 }

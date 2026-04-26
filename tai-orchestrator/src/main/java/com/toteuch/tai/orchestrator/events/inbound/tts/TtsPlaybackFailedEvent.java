@@ -3,7 +3,6 @@ package com.toteuch.tai.orchestrator.events.inbound.tts;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.TaiEvent;
-
 import java.time.Instant;
 
 /**
@@ -17,13 +16,13 @@ import java.time.Instant;
  * @param errorMessage a human-readable error message describing the failure
  */
 public record TtsPlaybackFailedEvent(
-    String eventId,
-    Instant occurredAt,
-    String correlationId,
-    EventSource source,
-    String errorCode,
-    String errorMessage
-) implements TaiEvent {
+        String eventId,
+        Instant occurredAt,
+        String correlationId,
+        EventSource source,
+        String errorCode,
+        String errorMessage)
+        implements TaiEvent {
     @Override
     public EventType type() {
         return EventType.TTS_PLAYBACK_FAILED;

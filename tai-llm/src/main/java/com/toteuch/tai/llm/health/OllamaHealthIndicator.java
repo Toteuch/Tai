@@ -19,7 +19,13 @@ public class OllamaHealthIndicator implements HealthIndicator {
     @Override
     public Health health() {
         if (client.isReachable())
-            return Health.up().withDetail("baseUrl", props.getOllama().getBaseUrl()).withDetail("model", props.getOllama().getModel()).build();
-        return Health.down().withDetail("baseUrl", props.getOllama().getBaseUrl()).withDetail("model", props.getOllama().getModel()).build();
+            return Health.up()
+                    .withDetail("baseUrl", props.getOllama().getBaseUrl())
+                    .withDetail("model", props.getOllama().getModel())
+                    .build();
+        return Health.down()
+                .withDetail("baseUrl", props.getOllama().getBaseUrl())
+                .withDetail("model", props.getOllama().getModel())
+                .build();
     }
 }

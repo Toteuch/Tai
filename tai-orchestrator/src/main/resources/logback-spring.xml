@@ -24,7 +24,7 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
-    
+
     <root level="${ROOT_LEVEL}">
         <appender-ref ref="CONSOLE"/>
     </root>

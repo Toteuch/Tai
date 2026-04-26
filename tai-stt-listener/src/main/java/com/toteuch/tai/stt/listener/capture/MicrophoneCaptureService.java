@@ -4,15 +4,14 @@ import com.toteuch.tai.stt.listener.audio.AudioMetrics;
 import com.toteuch.tai.stt.listener.audio.SpeechSegment;
 import com.toteuch.tai.stt.listener.audio.WavFileWriter;
 import com.toteuch.tai.stt.listener.config.SttListenerProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
-import javax.sound.sampled.*;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import javax.sound.sampled.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 public class MicrophoneCaptureService {
@@ -31,10 +30,12 @@ public class MicrophoneCaptureService {
         DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
 
         if (!AudioSystem.isLineSupported(info)) {
-            throw new IllegalStateException("Microphone line is not supported for format: " + audioFormat);
+            throw new IllegalStateException(
+                    "Microphone line is not supported for format: " + audioFormat);
         }
 
-        Path outputFile = Path.of(capture.getOutputDir(), "mic_" + System.currentTimeMillis() + ".wav");
+        Path outputFile =
+                Path.of(capture.getOutputDir(), "mic_" + System.currentTimeMillis() + ".wav");
         ByteArrayOutputStream audioBuffer = new ByteArrayOutputStream();
         List<Double> energies = new ArrayList<>();
 
@@ -62,11 +63,9 @@ public class MicrophoneCaptureService {
                 byte[] chunk = new byte[bytesRead];
                 System.arraycopy(buffer, 0, chunk, 0, bytesRead);
 
-                double energy = AudioMetrics.averageAbsoluteEnergy(
-                    chunk,
-                    capture.getSampleSizeBits(),
-                    capture.isBigEndian()
-                );
+                double energy =
+                        AudioMetrics.averageAbsoluteEnergy(
+                                chunk, capture.getSampleSizeBits(), capture.isBigEndian());
                 energies.add(energy);
 
                 long now = System.nanoTime();
@@ -84,11 +83,9 @@ public class MicrophoneCaptureService {
 
                 long silenceMs = elapsedMs(lastVoiceAt, now);
 
-                if (
-                    speechStarted
+                if (speechStarted
                         && elapsedMs >= capture.getMinRecordingMs()
-                        && silenceMs >= capture.getSilenceDurationMs()
-                ) {
+                        && silenceMs >= capture.getSilenceDurationMs()) {
                     speechEnded = true;
                     break;
                 }
@@ -112,24 +109,22 @@ public class MicrophoneCaptureService {
         double voicedRatio = AudioMetrics.voicedRatio(energies, capture.getSilenceThreshold());
 
         return new SpeechSegment(
-            outputFile,
-            durationMs,
-            averageEnergy,
-            peakEnergy,
-            voicedRatio,
-            speechStarted,
-            speechEnded
-        );
+                outputFile,
+                durationMs,
+                averageEnergy,
+                peakEnergy,
+                voicedRatio,
+                speechStarted,
+                speechEnded);
     }
 
     private AudioFormat audioFormat(SttListenerProperties.Capture capture) {
         return new AudioFormat(
-            capture.getSampleRate(),
-            capture.getSampleSizeBits(),
-            capture.getChannels(),
-            capture.isSigned(),
-            capture.isBigEndian()
-        );
+                capture.getSampleRate(),
+                capture.getSampleSizeBits(),
+                capture.getChannels(),
+                capture.isSigned(),
+                capture.isBigEndian());
     }
 
     private long durationMs(byte[] audioBytes, AudioFormat audioFormat) {

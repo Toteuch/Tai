@@ -3,7 +3,6 @@ package com.toteuch.tai.orchestrator.events.inbound.tts;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.TaiEvent;
-
 import java.time.Instant;
 
 /**
@@ -17,13 +16,13 @@ import java.time.Instant;
  * @param speechDurationMs the playback duration in milliseconds, if available
  */
 public record TtsPlaybackCompletedEvent(
-    String eventId,
-    Instant occurredAt,
-    String correlationId,
-    EventSource source,
-    String text,
-    Long speechDurationMs
-) implements TaiEvent {
+        String eventId,
+        Instant occurredAt,
+        String correlationId,
+        EventSource source,
+        String text,
+        Long speechDurationMs)
+        implements TaiEvent {
     @Override
     public EventType type() {
         return EventType.TTS_PLAYBACK_COMPLETED;

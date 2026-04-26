@@ -1,9 +1,8 @@
 package com.toteuch.tai.llm.config;
 
+import java.util.concurrent.Executor;
 import org.springframework.context.annotation.*;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import java.util.concurrent.Executor;
 
 @Configuration
 public class AsyncConfig {

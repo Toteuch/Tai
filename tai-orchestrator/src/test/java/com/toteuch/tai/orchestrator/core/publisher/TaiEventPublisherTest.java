@@ -1,13 +1,13 @@
 package com.toteuch.tai.orchestrator.core.publisher;
 
-import com.toteuch.tai.orchestrator.events.TaiEvent;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.ObjectProvider;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.toteuch.tai.orchestrator.events.TaiEvent;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ObjectProvider;
 
 class TaiEventPublisherTest {
 

@@ -1,13 +1,12 @@
 package com.toteuch.tai.orchestrator.transport.events;
 
+import java.time.Instant;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.util.UUID;
-
 public abstract class AbstractTransportEventMapper {
-    private final static Logger errorLog = LoggerFactory.getLogger("tai.error");
+    private static final Logger errorLog = LoggerFactory.getLogger("tai.error");
 
     protected String safeId(String id) {
         if (id == null) {
@@ -28,7 +27,8 @@ public abstract class AbstractTransportEventMapper {
     protected String safeCorrelation(String correlationId) {
         if (correlationId == null) {
             correlationId = UUID.randomUUID().toString();
-            errorLog.warn("Transport event correlationId is null, generating a random correlationId");
+            errorLog.warn(
+                    "Transport event correlationId is null, generating a random correlationId");
         }
         return correlationId;
     }

@@ -4,10 +4,9 @@ import com.toteuch.tai.llm.api.dto.LlmMessage;
 import com.toteuch.tai.llm.config.LlmProperties;
 import com.toteuch.tai.llm.ollama.*;
 import jakarta.annotation.PostConstruct;
+import java.util.List;
 import org.slf4j.*;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ModelWarmupService {
@@ -26,13 +25,18 @@ public class ModelWarmupService {
     public void warmupOnStartup() {
         if (!props.getOllama().isWarmUpOnStartup()) return;
         try {
-            OllamaGenerationResult r = client.generate(List.of(new LlmMessage("user", props.getOllama().getWarmUpPrompt())));
+            OllamaGenerationResult r =
+                    client.generate(
+                            List.of(new LlmMessage("user", props.getOllama().getWarmUpPrompt())));
             if (r.success()) {
                 state.markWarm();
                 log.info("Ollama model warmed | model={}", props.getOllama().getModel());
             } else {
                 state.markFailed(r.errorCode() + ": " + r.errorMessage());
-                log.warn("Ollama model warmup failed | errorCode={} errorMessage={}", r.errorCode(), r.errorMessage());
+                log.warn(
+                        "Ollama model warmup failed | errorCode={} errorMessage={}",
+                        r.errorCode(),
+                        r.errorMessage());
             }
         } catch (Exception e) {
             state.markFailed(e.getMessage());

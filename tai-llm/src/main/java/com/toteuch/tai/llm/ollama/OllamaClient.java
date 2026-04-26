@@ -3,12 +3,11 @@ package com.toteuch.tai.llm.ollama;
 import com.toteuch.tai.llm.api.dto.LlmMessage;
 import com.toteuch.tai.llm.config.LlmProperties;
 import com.toteuch.tai.llm.ollama.dto.*;
+import java.time.*;
+import java.util.List;
 import org.slf4j.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.*;
-
-import java.time.*;
-import java.util.List;
 
 @Component
 public class OllamaClient {
@@ -24,14 +23,37 @@ public class OllamaClient {
     public OllamaGenerationResult generate(List<LlmMessage> messages) {
         Instant start = Instant.now();
         try {
-            OllamaChatRequest req = new OllamaChatRequest(props.getOllama().getModel(), messages.stream().map(m -> new OllamaMessage(m.role(), m.content())).toList(), props.getOllama().isStream(), props.getOllama().getKeepAlive());
-            OllamaChatResponse res = client.post().uri(props.getOllama().getChatPath()).body(req).retrieve().body(OllamaChatResponse.class);
+            OllamaChatRequest req =
+                    new OllamaChatRequest(
+                            props.getOllama().getModel(),
+                            messages.stream()
+                                    .map(m -> new OllamaMessage(m.role(), m.content()))
+                                    .toList(),
+                            props.getOllama().isStream(),
+                            props.getOllama().getKeepAlive());
+            OllamaChatResponse res =
+                    client.post()
+                            .uri(props.getOllama().getChatPath())
+                            .body(req)
+                            .retrieve()
+                            .body(OllamaChatResponse.class);
             long ms = Duration.between(start, Instant.now()).toMillis();
             if (res == null)
-                return OllamaGenerationResult.failure("OLLAMA_EMPTY_RESPONSE", "Ollama returned an empty response.", ms);
-            if (res.getMessage() == null || res.getMessage().content() == null || res.getMessage().content().isBlank())
-                return OllamaGenerationResult.failure("OLLAMA_EMPTY_MESSAGE", "Ollama returned no assistant message content.", ms);
-            return OllamaGenerationResult.success(res.getMessage().content(), res.getModel() != null ? res.getModel() : props.getOllama().getModel(), res.getPrompt_eval_count(), res.getEval_count(), ms);
+                return OllamaGenerationResult.failure(
+                        "OLLAMA_EMPTY_RESPONSE", "Ollama returned an empty response.", ms);
+            if (res.getMessage() == null
+                    || res.getMessage().content() == null
+                    || res.getMessage().content().isBlank())
+                return OllamaGenerationResult.failure(
+                        "OLLAMA_EMPTY_MESSAGE",
+                        "Ollama returned no assistant message content.",
+                        ms);
+            return OllamaGenerationResult.success(
+                    res.getMessage().content(),
+                    res.getModel() != null ? res.getModel() : props.getOllama().getModel(),
+                    res.getPrompt_eval_count(),
+                    res.getEval_count(),
+                    ms);
         } catch (RestClientException e) {
             long ms = Duration.between(start, Instant.now()).toMillis();
             log.warn("Ollama call failed", e);

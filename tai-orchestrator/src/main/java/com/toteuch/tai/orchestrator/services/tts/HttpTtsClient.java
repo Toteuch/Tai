@@ -13,22 +13,19 @@ public class HttpTtsClient implements TtsClient {
 
     private final RestClient restClient;
 
-    public HttpTtsClient(
-        @Value("${tai.tts.base-url}") String baseUrl
-    ) {
-        this.restClient = RestClient.builder()
-            .baseUrl(baseUrl)
-            .build();
+    public HttpTtsClient(@Value("${tai.tts.base-url}") String baseUrl) {
+        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
     }
 
     @Override
     public void speak(String correlationId, String text) {
         try {
-            restClient.post()
-                .uri("/tts/speak")
-                .body(new TtsSpeakRequest(correlationId, text))
-                .retrieve()
-                .toBodilessEntity();
+            restClient
+                    .post()
+                    .uri("/tts/speak")
+                    .body(new TtsSpeakRequest(correlationId, text))
+                    .retrieve()
+                    .toBodilessEntity();
 
             log.info("TTS speak request sent | correlationId={}", correlationId);
         } catch (Exception e) {
@@ -39,11 +36,12 @@ public class HttpTtsClient implements TtsClient {
     @Override
     public void stop(String correlationId) {
         try {
-            restClient.post()
-                .uri("/tts/stop")
-                .body(new TtsStopRequest(correlationId))
-                .retrieve()
-                .toBodilessEntity();
+            restClient
+                    .post()
+                    .uri("/tts/stop")
+                    .body(new TtsStopRequest(correlationId))
+                    .retrieve()
+                    .toBodilessEntity();
 
             log.info("TTS stop request sent | correlationId={}", correlationId);
         } catch (Exception e) {
@@ -51,14 +49,7 @@ public class HttpTtsClient implements TtsClient {
         }
     }
 
-    private record TtsSpeakRequest(
-        String correlationId,
-        String text
-    ) {
-    }
+    private record TtsSpeakRequest(String correlationId, String text) {}
 
-    private record TtsStopRequest(
-        String correlationId
-    ) {
-    }
+    private record TtsStopRequest(String correlationId) {}
 }

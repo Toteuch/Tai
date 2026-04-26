@@ -11,15 +11,15 @@ import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
+import java.time.Instant;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-import java.util.UUID;
-
 @Component
-public class AssistantReplyAcceptedEventHandler implements EventHandler<AssistantReplyAcceptedEvent> {
+public class AssistantReplyAcceptedEventHandler
+        implements EventHandler<AssistantReplyAcceptedEvent> {
     private static final Logger perfLog = LoggerFactory.getLogger("tai.performance");
     private static final Logger contextLog = LoggerFactory.getLogger("tai.context");
     private static final Logger traceLog = LoggerFactory.getLogger("tai.trace");
@@ -29,10 +29,7 @@ public class AssistantReplyAcceptedEventHandler implements EventHandler<Assistan
     private final TtsClient ttsClient;
 
     public AssistantReplyAcceptedEventHandler(
-        SessionStore sessionStore,
-        TaiEventPublisher eventPublisher,
-        TtsClient ttsClient
-    ) {
+            SessionStore sessionStore, TaiEventPublisher eventPublisher, TtsClient ttsClient) {
         this.sessionStore = sessionStore;
         this.eventPublisher = eventPublisher;
         this.ttsClient = ttsClient;
@@ -54,10 +51,10 @@ public class AssistantReplyAcceptedEventHandler implements EventHandler<Assistan
 
         sessionContext.getActiveTurn().setAssistantMessage(sanitizedResponseText);
         sessionContext.getActiveTurn().setAssistantReplyGenerated(true);
-        contextLog.info("New assistantMessage | correlationId={} assistantMessage={}",
-            event.correlationId(),
-            sanitizedResponseText
-        );
+        contextLog.info(
+                "New assistantMessage | correlationId={} assistantMessage={}",
+                event.correlationId(),
+                sanitizedResponseText);
 
         sessionContext.setThinkingState(ThinkingState.IDLE);
 
@@ -67,12 +64,12 @@ public class AssistantReplyAcceptedEventHandler implements EventHandler<Assistan
             perfLog.info("TTS speech called | correlationId={}", event.correlationId());
             ttsClient.speak(event.correlationId(), sanitizedResponseText);
         } else {
-            eventPublisher.publish(new ConversationTurnCompletedEvent(
-                UUID.randomUUID().toString(),
-                Instant.now(),
-                event.correlationId(),
-                EventSource.ORCHESTRATOR
-            ));
+            eventPublisher.publish(
+                    new ConversationTurnCompletedEvent(
+                            UUID.randomUUID().toString(),
+                            Instant.now(),
+                            event.correlationId(),
+                            EventSource.ORCHESTRATOR));
         }
     }
 

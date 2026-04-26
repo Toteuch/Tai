@@ -3,12 +3,11 @@ package com.toteuch.tai.llm.transport;
 import com.toteuch.tai.llm.config.LlmProperties;
 import com.toteuch.tai.llm.ollama.OllamaGenerationResult;
 import com.toteuch.tai.llm.transport.dto.*;
+import java.time.Instant;
+import java.util.UUID;
 import org.slf4j.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Component
 public class OrchestratorLlmEventClient {
@@ -32,7 +31,11 @@ public class OrchestratorLlmEventClient {
         r.setInputTokens(result.inputTokens());
         r.setOutputTokens(result.outputTokens());
         r.setGenerationDurationMs(result.generationDurationMs());
-        client.post().uri(props.getOrchestrator().getCallbacks().getResponseCompletedPath()).body(r).retrieve().toBodilessEntity();
+        client.post()
+                .uri(props.getOrchestrator().getCallbacks().getResponseCompletedPath())
+                .body(r)
+                .retrieve()
+                .toBodilessEntity();
     }
 
     public void sendFailed(String correlationId, OllamaGenerationResult result) {
@@ -43,7 +46,11 @@ public class OrchestratorLlmEventClient {
         r.setCorrelationId(correlationId);
         r.setErrorCode(result.errorCode());
         r.setErrorMessage(result.errorMessage());
-        client.post().uri(props.getOrchestrator().getCallbacks().getResponseFailedPath()).body(r).retrieve().toBodilessEntity();
+        client.post()
+                .uri(props.getOrchestrator().getCallbacks().getResponseFailedPath())
+                .body(r)
+                .retrieve()
+                .toBodilessEntity();
     }
 
     public boolean isOrchestratorReachable() {

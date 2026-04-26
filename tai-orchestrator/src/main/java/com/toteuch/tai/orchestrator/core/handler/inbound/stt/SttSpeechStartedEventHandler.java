@@ -6,12 +6,11 @@ import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.inbound.stt.SttSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserSpeechStartedEvent;
+import java.time.Instant;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Component
 public class SttSpeechStartedEventHandler implements EventHandler<SttSpeechStartedEvent> {
@@ -31,11 +30,11 @@ public class SttSpeechStartedEventHandler implements EventHandler<SttSpeechStart
     @Override
     public void handle(SttSpeechStartedEvent event) {
         perfLog.info("STT speech started call received | correlationId={}", event.correlationId());
-        eventPublisher.publish(new UserSpeechStartedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            event.correlationId(),
-            EventSource.ORCHESTRATOR
-        ));
+        eventPublisher.publish(
+                new UserSpeechStartedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        event.correlationId(),
+                        EventSource.ORCHESTRATOR));
     }
 }

@@ -10,9 +10,10 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI taiTtsPiperOpenApi() {
         return new OpenAPI()
-            .info(new Info()
-                .title("Tai TTS Piper Service API")
-                .version("0.1.0")
-                .description("Asynchronous Piper TTS microservice."));
+                .info(
+                        new Info()
+                                .title("Tai TTS Piper Service API")
+                                .version("0.1.0")
+                                .description("Asynchronous Piper TTS microservice."));
     }
 }

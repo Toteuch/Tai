@@ -52,7 +52,9 @@ public class TranscriptGatekeeper {
         String text = normalize(transcription.text());
 
         if (text == null || text.isBlank()) {
-            if (segment.speechStarted() && segment.averageEnergy() >= properties.getGatekeeper().getRejectAverageEnergyThreshold()) {
+            if (segment.speechStarted()
+                    && segment.averageEnergy()
+                            >= properties.getGatekeeper().getRejectAverageEnergyThreshold()) {
                 return GatekeeperDecision.unintelligible("EMPTY_TRANSCRIPT");
             }
             return GatekeeperDecision.noise("EMPTY_TRANSCRIPT");
@@ -63,7 +65,8 @@ public class TranscriptGatekeeper {
         }
 
         String language = transcription.language();
-        if (language != null && !properties.getGatekeeper().getAllowedLanguages().contains(language)) {
+        if (language != null
+                && !properties.getGatekeeper().getAllowedLanguages().contains(language)) {
             return GatekeeperDecision.unintelligible("UNSUPPORTED_LANGUAGE");
         }
 
@@ -74,7 +77,9 @@ public class TranscriptGatekeeper {
         }
 
         Double languageProbability = transcription.languageProbability();
-        if (languageProbability != null && languageProbability < properties.getGatekeeper().getSuspiciousLanguageProbabilityThreshold()) {
+        if (languageProbability != null
+                && languageProbability
+                        < properties.getGatekeeper().getSuspiciousLanguageProbabilityThreshold()) {
             suspicionScore++;
         }
 

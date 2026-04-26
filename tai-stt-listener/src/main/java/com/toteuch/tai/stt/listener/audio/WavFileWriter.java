@@ -1,9 +1,9 @@
 package com.toteuch.tai.stt.listener.audio;
 
-import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import javax.sound.sampled.*;
 
 public class WavFileWriter {
     public void write(Path outputFile, byte[] audioBytes, AudioFormat audioFormat) {
@@ -11,11 +11,11 @@ public class WavFileWriter {
             Files.createDirectories(outputFile.getParent());
 
             try (ByteArrayInputStream byteStream = new ByteArrayInputStream(audioBytes);
-                 AudioInputStream audioInputStream = new AudioInputStream(
-                     byteStream,
-                     audioFormat,
-                     audioBytes.length / audioFormat.getFrameSize()
-                 )) {
+                    AudioInputStream audioInputStream =
+                            new AudioInputStream(
+                                    byteStream,
+                                    audioFormat,
+                                    audioBytes.length / audioFormat.getFrameSize())) {
                 AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, outputFile.toFile());
             }
         } catch (Exception e) {

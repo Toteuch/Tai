@@ -2,13 +2,12 @@ package com.toteuch.tai.tts.piper.transport;
 
 import com.toteuch.tai.tts.piper.config.TtsPiperProperties;
 import com.toteuch.tai.tts.piper.transport.dto.*;
+import java.time.Instant;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Component
 public class OrchestratorTtsEventClient {
@@ -17,7 +16,8 @@ public class OrchestratorTtsEventClient {
     private final RestClient orchestratorRestClient;
     private final TtsPiperProperties properties;
 
-    public OrchestratorTtsEventClient(RestClient orchestratorRestClient, TtsPiperProperties properties) {
+    public OrchestratorTtsEventClient(
+            RestClient orchestratorRestClient, TtsPiperProperties properties) {
         this.orchestratorRestClient = orchestratorRestClient;
         this.properties = properties;
     }
@@ -55,11 +55,7 @@ public class OrchestratorTtsEventClient {
 
     private void post(String path, Object request) {
         try {
-            orchestratorRestClient.post()
-                .uri(path)
-                .body(request)
-                .retrieve()
-                .toBodilessEntity();
+            orchestratorRestClient.post().uri(path).body(request).retrieve().toBodilessEntity();
         } catch (Exception e) {
             log.warn("Failed to send TTS callback | path={}", path, e);
         }

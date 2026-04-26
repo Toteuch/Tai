@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AssistantSpeechStartedEventHandler implements EventHandler<AssistantSpeechStartedEvent> {
+public class AssistantSpeechStartedEventHandler
+        implements EventHandler<AssistantSpeechStartedEvent> {
     private static final Logger contextLog = LoggerFactory.getLogger("tai.context");
 
     private final SessionStore sessionStore;

@@ -1,4 +1,3 @@
 package com.toteuch.tai.llm.api.dto;
 
-public record LlmGenerationAcceptedResponse(boolean accepted, String correlationId) {
-}
+public record LlmGenerationAcceptedResponse(boolean accepted, String correlationId) {}

@@ -10,9 +10,11 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI taiSttListenerOpenApi() {
         return new OpenAPI()
-            .info(new Info()
-                .title("Tai STT Listener API")
-                .version("0.1.0")
-                .description("Java microphone capture microservice for Tai STT flows."));
+                .info(
+                        new Info()
+                                .title("Tai STT Listener API")
+                                .version("0.1.0")
+                                .description(
+                                        "Java microphone capture microservice for Tai STT flows."));
     }
 }

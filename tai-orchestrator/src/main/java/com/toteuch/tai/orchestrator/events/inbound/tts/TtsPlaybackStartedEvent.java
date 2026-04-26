@@ -3,7 +3,6 @@ package com.toteuch.tai.orchestrator.events.inbound.tts;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.TaiEvent;
-
 import java.time.Instant;
 
 /**
@@ -16,13 +15,13 @@ import java.time.Instant;
  * @param voiceId the identifier of the voice used for playback, if available
  */
 public record TtsPlaybackStartedEvent(
-    String eventId,
-    Instant occurredAt,
-    String correlationId,
-    EventSource source,
-    String text,
-    String voiceId
-) implements TaiEvent {
+        String eventId,
+        Instant occurredAt,
+        String correlationId,
+        EventSource source,
+        String text,
+        String voiceId)
+        implements TaiEvent {
     @Override
     public EventType type() {
         return EventType.TTS_PLAYBACK_STARTED;

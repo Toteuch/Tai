@@ -12,34 +12,31 @@ import org.springframework.stereotype.Component;
 public class TtsTransportEventMapper extends AbstractTransportEventMapper {
     public TaiEvent toEvent(TtsPlaybackCompletedEventRequest req) {
         return new TtsPlaybackCompletedEvent(
-            safeId(req.getEventId()),
-            safeTime(req.getCreatedAt()),
-            safeCorrelation(req.getCorrelationId()),
-            EventSource.TTS_SERVICE,
-            req.getText(),
-            req.getSpeechDurationMs()
-        );
+                safeId(req.getEventId()),
+                safeTime(req.getCreatedAt()),
+                safeCorrelation(req.getCorrelationId()),
+                EventSource.TTS_SERVICE,
+                req.getText(),
+                req.getSpeechDurationMs());
     }
 
     public TaiEvent toEvent(TtsPlaybackStartedEventRequest req) {
         return new TtsPlaybackStartedEvent(
-            safeId(req.getEventId()),
-            safeTime(req.getCreatedAt()),
-            safeCorrelation(req.getCorrelationId()),
-            EventSource.TTS_SERVICE,
-            req.getText(),
-            req.getVoiceId()
-        );
+                safeId(req.getEventId()),
+                safeTime(req.getCreatedAt()),
+                safeCorrelation(req.getCorrelationId()),
+                EventSource.TTS_SERVICE,
+                req.getText(),
+                req.getVoiceId());
     }
 
     public TaiEvent toEvent(TtsPlaybackFailedEventRequest req) {
         return new TtsPlaybackFailedEvent(
-            safeId(req.getEventId()),
-            safeTime(req.getCreatedAt()),
-            safeCorrelation(req.getCorrelationId()),
-            EventSource.TTS_SERVICE,
-            req.getErrorCode(),
-            req.getErrorMessage()
-        );
+                safeId(req.getEventId()),
+                safeTime(req.getCreatedAt()),
+                safeCorrelation(req.getCorrelationId()),
+                EventSource.TTS_SERVICE,
+                req.getErrorCode(),
+                req.getErrorMessage());
     }
 }

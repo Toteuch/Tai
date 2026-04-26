@@ -8,12 +8,11 @@ import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackStartedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
+import java.time.Instant;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Component
 public class TtsPlaybackStartedEventHandler implements EventHandler<TtsPlaybackStartedEvent> {
@@ -24,9 +23,7 @@ public class TtsPlaybackStartedEventHandler implements EventHandler<TtsPlaybackS
     private final TaiEventPublisher eventPublisher;
 
     public TtsPlaybackStartedEventHandler(
-        SessionStore sessionStore,
-        TaiEventPublisher eventPublisher
-    ) {
+            SessionStore sessionStore, TaiEventPublisher eventPublisher) {
         this.sessionStore = sessionStore;
         this.eventPublisher = eventPublisher;
     }
@@ -43,26 +40,27 @@ public class TtsPlaybackStartedEventHandler implements EventHandler<TtsPlaybackS
 
         if (sessionContext.getActiveTurn() == null) {
             // TODO : handle that case to send TtsClient.stop()
-            decisionLog.info("{} ignored : no active turn | correlationId={}",
-                this.getClass().getSimpleName(),
-                event.correlationId());
+            decisionLog.info(
+                    "{} ignored : no active turn | correlationId={}",
+                    this.getClass().getSimpleName(),
+                    event.correlationId());
             return;
         }
 
         if (!sessionContext.isStillActiveTurn(event.correlationId())) {
-            decisionLog.info("{} ignored: stalled correlationId | correlationId={} activeTurnCorrelationId={}",
-                this.getClass().getSimpleName(),
-                event.correlationId(),
-                sessionContext.getActiveTurn().getCorrelationId());
+            decisionLog.info(
+                    "{} ignored: stalled correlationId | correlationId={} activeTurnCorrelationId={}",
+                    this.getClass().getSimpleName(),
+                    event.correlationId(),
+                    sessionContext.getActiveTurn().getCorrelationId());
             return;
         }
 
-        eventPublisher.publish(new AssistantSpeechStartedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            event.correlationId(),
-            EventSource.TTS_SERVICE
-        ));
-
+        eventPublisher.publish(
+                new AssistantSpeechStartedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        event.correlationId(),
+                        EventSource.TTS_SERVICE));
     }
 }

@@ -1,12 +1,11 @@
 package com.toteuch.tai.orchestrator.services.llm;
 
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-
-import java.util.List;
 
 @Component
 public class HttpLlmClient implements LlmClient {
@@ -15,12 +14,8 @@ public class HttpLlmClient implements LlmClient {
 
     private final RestClient restClient;
 
-    public HttpLlmClient(
-        @Value("${tai.llm.base-url}") String baseUrl
-    ) {
-        this.restClient = RestClient.builder()
-            .baseUrl(baseUrl)
-            .build();
+    public HttpLlmClient(@Value("${tai.llm.base-url}") String baseUrl) {
+        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
     }
 
     @Override
@@ -28,11 +23,12 @@ public class HttpLlmClient implements LlmClient {
         try {
             var request = new LlmGenerationRequest(correlationId, messages);
 
-            restClient.post()
-                .uri("/llm/generate-reply")
-                .body(request)
-                .retrieve()
-                .toBodilessEntity();
+            restClient
+                    .post()
+                    .uri("/llm/generate-reply")
+                    .body(request)
+                    .retrieve()
+                    .toBodilessEntity();
 
             log.info("LLM request sent | correlationId={}", correlationId);
 
@@ -41,9 +37,5 @@ public class HttpLlmClient implements LlmClient {
         }
     }
 
-    private record LlmGenerationRequest(
-        String correlationId,
-        List<LlmMessage> messages
-    ) {
-    }
+    private record LlmGenerationRequest(String correlationId, List<LlmMessage> messages) {}
 }
