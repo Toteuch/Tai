@@ -10,6 +10,9 @@ public class SttListenerProperties {
     private Capture capture = new Capture();
     private Gatekeeper gatekeeper = new Gatekeeper();
     private Whisper whisper = new Whisper();
+    private Orchestrator orchestrator = new Orchestrator();
+    private Listener listener = new Listener();
+
 
     public Capture getCapture() {
         return capture;
@@ -33,6 +36,22 @@ public class SttListenerProperties {
 
     public void setWhisper(Whisper whisper) {
         this.whisper = whisper;
+    }
+
+    public Orchestrator getOrchestrator() {
+        return orchestrator;
+    }
+
+    public void setOrchestrator(Orchestrator orchestrator) {
+        this.orchestrator = orchestrator;
+    }
+
+    public Listener getListener() {
+        return listener;
+    }
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
     }
 
     public static class Capture {
@@ -257,6 +276,114 @@ public class SttListenerProperties {
 
         public void setTranscribeRawPath(String transcribeRawPath) {
             this.transcribeRawPath = transcribeRawPath;
+        }
+    }
+
+    public static class Orchestrator {
+        private String baseUrl = "http://localhost:8080";
+        private int connectTimeoutMs = 3000;
+        private int readTimeoutMs = 10000;
+        private Callbacks callbacks = new Callbacks();
+
+        public String getBaseUrl() {
+            return baseUrl;
+        }
+
+        public void setBaseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+        }
+
+        public int getConnectTimeoutMs() {
+            return connectTimeoutMs;
+        }
+
+        public void setConnectTimeoutMs(int connectTimeoutMs) {
+            this.connectTimeoutMs = connectTimeoutMs;
+        }
+
+        public int getReadTimeoutMs() {
+            return readTimeoutMs;
+        }
+
+        public void setReadTimeoutMs(int readTimeoutMs) {
+            this.readTimeoutMs = readTimeoutMs;
+        }
+
+        public Callbacks getCallbacks() {
+            return callbacks;
+        }
+
+        public void setCallbacks(Callbacks callbacks) {
+            this.callbacks = callbacks;
+        }
+
+        public static class Callbacks {
+            private String transcriptAcceptedPath = "/events/stt/transcript-accepted";
+            private String transcriptUnintelligiblePath = "/events/stt/transcript-unintelligible";
+            private String transcriptNoisePath = "/events/stt/transcript-noise";
+
+            public String getTranscriptAcceptedPath() {
+                return transcriptAcceptedPath;
+            }
+
+            public void setTranscriptAcceptedPath(String transcriptAcceptedPath) {
+                this.transcriptAcceptedPath = transcriptAcceptedPath;
+            }
+
+            public String getTranscriptUnintelligiblePath() {
+                return transcriptUnintelligiblePath;
+            }
+
+            public void setTranscriptUnintelligiblePath(String transcriptUnintelligiblePath) {
+                this.transcriptUnintelligiblePath = transcriptUnintelligiblePath;
+            }
+
+            public String getTranscriptNoisePath() {
+                return transcriptNoisePath;
+            }
+
+            public void setTranscriptNoisePath(String transcriptNoisePath) {
+                this.transcriptNoisePath = transcriptNoisePath;
+            }
+        }
+    }
+
+    public static class Listener {
+        private boolean autoStart = false;
+        private boolean continueOnError = true;
+        private boolean deleteAudioAfterProcessing = true;
+        private boolean publishFinalCallbacks = false;
+
+        public boolean isAutoStart() {
+            return autoStart;
+        }
+
+        public void setAutoStart(boolean autoStart) {
+            this.autoStart = autoStart;
+        }
+
+        public boolean isContinueOnError() {
+            return continueOnError;
+        }
+
+        public void setContinueOnError(boolean continueOnError) {
+            this.continueOnError = continueOnError;
+        }
+
+        public boolean isDeleteAudioAfterProcessing() {
+            return deleteAudioAfterProcessing;
+        }
+
+        public void setDeleteAudioAfterProcessing(boolean deleteAudioAfterProcessing) {
+            this.deleteAudioAfterProcessing = deleteAudioAfterProcessing;
+        }
+
+        public boolean isPublishFinalCallbacks() {
+            return publishFinalCallbacks;
+        }
+
+        public void setPublishFinalCallbacks(boolean publishFinalCallbacks) {
+            this.publishFinalCallbacks = publishFinalCallbacks;
         }
     }
 }

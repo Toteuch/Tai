@@ -35,6 +35,20 @@ tai:
         transcribe-upload-path: /whisper/transcribe-upload
         transcribe-raw-path: /whisper/transcribe-raw
 
+    orchestrator:
+        base-url: http://localhost:8080
+        connect-timeout-ms: 3000
+        read-timeout-ms: 10000
+        callbacks:
+            transcript-accepted-path: /events/stt/transcript-accepted
+            transcript-unintelligible-path: /events/stt/transcript-unintelligible
+            transcript-noise-path: /events/stt/transcript-noise
+    listener:
+        auto-start: false
+        continue-on-error: true
+        delete-audio-after-processing: true
+        publish-final-callbacks: true
+
 management:
   endpoints:
     web:
