@@ -16,6 +16,7 @@ import com.toteuch.tai.taiorchestrator.session.SessionStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Instant;
@@ -23,6 +24,7 @@ import java.util.UUID;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@ActiveProfiles("test")
 abstract class AbstractScenarioTest {
 
     protected static String MODEL_NAME = "tai-model";

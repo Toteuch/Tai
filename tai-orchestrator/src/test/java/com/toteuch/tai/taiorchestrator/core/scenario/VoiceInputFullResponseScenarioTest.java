@@ -7,8 +7,6 @@ import com.toteuch.tai.taiorchestrator.session.SpeakingState;
 import com.toteuch.tai.taiorchestrator.session.ThinkingState;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.List;
 
@@ -17,8 +15,6 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class VoiceInputFullResponseScenarioTest extends AbstractScenarioTest {
 
     @Test

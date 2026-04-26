@@ -3,10 +3,15 @@
 
     <timestamp key="startupTimestamp" datePattern="yyyyMMdd-HHmmss"/>
 
-    <property name="LOG_DIR" value="tai-orchestrator/logs"/>
-    <property name="CONVERSATION_LOG_FILE" value="${LOG_DIR}/${startupTimestamp}-conversation.log"/>
+    <springProperty name="CONVERSATION_FILE_ENABLED"
+                    source="tai.logs.conversation-file-enabled"
+                    defaultValue="true"/>
+    <springProperty scope="context" name="LOG_DIR" source="tai.logs.dir" defaultValue="./logs"/>
+
     <springProperty name="TAI_CONVERSATION_LEVEL" source="logging.level.tai.conversation" defaultValue="INFO"/>
     <springProperty name="ROOT_LEVEL" source="logging.level.root" defaultValue="INFO"/>
+
+    <property name="CONVERSATION_LOG_FILE" value="${LOG_DIR}/${startupTimestamp}-conversation.log"/>
 
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
@@ -19,9 +24,8 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
-
-    <!-- Default console logging -->
-    <root level="%{ROOT_LEVEL}">
+    
+    <root level="${ROOT_LEVEL}">
         <appender-ref ref="CONSOLE"/>
     </root>
 
