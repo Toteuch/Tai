@@ -65,12 +65,25 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
             ttsClient.stop(previousCorrelationId);
         }
 
-        ConversationTurn newTurn = new ConversationTurn(event.correlationId(), event.text(), Instant.now(), true);
+        String normalizedText = normalizeTaiName(event.text());
+
+        ConversationTurn newTurn = new ConversationTurn(event.correlationId(), normalizedText, Instant.now(), true);
         sessionContext.setActiveTurn(newTurn);
 
-        List<LlmMessage> messages = contextAssembler.assemble(sessionContext, event.text(), false);
+        List<LlmMessage> messages = contextAssembler.assemble(sessionContext, normalizedText, false);
         sessionContext.setThinkingState(ThinkingState.GENERATING);
         perfLog.info("LLM generation called | correlationId={}", event.correlationId());
         llmClient.generateReply(sessionContext.getActiveTurn().getCorrelationId(), messages);
+    }
+
+    private String normalizeTaiName(String text) {
+        if (text == null || text.isBlank()) {
+            return text;
+        }
+
+        return text
+            .replace("Ty", "Tai")
+            .replace("Thaï", "Tai")
+            .replace("Thai", "Tai");
     }
 }
