@@ -3,7 +3,6 @@ package com.toteuch.tai.taiorchestrator.transport.debug;
 import com.toteuch.tai.taiorchestrator.core.publisher.TaiEventPublisher;
 import com.toteuch.tai.taiorchestrator.events.EventSource;
 import com.toteuch.tai.taiorchestrator.events.inbound.ui.UiManualTextInputReceivedEvent;
-import com.toteuch.tai.taiorchestrator.services.stt.audio.capture.MicrophoneCaptureService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,14 +16,11 @@ import java.util.UUID;
 public class DebugController {
 
     private final TaiEventPublisher eventPublisher;
-    private final MicrophoneCaptureService microphoneCaptureService;
 
     public DebugController(
-        TaiEventPublisher eventPublisher,
-        MicrophoneCaptureService microphoneCaptureService
+        TaiEventPublisher eventPublisher
     ) {
         this.eventPublisher = eventPublisher;
-        this.microphoneCaptureService = microphoneCaptureService;
     }
 
     @PostMapping("/text")
@@ -36,16 +32,6 @@ public class DebugController {
             EventSource.UI,
             text
         ));
-        return "OK";
-    }
-
-    @PostMapping("/stt/mic/auto-process/start")
-    public String startRecordingAutoProcess(
-        @RequestParam(required = false) String correlationId
-    ) {
-        correlationId = (correlationId == null || correlationId.isBlank())
-            ? "test" : correlationId;
-        microphoneCaptureService.startRecordingAndWaitForSilence(correlationId);
         return "OK";
     }
 }
