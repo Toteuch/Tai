@@ -22,14 +22,7 @@ tai:
         system-file: classpath:prompts/tai-system-prompt.txt
     logs:
         dir: ./tai-orchestrator/logs # for logback-spring.xml
-#### Will be moved in dedicated modules ####
     llm:
         base-url: http://localhost:8092
     tts:
-        piper:
-            enabled: true
-            executable: ./tai-tts/.venv/Scripts/piper.exe
-            model: ./tai-tts/voices/en_GB-alba-medium.onnx
-            config: ./tai-tts/voices/en_GB-alba-medium.onnx.json
-            output-dir: ./tai-tts/output
-            voice-id: en_GB-alba-medium
+        base-url: http://localhost:8093

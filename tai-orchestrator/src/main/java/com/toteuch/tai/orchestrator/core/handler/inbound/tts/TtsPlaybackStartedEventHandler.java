@@ -40,8 +40,17 @@ public class TtsPlaybackStartedEventHandler implements EventHandler<TtsPlaybackS
     public void handle(TtsPlaybackStartedEvent event) {
         perfLog.info("TTS speech started | correlationId={}", event.correlationId());
         SessionContext sessionContext = sessionStore.get();
+
+        if (sessionContext.getActiveTurn() == null) {
+            // TODO : handle that case to send TtsClient.stop()
+            decisionLog.info("{} ignored : no active turn | correlationId={}",
+                this.getClass().getSimpleName(),
+                event.correlationId());
+            return;
+        }
+
         if (!sessionContext.isStillActiveTurn(event.correlationId())) {
-            decisionLog.info("{} ignored | correlationId={} activeTurnCorrelationId={}",
+            decisionLog.info("{} ignored: stalled correlationId | correlationId={} activeTurnCorrelationId={}",
                 this.getClass().getSimpleName(),
                 event.correlationId(),
                 sessionContext.getActiveTurn().getCorrelationId());

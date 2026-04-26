@@ -44,8 +44,15 @@ public class TtsPlaybackCompletedEventHandler implements EventHandler<TtsPlaybac
         );
         SessionContext sessionContext = sessionStore.get();
 
+        if (sessionContext.getActiveTurn() == null) {
+            decisionLog.info("{} ignored : no active turn | correlationId={}",
+                this.getClass().getSimpleName(),
+                event.correlationId());
+            return;
+        }
+
         if (!sessionContext.isStillActiveTurn(event.correlationId())) {
-            decisionLog.info("{} ignored | correlationId={} activeTurnCorrelationId={}",
+            decisionLog.info("{} ignored: stalled correlationId | correlationId={} activeTurnCorrelationId={}",
                 this.getClass().getSimpleName(),
                 event.correlationId(),
                 sessionContext.getActiveTurn().getCorrelationId());

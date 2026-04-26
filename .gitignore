@@ -105,12 +105,11 @@ htmlcov/
 
 # =========================
 
-# TTS models
+# TTS
 
 # =========================
-tai-tts/voices/*
-!tai-tts/voices/README.md
-tai-tts/output/
+**/voices/
+**/output/
 
 # =========================
 

@@ -1,0 +1,41 @@
+server:
+  port: 8093
+
+tai:
+  tts:
+    async:
+      core-pool-size: 1
+      max-pool-size: 1
+      queue-capacity: 10
+
+    orchestrator:
+      base-url: http://localhost:8080
+      connect-timeout-ms: 3000
+      read-timeout-ms: 10000
+      callbacks:
+        playback-started-path: /events/tts/playback-started
+        playback-completed-path: /events/tts/playback-completed
+        playback-failed-path: /events/tts/playback-failed
+
+    piper:
+      executable: ./.venv/Scripts/piper.exe
+      model: ./voices/en_GB-alba-medium.onnx
+      config: ./voices/en_GB-alba-medium.onnx.json
+      output-dir: ./output
+      voice-id: en_GB-alba-medium
+      process-timeout-ms: 60000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /docs
+  api-docs:
+    path: /v3/api-docs
