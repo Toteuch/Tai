@@ -5,70 +5,80 @@
 - JDK 21
 - Maven
 - A working microphone
-- Microphone permission enabled for Java / IntelliJ / terminal
+- `tai-stt-whisper` running on port `8095`
 
 ---
 
-## Run with Maven
+## Run order
 
-From the module root:
+```text
+1. Start tai-stt-whisper
+2. Start tai-stt-listener
+3. Call /debug/mic/capture
+```
+
+---
+
+## Start tai-stt-whisper
+
+From the `tai-stt-whisper` module:
+
+```bash
+source .venv/Scripts/activate
+uvicorn app.main:app --host 127.0.0.1 --port 8095
+```
+
+Check:
+
+```bash
+curl http://localhost:8095/health
+```
+
+---
+
+## Start tai-stt-listener
+
+From the `tai-stt-listener` module:
 
 ```bash
 mvn spring-boot:run
 ```
 
----
-
-## Check health
-
-```bash
-curl http://localhost:8094/actuator/health
-```
-
----
-
-## Test capture + pre-gatekeeper
-
-```bash
-curl -X POST http://localhost:8094/debug/mic/capture
-```
-
-Generated WAV files are written to:
+Swagger:
 
 ```text
-input/
+http://localhost:8094/docs
 ```
 
 ---
 
-## Calibration tips
+## Test full debug pipeline
 
-If `speechStarted` is always false, lower:
-
-```yaml
-tai.stt.capture.silence-threshold
+```bash
+curl -X POST "http://localhost:8094/debug/mic/capture?correlationId=test-1"
 ```
 
-If background noise starts speech too easily, raise:
+Expected flow:
 
-```yaml
-tai.stt.capture.silence-threshold
+```text
+MicCapture
+  → PreFiltering
+  → Whisper if accepted
+  → PostFiltering
+  → JSON result
 ```
 
-If captures stop too late, lower:
+---
+
+## Debug notes
+
+If `preGatekeeperDecision` is not null, Whisper was intentionally skipped.
+
+If `transcription.errorCode = WHISPER_HTTP_ERROR`, verify that `tai-stt-whisper` is running.
+
+If valid short utterances are rejected before Whisper, tune:
 
 ```yaml
-tai.stt.capture.silence-duration-ms
-```
-
-If silence captures take too long, lower:
-
-```yaml
-tai.stt.capture.no-speech-timeout-ms
-```
-
-If claps/noises pass the pre-gatekeeper too often, raise:
-
-```yaml
+tai.stt.gatekeeper.reject-average-energy-threshold
 tai.stt.gatekeeper.min-voiced-ratio
 ```

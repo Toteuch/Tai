@@ -9,6 +9,7 @@ import java.util.List;
 public class SttListenerProperties {
     private Capture capture = new Capture();
     private Gatekeeper gatekeeper = new Gatekeeper();
+    private Whisper whisper = new Whisper();
 
     public Capture getCapture() {
         return capture;
@@ -24,6 +25,14 @@ public class SttListenerProperties {
 
     public void setGatekeeper(Gatekeeper gatekeeper) {
         this.gatekeeper = gatekeeper;
+    }
+
+    public Whisper getWhisper() {
+        return whisper;
+    }
+
+    public void setWhisper(Whisper whisper) {
+        this.whisper = whisper;
     }
 
     public static class Capture {
@@ -200,6 +209,54 @@ public class SttListenerProperties {
 
         public void setMinVoicedRatio(double minVoicedRatio) {
             this.minVoicedRatio = minVoicedRatio;
+        }
+    }
+
+    public static class Whisper {
+        private String baseUrl = "http://localhost:8095";
+        private int connectTimeoutMs = 3000;
+        private int readTimeoutMs = 120000;
+        private String transcribeUploadPath = "/whisper/transcribe-upload";
+        private String transcribeRawPath = "/whisper/transcribe-raw";
+
+        public String getBaseUrl() {
+            return baseUrl;
+        }
+
+        public void setBaseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+        }
+
+        public int getConnectTimeoutMs() {
+            return connectTimeoutMs;
+        }
+
+        public void setConnectTimeoutMs(int connectTimeoutMs) {
+            this.connectTimeoutMs = connectTimeoutMs;
+        }
+
+        public int getReadTimeoutMs() {
+            return readTimeoutMs;
+        }
+
+        public void setReadTimeoutMs(int readTimeoutMs) {
+            this.readTimeoutMs = readTimeoutMs;
+        }
+
+        public String getTranscribeUploadPath() {
+            return transcribeUploadPath;
+        }
+
+        public void setTranscribeUploadPath(String transcribeUploadPath) {
+            this.transcribeUploadPath = transcribeUploadPath;
+        }
+
+        public String getTranscribeRawPath() {
+            return transcribeRawPath;
+        }
+
+        public void setTranscribeRawPath(String transcribeRawPath) {
+            this.transcribeRawPath = transcribeRawPath;
         }
     }
 }

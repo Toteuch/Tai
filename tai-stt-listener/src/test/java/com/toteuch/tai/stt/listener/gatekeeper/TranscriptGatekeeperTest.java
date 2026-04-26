@@ -16,18 +16,12 @@ class TranscriptGatekeeperTest {
     @BeforeEach
     void setUp() {
         SttListenerProperties properties = new SttListenerProperties();
-
-        properties.getGatekeeper().setRejectAverageEnergyThreshold(15);
-        properties.getGatekeeper().setMinVoicedRatio(0.10);
-
         gatekeeper = new TranscriptGatekeeper(properties);
     }
 
     @Test
     void should_reject_when_no_speech_detected() {
-        GatekeeperDecision decision = gatekeeper.preEvaluateSegment(
-            segment(false, false, 3000, 1, 1, 0)
-        );
+        GatekeeperDecision decision = gatekeeper.preEvaluateSegment(segment(false, false, 3000, 1, 1, 0));
 
         assertThat(decision.accepted()).isFalse();
         assertThat(decision.reason()).isEqualTo("NO_SPEECH_DETECTED");
@@ -35,10 +29,8 @@ class TranscriptGatekeeperTest {
     }
 
     @Test
-    void should_reject_when_audio_peak_is_too_weak() {
-        GatekeeperDecision decision = gatekeeper.preEvaluateSegment(
-            segment(true, true, 3000, 10, 10, 0.5)
-        );
+    void should_reject_when_audio_is_too_weak() {
+        GatekeeperDecision decision = gatekeeper.preEvaluateSegment(segment(true, true, 3000, 10, 10, 0.5));
 
         assertThat(decision.accepted()).isFalse();
         assertThat(decision.reason()).isEqualTo("AUDIO_TOO_WEAK");
@@ -47,9 +39,7 @@ class TranscriptGatekeeperTest {
 
     @Test
     void should_reject_when_not_enough_voiced_audio() {
-        GatekeeperDecision decision = gatekeeper.preEvaluateSegment(
-            segment(true, true, 3000, 80, 300, 0.05)
-        );
+        GatekeeperDecision decision = gatekeeper.preEvaluateSegment(segment(true, true, 3000, 80, 300, 0.05));
 
         assertThat(decision.accepted()).isFalse();
         assertThat(decision.reason()).isEqualTo("NOT_ENOUGH_VOICED_AUDIO");
@@ -58,9 +48,7 @@ class TranscriptGatekeeperTest {
 
     @Test
     void should_not_reject_short_audible_utterance_before_transcription() {
-        GatekeeperDecision decision = gatekeeper.preEvaluateSegment(
-            segment(true, true, 2048, 21.57, 170.60, 0.125)
-        );
+        GatekeeperDecision decision = gatekeeper.preEvaluateSegment(segment(true, true, 2048, 21.57, 170.60, 0.125));
 
         assertThat(decision).isNull();
     }
