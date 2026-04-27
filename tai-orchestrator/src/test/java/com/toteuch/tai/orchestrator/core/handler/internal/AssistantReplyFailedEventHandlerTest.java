@@ -29,7 +29,8 @@ class AssistantReplyFailedEventHandlerTest extends AbstractHandlerTest {
                         "corr-1",
                         EventSource.LLM_SERVICE,
                         "LLM_ERROR",
-                        "LLM failed"));
+                        "LLM failed",
+                        0L));
 
         assertThat(context.getThinkingState()).isEqualTo(ThinkingState.IDLE);
 

@@ -19,7 +19,8 @@ public record AssistantReplyAcceptedEvent(
         Instant occurredAt,
         String correlationId,
         EventSource source,
-        String replyText)
+        String replyText,
+        Long llmGenerationMs)
         implements TaiEvent {
     @Override
     public EventType type() {

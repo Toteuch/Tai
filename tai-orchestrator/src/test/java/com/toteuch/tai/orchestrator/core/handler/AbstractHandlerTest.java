@@ -46,7 +46,8 @@ public abstract class AbstractHandlerTest {
                         EventSource.LLM_SERVICE,
                         MODEL_NAME,
                         "LLM_ERROR",
-                        "LLM failed"));
+                        "LLM failed",
+                        0L));
     }
 
     protected static class CapturingTaiEventPublisher implements TaiEventPublisher {

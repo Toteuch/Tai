@@ -7,8 +7,6 @@ import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechFailedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
-import java.time.Instant;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,7 +32,7 @@ public class TtsPlaybackFailedEventHandler implements EventHandler<TtsPlaybackFa
 
     @Override
     public void handle(TtsPlaybackFailedEvent event) {
-        perfLog.info("TTS speech failed | correlationId={}", event.correlationId());
+        perfLog.debug("TTS speech failed | correlationId={}", event.correlationId());
         SessionContext sessionContext = sessionStore.get();
 
         if (sessionContext.getActiveTurn() == null) {
@@ -56,11 +54,12 @@ public class TtsPlaybackFailedEventHandler implements EventHandler<TtsPlaybackFa
 
         eventPublisher.publish(
                 new AssistantSpeechFailedEvent(
-                        UUID.randomUUID().toString(),
-                        Instant.now(),
+                        event.eventId(),
+                        event.occurredAt(),
                         event.correlationId(),
                         event.source(),
                         event.errorCode(),
-                        event.errorMessage()));
+                        event.errorMessage(),
+                        event.speechDurationMs()));
     }
 }

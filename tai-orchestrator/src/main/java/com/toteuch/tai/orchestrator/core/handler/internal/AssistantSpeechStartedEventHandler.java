@@ -29,6 +29,12 @@ public class AssistantSpeechStartedEventHandler
     @Override
     public void handle(AssistantSpeechStartedEvent event) {
         SessionContext sessionContext = sessionStore.get();
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setTtsSpeechStartAt(event.occurredAt());
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setTtsSynthesisMs(event.synthesisDurationMs());
 
         sessionContext.setSpeakingState(SpeakingState.SPEAKING);
         sessionContext.getActiveTurn().setAssistantPlaybackStarted(true);

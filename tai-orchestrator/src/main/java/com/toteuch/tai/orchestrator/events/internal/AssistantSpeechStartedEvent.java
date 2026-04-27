@@ -6,7 +6,11 @@ import com.toteuch.tai.orchestrator.events.TaiEvent;
 import java.time.Instant;
 
 public record AssistantSpeechStartedEvent(
-        String eventId, Instant occurredAt, String correlationId, EventSource source)
+        String eventId,
+        Instant occurredAt,
+        String correlationId,
+        EventSource source,
+        Long synthesisDurationMs)
         implements TaiEvent {
     @Override
     public EventType type() {

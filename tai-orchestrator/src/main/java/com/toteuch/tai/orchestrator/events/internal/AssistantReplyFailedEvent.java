@@ -11,7 +11,8 @@ public record AssistantReplyFailedEvent(
         String correlationId,
         EventSource source,
         String errorCode,
-        String errorMessage)
+        String errorMessage,
+        Long llmGenerationMs)
         implements TaiEvent {
     @Override
     public EventType type() {

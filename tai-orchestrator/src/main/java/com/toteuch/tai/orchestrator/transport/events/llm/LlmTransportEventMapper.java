@@ -30,6 +30,7 @@ public class LlmTransportEventMapper extends AbstractTransportEventMapper {
                 mapEventSource(req.getSource()),
                 req.getModelName(),
                 req.getErrorCode(),
-                req.getErrorMessage());
+                req.getErrorMessage(),
+                req.getGenerationDurationMs());
     }
 }

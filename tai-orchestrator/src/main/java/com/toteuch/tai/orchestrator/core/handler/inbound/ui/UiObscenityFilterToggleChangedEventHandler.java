@@ -20,7 +20,7 @@ public class UiObscenityFilterToggleChangedEventHandler
 
     @Override
     public void handle(UiObscenityFilterToggleChangedEvent event) {
-        perfLog.info(
+        perfLog.debug(
                 "Obscenity filter toggle change received | correlationId={}",
                 event.correlationId());
         errorLog.error("{} not supported yet", this.getClass().getSimpleName());

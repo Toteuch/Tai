@@ -45,7 +45,7 @@ tai:
             transcript-noise-path: /events/stt/transcript-noise
             speech-started-path: /events/stt/speech-started
     listener:
-        auto-start: false
+        auto-start: true
         continue-on-error: true
         delete-audio-after-processing: true
         publish-final-callbacks: true

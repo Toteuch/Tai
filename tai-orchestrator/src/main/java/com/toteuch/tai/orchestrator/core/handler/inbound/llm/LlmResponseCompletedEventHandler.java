@@ -7,8 +7,6 @@ import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent
 import com.toteuch.tai.orchestrator.events.internal.AssistantReplyAcceptedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
-import java.time.Instant;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,7 +32,7 @@ public class LlmResponseCompletedEventHandler implements EventHandler<LlmRespons
 
     @Override
     public void handle(LlmResponseCompletedEvent event) {
-        perfLog.info(
+        perfLog.debug(
                 "LLM generation completed | correlationId={} modelName={} generationDurationMs={} inputTokens={} outputTokens={}",
                 event.correlationId(),
                 event.modelName(),
@@ -57,10 +55,11 @@ public class LlmResponseCompletedEventHandler implements EventHandler<LlmRespons
 
         eventPublisher.publish(
                 new AssistantReplyAcceptedEvent(
-                        UUID.randomUUID().toString(),
-                        Instant.now(),
+                        event.eventId(),
+                        event.occurredAt(),
                         event.correlationId(),
                         event.source(),
-                        event.responseText()));
+                        event.responseText(),
+                        event.generationDurationMs()));
     }
 }

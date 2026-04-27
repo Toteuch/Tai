@@ -37,6 +37,7 @@ public class TtsPlaybackService {
         Instant start = Instant.now();
         Path wavFile = piperSynthesisService.synthesize(correlationId, text);
         long ms = Duration.between(start, Instant.now()).toMillis();
+        Instant playbackStartedAt = null;
         try {
             if (!state.isActive(correlationId)) {
                 log.info("TTS speech superseded before playback | correlationId={}", correlationId);
@@ -45,7 +46,7 @@ public class TtsPlaybackService {
 
             eventClient.sendPlaybackStarted(correlationId, text, ms);
 
-            Instant playbackStartedAt = Instant.now();
+            playbackStartedAt = Instant.now();
             playbackService.playBlocking(wavFile);
             long speechDurationMs = Duration.between(playbackStartedAt, Instant.now()).toMillis();
 
@@ -59,7 +60,14 @@ public class TtsPlaybackService {
             eventClient.sendPlaybackCompleted(correlationId, text, speechDurationMs);
         } catch (Exception e) {
             log.warn("TTS playback failed | correlationId={}", correlationId, e);
-            eventClient.sendPlaybackFailed(correlationId, "PIPER_TTS_ERROR", e.getMessage());
+            long speechDurationMs;
+            if (playbackStartedAt != null) {
+                speechDurationMs = Duration.between(playbackStartedAt, Instant.now()).toMillis();
+            } else {
+                speechDurationMs = 0;
+            }
+            eventClient.sendPlaybackFailed(
+                    correlationId, "PIPER_TTS_ERROR", e.getMessage(), speechDurationMs);
         } finally {
             state.clearIfActive(correlationId);
             deleteGeneratedWav(correlationId, wavFile);

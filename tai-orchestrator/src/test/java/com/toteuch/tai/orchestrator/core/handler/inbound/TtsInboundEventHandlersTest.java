@@ -131,7 +131,8 @@ class TtsInboundEventHandlersTest extends AbstractHandlerTest {
                         "corr-3",
                         EventSource.TTS_SERVICE,
                         "TTS_ERROR",
-                        "TTS failed"));
+                        "TTS failed",
+                        0L));
 
         AssistantSpeechFailedEvent published =
                 eventPublisher.assertSingleEventPublished(AssistantSpeechFailedEvent.class);
@@ -157,7 +158,8 @@ class TtsInboundEventHandlersTest extends AbstractHandlerTest {
                         "stale-corr",
                         EventSource.TTS_SERVICE,
                         "TTS_ERROR",
-                        "TTS failed"));
+                        "TTS failed",
+                        0L));
 
         eventPublisher.assertNoEventPublished();
     }

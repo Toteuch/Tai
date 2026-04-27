@@ -3,7 +3,6 @@ package com.toteuch.tai.llm.transport.dto;
 public class LlmResponseCompletedEventRequest extends AbstractTransportEventRequest {
     private String responseText;
     private Integer inputTokens, outputTokens;
-    private Long generationDurationMs;
 
     public String getResponseText() {
         return responseText;
@@ -27,13 +26,5 @@ public class LlmResponseCompletedEventRequest extends AbstractTransportEventRequ
 
     public void setOutputTokens(Integer v) {
         outputTokens = v;
-    }
-
-    public Long getGenerationDurationMs() {
-        return generationDurationMs;
-    }
-
-    public void setGenerationDurationMs(Long v) {
-        generationDurationMs = v;
     }
 }

@@ -5,8 +5,6 @@ import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptAcceptedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserUtteranceAcceptedEvent;
-import java.time.Instant;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -28,17 +26,18 @@ public class SttTranscriptAcceptedEventHandler implements EventHandler<SttTransc
 
     @Override
     public void handle(SttTranscriptAcceptedEvent event) {
-        perfLog.info(
+        perfLog.debug(
                 "STT utterance completed received | correlationId={} transcriptionDurationMs={} durationMs={}",
                 event.correlationId(),
                 event.transcriptionDurationMs(),
                 event.durationMs());
         eventPublisher.publish(
                 new UserUtteranceAcceptedEvent(
-                        UUID.randomUUID().toString(),
-                        Instant.now(),
+                        event.eventId(),
+                        event.occurredAt(),
                         event.correlationId(),
                         event.source(),
-                        event.text()));
+                        event.text(),
+                        event.transcriptionDurationMs()));
     }
 }

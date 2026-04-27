@@ -43,11 +43,13 @@ public class OrchestratorTtsEventClient {
         post(properties.getOrchestrator().getCallbacks().getPlaybackCompletedPath(), request);
     }
 
-    public void sendPlaybackFailed(String correlationId, String errorCode, String errorMessage) {
+    public void sendPlaybackFailed(
+            String correlationId, String errorCode, String errorMessage, long speechDurationMs) {
         TtsPlaybackFailedEventRequest request = new TtsPlaybackFailedEventRequest();
         fillCommon(request, correlationId);
         request.setErrorCode(errorCode);
         request.setErrorMessage(errorMessage);
+        request.setSpeechDurationMs(speechDurationMs);
         post(properties.getOrchestrator().getCallbacks().getPlaybackFailedPath(), request);
     }
 

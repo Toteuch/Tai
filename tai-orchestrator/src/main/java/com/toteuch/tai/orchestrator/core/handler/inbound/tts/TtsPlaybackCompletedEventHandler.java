@@ -7,8 +7,6 @@ import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackCompletedEvent
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechCompletedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
-import java.time.Instant;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,7 +32,7 @@ public class TtsPlaybackCompletedEventHandler implements EventHandler<TtsPlaybac
 
     @Override
     public void handle(TtsPlaybackCompletedEvent event) {
-        perfLog.info(
+        perfLog.debug(
                 "TTS speech completed | correlationId={} speechDurationMs={}",
                 event.correlationId(),
                 event.speechDurationMs());
@@ -59,9 +57,10 @@ public class TtsPlaybackCompletedEventHandler implements EventHandler<TtsPlaybac
 
         eventPublisher.publish(
                 new AssistantSpeechCompletedEvent(
-                        UUID.randomUUID().toString(),
-                        Instant.now(),
+                        event.eventId(),
+                        event.occurredAt(),
                         event.correlationId(),
-                        event.source()));
+                        event.source(),
+                        event.speechDurationMs()));
     }
 }

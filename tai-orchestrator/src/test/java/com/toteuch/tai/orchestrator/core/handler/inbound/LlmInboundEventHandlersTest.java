@@ -90,7 +90,8 @@ class LlmInboundEventHandlersTest extends AbstractHandlerTest {
                         EventSource.LLM_SERVICE,
                         MODEL_NAME,
                         "LLM_ERROR",
-                        "LLM failed"));
+                        "LLM failed",
+                        0L));
 
         AssistantReplyFailedEvent published =
                 eventPublisher.assertSingleEventPublished(AssistantReplyFailedEvent.class);
@@ -117,7 +118,8 @@ class LlmInboundEventHandlersTest extends AbstractHandlerTest {
                         EventSource.LLM_SERVICE,
                         MODEL_NAME,
                         "LLM_ERROR",
-                        "LLM failed"));
+                        "LLM failed",
+                        0L));
 
         eventPublisher.assertNoEventPublished();
     }

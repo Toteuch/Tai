@@ -7,8 +7,6 @@ import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantReplyFailedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
-import java.time.Instant;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,7 +32,7 @@ public class LlmResponseFailedEventHandler implements EventHandler<LlmResponseFa
 
     @Override
     public void handle(LlmResponseFailedEvent event) {
-        perfLog.info(
+        perfLog.debug(
                 "LLM generation completed | correlationId={} modelName={}",
                 event.correlationId(),
                 event.modelName());
@@ -51,11 +49,12 @@ public class LlmResponseFailedEventHandler implements EventHandler<LlmResponseFa
 
         eventPublisher.publish(
                 new AssistantReplyFailedEvent(
-                        UUID.randomUUID().toString(),
-                        Instant.now(),
+                        event.eventId(),
+                        event.occurredAt(),
                         event.correlationId(),
                         event.source(),
                         event.errorCode(),
-                        event.errorMessage()));
+                        event.errorMessage(),
+                        event.generationDurationMs()));
     }
 }

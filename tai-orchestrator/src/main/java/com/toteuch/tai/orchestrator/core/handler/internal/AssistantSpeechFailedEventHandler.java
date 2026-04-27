@@ -38,6 +38,10 @@ public class AssistantSpeechFailedEventHandler implements EventHandler<Assistant
     @Override
     public void handle(AssistantSpeechFailedEvent event) {
         SessionContext sessionContext = sessionStore.get();
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setTtsSpeechDurationMs(event.ttsSpeechDurationMs());
+
         errorLog.error(
                 "TTS speech failed | correlationId={} errorCode={} errorMessage={}",
                 event.correlationId(),

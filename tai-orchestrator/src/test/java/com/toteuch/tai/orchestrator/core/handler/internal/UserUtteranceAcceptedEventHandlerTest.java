@@ -45,7 +45,8 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-1",
                         EventSource.STT_SERVICE,
-                        "Hello"));
+                        "Hello",
+                        0L));
 
         assertThat(context.getActiveTurn()).isNotNull();
         assertThat(context.getActiveTurn().getCorrelationId()).isEqualTo("corr-1");
@@ -83,7 +84,8 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-1",
                         EventSource.STT_SERVICE,
-                        "Hello"));
+                        "Hello",
+                        0L));
 
         verify(llmClient).generateReply(eq("corr-1"), anyList());
         publishLlmFailedEvent("corr-1");

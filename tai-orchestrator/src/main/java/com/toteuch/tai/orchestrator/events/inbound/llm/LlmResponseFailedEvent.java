@@ -22,7 +22,8 @@ public record LlmResponseFailedEvent(
         EventSource source,
         String modelName,
         String errorCode,
-        String errorMessage)
+        String errorMessage,
+        Long generationDurationMs)
         implements TaiEvent {
     @Override
     public EventType type() {

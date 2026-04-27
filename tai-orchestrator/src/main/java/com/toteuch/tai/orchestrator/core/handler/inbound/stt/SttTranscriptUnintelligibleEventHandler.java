@@ -5,8 +5,6 @@ import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptUnintelligibleEvent;
 import com.toteuch.tai.orchestrator.events.internal.ClarificationRequestedEvent;
-import java.time.Instant;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -29,15 +27,16 @@ public class SttTranscriptUnintelligibleEventHandler
 
     @Override
     public void handle(SttTranscriptUnintelligibleEvent event) {
-        perfLog.info(
+        perfLog.debug(
                 "STT unintelligible speech received | correlationId={} transcriptionDurationMs={}",
                 event.correlationId(),
                 event.transcriptionDurationMs());
         eventPublisher.publish(
                 new ClarificationRequestedEvent(
-                        UUID.randomUUID().toString(),
-                        Instant.now(),
+                        event.eventId(),
+                        event.occurredAt(),
                         event.correlationId(),
-                        event.source()));
+                        event.source(),
+                        event.transcriptionDurationMs()));
     }
 }

@@ -9,6 +9,7 @@ import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
+import com.toteuch.tai.orchestrator.session.TurnMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -38,6 +39,9 @@ public class UserSpeechStartedEventHandler implements EventHandler<UserSpeechSta
         ConversationTurn activeTurn = sessionStore.get().getActiveTurn();
         String newCorrelationId = event.correlationId();
 
+        TurnMetrics turnMetrics = sessionContext.getTurnMetrics(newCorrelationId);
+        turnMetrics.setUserSpeechStartAt(event.occurredAt());
+
         if (activeTurn != null && !sessionContext.isStillActiveTurn(newCorrelationId)) {
             if (sessionContext.isTtsEnabled()
                     && (sessionContext.getSpeakingState() == SpeakingState.SPEAKING
@@ -48,7 +52,7 @@ public class UserSpeechStartedEventHandler implements EventHandler<UserSpeechSta
                         activeTurn.getCorrelationId());
                 activeTurn.setAssistantPlaybackInterrupted(true);
                 sessionContext.setSpeakingState(SpeakingState.SILENT);
-                perfLog.info(
+                perfLog.debug(
                         "TTS stop speech called | correlationId={} activeTurnCorrelationId={}",
                         event.correlationId(),
                         activeTurn.getCorrelationId());
@@ -62,6 +66,7 @@ public class UserSpeechStartedEventHandler implements EventHandler<UserSpeechSta
                 activeTurn.setSupersededBeforeAssistantReply(true);
                 activeTurn.setSupersededByCorrelationId(newCorrelationId);
             }
+            sessionContext.getTurnMetrics(activeTurn.getCorrelationId()).log();
             sessionContext.addTurn(sessionContext.getActiveTurn());
             sessionContext.setActiveTurn(null);
         }

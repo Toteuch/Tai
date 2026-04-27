@@ -57,7 +57,8 @@ abstract class AbstractScenarioTest {
                         EventSource.LLM_SERVICE,
                         MODEL_NAME,
                         "LLM_ERROR",
-                        "LLM failed"));
+                        "LLM failed",
+                        0L));
     }
 
     protected void publishSttAccepted(String correlationId, String text) {
@@ -138,7 +139,8 @@ abstract class AbstractScenarioTest {
                         correlationId,
                         EventSource.TTS_SERVICE,
                         "PIPER_TTS_ERROR",
-                        "Piper TTS failed"));
+                        "Piper TTS failed",
+                        0L));
     }
 
     protected void publishSttSpeechStarted(String correlationId) {

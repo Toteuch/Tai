@@ -38,7 +38,8 @@ class AssistantReplyAcceptedEventHandlerTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-1",
                         EventSource.LLM_SERVICE,
-                        "Hello   Tai!!!"));
+                        "Hello   Tai!!!",
+                        200L));
 
         assertThat(context.getActiveTurn().getAssistantMessage()).isEqualTo("Hello Tai!");
         assertThat(context.getActiveTurn().isAssistantReplyGenerated()).isTrue();
@@ -67,7 +68,8 @@ class AssistantReplyAcceptedEventHandlerTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-1",
                         EventSource.LLM_SERVICE,
-                        "Hi"));
+                        "Hi",
+                        200L));
 
         verifyNoInteractions(ttsClient);
 

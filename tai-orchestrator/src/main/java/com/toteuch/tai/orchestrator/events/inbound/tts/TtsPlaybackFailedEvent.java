@@ -21,7 +21,8 @@ public record TtsPlaybackFailedEvent(
         String correlationId,
         EventSource source,
         String errorCode,
-        String errorMessage)
+        String errorMessage,
+        Long speechDurationMs)
         implements TaiEvent {
     @Override
     public EventType type() {

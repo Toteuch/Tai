@@ -43,6 +43,9 @@ public class ConversationTurnCompletedEventHandler
                     "SpeakingState should be SILENT | speakingState={}",
                     sessionContext.getSpeakingState());
         }
+
+        sessionContext.logMetrics(event.correlationId());
+
         ConversationTurn activeTurn = sessionContext.getActiveTurn();
 
         if (activeTurn != null && activeTurn.isPersistInHistory()) {

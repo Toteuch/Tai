@@ -11,7 +11,8 @@ public record AssistantSpeechFailedEvent(
         String correlationId,
         EventSource source,
         String errorCode,
-        String errorMessage)
+        String errorMessage,
+        Long ttsSpeechDurationMs)
         implements TaiEvent {
     @Override
     public EventType type() {

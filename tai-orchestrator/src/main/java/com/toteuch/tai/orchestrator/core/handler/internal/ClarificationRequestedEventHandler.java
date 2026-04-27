@@ -37,6 +37,12 @@ public class ClarificationRequestedEventHandler
     public void handle(ClarificationRequestedEvent event) {
         SessionContext sessionContext = sessionStore.get();
 
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setUserUtteranceAcceptedAt(event.occurredAt());
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setTranscriptDurationMs(event.transcriptDurationMs());
         // This turn mustn't be added in SessionContext.turns, to not be added in the conversation
         // history
         ConversationTurn newTurn =
@@ -58,7 +64,7 @@ public class ClarificationRequestedEventHandler
                         // response, fails otherwise
                         new LlmMessage("user", "..."));
         sessionContext.setThinkingState(ThinkingState.GENERATING);
-        perfLog.info("LLM generation called | correlationId={}", event.correlationId());
+        perfLog.debug("LLM generation called | correlationId={}", event.correlationId());
         llmClient.generateReply(sessionContext.getActiveTurn().getCorrelationId(), messages);
     }
 }

@@ -29,7 +29,8 @@ class AssistantSpeechFailedEventHandlerTest extends AbstractHandlerTest {
                         "corr-1",
                         EventSource.TTS_SERVICE,
                         "TTS_ERROR",
-                        "TTS failed"));
+                        "TTS failed",
+                        0L));
 
         assertThat(context.getSpeakingState()).isEqualTo(SpeakingState.SILENT);
 

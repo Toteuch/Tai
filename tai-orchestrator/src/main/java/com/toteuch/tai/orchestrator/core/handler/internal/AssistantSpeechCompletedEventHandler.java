@@ -37,6 +37,9 @@ public class AssistantSpeechCompletedEventHandler
     @Override
     public void handle(AssistantSpeechCompletedEvent event) {
         SessionContext sessionContext = sessionStore.get();
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setTtsSpeechDurationMs(event.speechDurationMs());
 
         sessionContext.setSpeakingState(SpeakingState.SILENT);
         sessionContext.getActiveTurn().setAssistantPlaybackCompleted(true);

@@ -15,7 +15,12 @@ import java.time.Instant;
  * @param text the accepted user utterance text
  */
 public record UserUtteranceAcceptedEvent(
-        String eventId, Instant occurredAt, String correlationId, EventSource source, String text)
+        String eventId,
+        Instant occurredAt,
+        String correlationId,
+        EventSource source,
+        String text,
+        Long transcriptDurationMs)
         implements TaiEvent {
     @Override
     public EventType type() {

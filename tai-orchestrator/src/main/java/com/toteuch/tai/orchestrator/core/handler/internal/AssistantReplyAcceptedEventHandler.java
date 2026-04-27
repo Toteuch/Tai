@@ -44,6 +44,10 @@ public class AssistantReplyAcceptedEventHandler
     public void handle(AssistantReplyAcceptedEvent event) {
         SessionContext sessionContext = sessionStore.get();
 
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setLlmGenerationMs(event.llmGenerationMs());
+
         String sanitizedResponseText = sanitizeText(event.replyText());
         traceLog.debug("Raw assistant reply sanitized");
         traceLog.debug("    rawMessage={}", event.replyText());
@@ -61,7 +65,7 @@ public class AssistantReplyAcceptedEventHandler
         if (sessionContext.isTtsEnabled()) {
             sessionContext.setSpeakingState(SpeakingState.PREPARING);
 
-            perfLog.info("TTS speech called | correlationId={}", event.correlationId());
+            perfLog.debug("TTS speech called | correlationId={}", event.correlationId());
             ttsClient.speak(event.correlationId(), sanitizedResponseText);
         } else {
             eventPublisher.publish(

@@ -44,6 +44,10 @@ public class AssistantReplyFailedEventHandler implements EventHandler<AssistantR
                 event.errorCode(),
                 event.errorMessage());
 
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setLlmGenerationMs(event.llmGenerationMs());
+
         sessionContext.setThinkingState(ThinkingState.IDLE);
 
         eventPublisher.publish(

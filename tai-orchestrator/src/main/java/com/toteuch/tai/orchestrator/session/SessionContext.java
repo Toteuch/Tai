@@ -3,7 +3,9 @@ package com.toteuch.tai.orchestrator.session;
 import com.toteuch.tai.orchestrator.services.llm.LlmMessage;
 import com.toteuch.tai.orchestrator.support.ContextAssembler;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +19,7 @@ public class SessionContext {
     private boolean ttsEnabled = true;
     private boolean obscenityFilterEnabled = false;
     private ConversationTurn activeTurn;
+    private final Map<String, TurnMetrics> metricsByCorrelationId = new HashMap<>();
 
     public List<ConversationTurn> getTurns() {
         return turns;
@@ -82,6 +85,15 @@ public class SessionContext {
     public void setTtsEnabled(boolean ttsEnabled) {
         contextLog.info("TtsEnabled changed to {}", ttsEnabled);
         this.ttsEnabled = ttsEnabled;
+    }
+
+    public TurnMetrics getTurnMetrics(String correlationId) {
+        return metricsByCorrelationId.computeIfAbsent(correlationId, TurnMetrics::new);
+    }
+
+    public void logMetrics(String correlationId) {
+        getTurnMetrics(correlationId).log();
+        metricsByCorrelationId.remove(correlationId);
     }
 
     public boolean isObscenityFilterEnabled() {

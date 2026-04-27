@@ -37,6 +37,7 @@ public class TtsTransportEventMapper extends AbstractTransportEventMapper {
                 safeCorrelation(req.getCorrelationId()),
                 mapEventSource(req.getSource()),
                 req.getErrorCode(),
-                req.getErrorMessage());
+                req.getErrorMessage(),
+                req.getSpeechDurationMs());
     }
 }

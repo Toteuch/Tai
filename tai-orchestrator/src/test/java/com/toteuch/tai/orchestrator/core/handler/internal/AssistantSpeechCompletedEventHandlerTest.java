@@ -31,7 +31,8 @@ class AssistantSpeechCompletedEventHandlerTest extends AbstractHandlerTest {
                         UUID.randomUUID().toString(),
                         Instant.now(),
                         "corr-1",
-                        EventSource.TTS_SERVICE));
+                        EventSource.TTS_SERVICE,
+                        0L));
 
         assertThat(context.getSpeakingState()).isEqualTo(SpeakingState.SILENT);
         assertThat(turn.isAssistantPlaybackCompleted()).isTrue();

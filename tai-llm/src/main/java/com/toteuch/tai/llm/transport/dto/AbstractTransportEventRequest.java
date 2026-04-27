@@ -8,6 +8,7 @@ public abstract class AbstractTransportEventRequest {
     private TransportEventSource source;
     private String correlationId;
     private String modelName;
+    private Long generationDurationMs;
 
     public String getEventId() {
         return eventId;
@@ -47,5 +48,13 @@ public abstract class AbstractTransportEventRequest {
 
     public void setModelName(String modelName) {
         this.modelName = modelName;
+    }
+
+    public Long getGenerationDurationMs() {
+        return generationDurationMs;
+    }
+
+    public void setGenerationDurationMs(Long generationDurationMs) {
+        this.generationDurationMs = generationDurationMs;
     }
 }

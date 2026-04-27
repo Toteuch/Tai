@@ -21,7 +21,7 @@ tai:
       executable: ./.venv/Scripts/piper.exe
       model: ./voices/en_GB-alba-medium.onnx
       config: ./voices/en_GB-alba-medium.onnx.json
-      output-dir: ./output
+      output-dir: ./tai-tts-piper/output
       voice-id: en_GB-alba-medium
       process-timeout-ms: 60000
 

@@ -41,6 +41,13 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
 
         SessionContext sessionContext = sessionStore.get();
 
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setUserUtteranceAcceptedAt(event.occurredAt());
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setTranscriptDurationMs(event.transcriptDurationMs());
+
         String normalizedText = normalizeTaiName(event.text());
 
         ConversationTurn newTurn =
@@ -50,7 +57,7 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
         List<LlmMessage> messages =
                 contextAssembler.assemble(sessionContext, normalizedText, false);
         sessionContext.setThinkingState(ThinkingState.GENERATING);
-        perfLog.info("LLM generation called | correlationId={}", event.correlationId());
+        perfLog.debug("LLM generation called | correlationId={}", event.correlationId());
         llmClient.generateReply(sessionContext.getActiveTurn().getCorrelationId(), messages);
     }
 
