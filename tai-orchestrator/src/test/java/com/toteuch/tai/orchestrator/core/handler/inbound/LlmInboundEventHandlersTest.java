@@ -88,6 +88,7 @@ class LlmInboundEventHandlersTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-2",
                         EventSource.LLM_SERVICE,
+                        MODEL_NAME,
                         "LLM_ERROR",
                         "LLM failed"));
 
@@ -114,6 +115,7 @@ class LlmInboundEventHandlersTest extends AbstractHandlerTest {
                         Instant.now(),
                         "stale-corr",
                         EventSource.LLM_SERVICE,
+                        MODEL_NAME,
                         "LLM_ERROR",
                         "LLM failed"));
 

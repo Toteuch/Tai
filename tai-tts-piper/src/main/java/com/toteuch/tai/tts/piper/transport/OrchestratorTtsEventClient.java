@@ -1,7 +1,11 @@
 package com.toteuch.tai.tts.piper.transport;
 
 import com.toteuch.tai.tts.piper.config.TtsPiperProperties;
-import com.toteuch.tai.tts.piper.transport.dto.*;
+import com.toteuch.tai.tts.piper.transport.dto.AbstractTransportEventRequest;
+import com.toteuch.tai.tts.piper.transport.dto.TransportEventSource;
+import com.toteuch.tai.tts.piper.transport.dto.TtsPlaybackCompletedEventRequest;
+import com.toteuch.tai.tts.piper.transport.dto.TtsPlaybackFailedEventRequest;
+import com.toteuch.tai.tts.piper.transport.dto.TtsPlaybackStartedEventRequest;
 import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -22,11 +26,12 @@ public class OrchestratorTtsEventClient {
         this.properties = properties;
     }
 
-    public void sendPlaybackStarted(String correlationId, String text) {
+    public void sendPlaybackStarted(String correlationId, String text, long ms) {
         TtsPlaybackStartedEventRequest request = new TtsPlaybackStartedEventRequest();
         fillCommon(request, correlationId);
         request.setText(text);
         request.setVoiceId(properties.getPiper().getVoiceId());
+        request.setSynthesisDurationMs(ms);
         post(properties.getOrchestrator().getCallbacks().getPlaybackStartedPath(), request);
     }
 

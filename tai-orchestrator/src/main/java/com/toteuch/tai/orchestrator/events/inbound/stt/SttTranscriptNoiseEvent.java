@@ -13,7 +13,8 @@ public record SttTranscriptNoiseEvent(
         Long durationMs,
         Double averageEnergy,
         String reason,
-        Integer suspicionScore)
+        Integer suspicionScore,
+        Long transcriptionDurationMs)
         implements TaiEvent {
     @Override
     public EventType type() {

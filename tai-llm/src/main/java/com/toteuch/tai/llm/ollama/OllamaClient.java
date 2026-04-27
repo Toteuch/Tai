@@ -2,12 +2,17 @@ package com.toteuch.tai.llm.ollama;
 
 import com.toteuch.tai.llm.api.dto.LlmMessage;
 import com.toteuch.tai.llm.config.LlmProperties;
-import com.toteuch.tai.llm.ollama.dto.*;
-import java.time.*;
+import com.toteuch.tai.llm.ollama.dto.OllamaChatRequest;
+import com.toteuch.tai.llm.ollama.dto.OllamaChatResponse;
+import com.toteuch.tai.llm.ollama.dto.OllamaMessage;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.*;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 @Component
 public class OllamaClient {
@@ -40,11 +45,15 @@ public class OllamaClient {
             long ms = Duration.between(start, Instant.now()).toMillis();
             if (res == null)
                 return OllamaGenerationResult.failure(
-                        "OLLAMA_EMPTY_RESPONSE", "Ollama returned an empty response.", ms);
+                        props.getOllama().getModel(),
+                        "OLLAMA_EMPTY_RESPONSE",
+                        "Ollama returned an empty response.",
+                        ms);
             if (res.getMessage() == null
                     || res.getMessage().content() == null
                     || res.getMessage().content().isBlank())
                 return OllamaGenerationResult.failure(
+                        props.getOllama().getModel(),
                         "OLLAMA_EMPTY_MESSAGE",
                         "Ollama returned no assistant message content.",
                         ms);
@@ -57,11 +66,13 @@ public class OllamaClient {
         } catch (RestClientException e) {
             long ms = Duration.between(start, Instant.now()).toMillis();
             log.warn("Ollama call failed", e);
-            return OllamaGenerationResult.failure("OLLAMA_HTTP_ERROR", e.getMessage(), ms);
+            return OllamaGenerationResult.failure(
+                    props.getOllama().getModel(), "OLLAMA_HTTP_ERROR", e.getMessage(), ms);
         } catch (Exception e) {
             long ms = Duration.between(start, Instant.now()).toMillis();
             log.warn("Ollama generation failed", e);
-            return OllamaGenerationResult.failure("LLM_INTERNAL_ERROR", e.getMessage(), ms);
+            return OllamaGenerationResult.failure(
+                    props.getOllama().getModel(), "LLM_INTERNAL_ERROR", e.getMessage(), ms);
         }
     }
 

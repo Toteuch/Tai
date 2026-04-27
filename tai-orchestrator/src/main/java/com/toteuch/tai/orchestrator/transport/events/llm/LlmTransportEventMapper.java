@@ -1,6 +1,5 @@
 package com.toteuch.tai.orchestrator.transport.events.llm;
 
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.TaiEvent;
 import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent;
 import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
@@ -15,7 +14,7 @@ public class LlmTransportEventMapper extends AbstractTransportEventMapper {
                 safeId(req.getEventId()),
                 safeTime(req.getCreatedAt()),
                 safeCorrelation(req.getCorrelationId()),
-                EventSource.LLM_SERVICE,
+                mapEventSource(req.getSource()),
                 req.getResponseText(),
                 req.getModelName(),
                 req.getInputTokens(),
@@ -28,7 +27,8 @@ public class LlmTransportEventMapper extends AbstractTransportEventMapper {
                 safeId(req.getEventId()),
                 safeTime(req.getCreatedAt()),
                 safeCorrelation(req.getCorrelationId()),
-                EventSource.LLM_SERVICE,
+                mapEventSource(req.getSource()),
+                req.getModelName(),
                 req.getErrorCode(),
                 req.getErrorMessage());
     }

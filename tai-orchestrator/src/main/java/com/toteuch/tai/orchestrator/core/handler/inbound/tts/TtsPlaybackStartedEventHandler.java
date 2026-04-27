@@ -2,7 +2,6 @@ package com.toteuch.tai.orchestrator.core.handler.inbound.tts;
 
 import com.toteuch.tai.orchestrator.core.EventHandler;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackStartedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechStartedEvent;
@@ -35,11 +34,13 @@ public class TtsPlaybackStartedEventHandler implements EventHandler<TtsPlaybackS
 
     @Override
     public void handle(TtsPlaybackStartedEvent event) {
-        perfLog.info("TTS speech started | correlationId={}", event.correlationId());
+        perfLog.info(
+                "TTS speech started | correlationId={} synthesisDurationMs={}",
+                event.correlationId(),
+                event.synthesisDurationMs());
         SessionContext sessionContext = sessionStore.get();
 
         if (sessionContext.getActiveTurn() == null) {
-            // TODO : handle that case to send TtsClient.stop()
             decisionLog.info(
                     "{} ignored : no active turn | correlationId={}",
                     this.getClass().getSimpleName(),
@@ -61,6 +62,6 @@ public class TtsPlaybackStartedEventHandler implements EventHandler<TtsPlaybackS
                         UUID.randomUUID().toString(),
                         Instant.now(),
                         event.correlationId(),
-                        EventSource.TTS_SERVICE));
+                        event.source()));
     }
 }

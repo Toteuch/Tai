@@ -9,9 +9,11 @@
     <springProperty scope="context" name="LOG_DIR" source="tai.logs.dir" defaultValue="./logs"/>
 
     <springProperty name="TAI_CONVERSATION_LEVEL" source="logging.level.tai.conversation" defaultValue="INFO"/>
+    <springProperty name="TAI_PERFORMANCE_LEVEL" source="logging.level.tai.performance" defaultValue="INFO"/>
     <springProperty name="ROOT_LEVEL" source="logging.level.root" defaultValue="INFO"/>
 
     <property name="CONVERSATION_LOG_FILE" value="${LOG_DIR}/${startupTimestamp}-conversation.log"/>
+    <property name="PERFORMANCE_LOG_FILE" value="${LOG_DIR}/${startupTimestamp}-performance.log"/>
 
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
@@ -24,14 +26,25 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
+    <appender name="PERFORMANCE_FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${PERFORMANCE_LOG_FILE}</file>
+        <append>false</append>
+        <encoder>
+            <pattern>[%d] - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
 
     <root level="${ROOT_LEVEL}">
         <appender-ref ref="CONSOLE"/>
     </root>
 
-    <!-- Conversation logs only go to dedicated file, not console -->
+    <!-- logs only go to dedicated file, not console -->
     <logger name="tai.conversation" level="%{TAI_CONVERSATION_LEVEL}" additivity="false">
         <appender-ref ref="CONVERSATION_FILE"/>
+    </logger>
+    <logger name="tai.performance" level="%{TAI_PERFORMANCE_LEVEL}" additivity="false">
+        <appender-ref ref="PERFORMANCE_FILE"/>
     </logger>
 
 </configuration>

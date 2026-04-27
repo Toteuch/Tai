@@ -1,7 +1,7 @@
 package com.toteuch.tai.llm.transport.dto;
 
 public class LlmResponseCompletedEventRequest extends AbstractTransportEventRequest {
-    private String responseText, modelName;
+    private String responseText;
     private Integer inputTokens, outputTokens;
     private Long generationDurationMs;
 
@@ -11,14 +11,6 @@ public class LlmResponseCompletedEventRequest extends AbstractTransportEventRequ
 
     public void setResponseText(String v) {
         responseText = v;
-    }
-
-    public String getModelName() {
-        return modelName;
-    }
-
-    public void setModelName(String v) {
-        modelName = v;
     }
 
     public Integer getInputTokens() {

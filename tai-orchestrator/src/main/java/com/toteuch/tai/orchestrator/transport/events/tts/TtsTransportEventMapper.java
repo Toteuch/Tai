@@ -1,6 +1,5 @@
 package com.toteuch.tai.orchestrator.transport.events.tts;
 
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.TaiEvent;
 import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackCompletedEvent;
 import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackFailedEvent;
@@ -15,7 +14,7 @@ public class TtsTransportEventMapper extends AbstractTransportEventMapper {
                 safeId(req.getEventId()),
                 safeTime(req.getCreatedAt()),
                 safeCorrelation(req.getCorrelationId()),
-                EventSource.TTS_SERVICE,
+                mapEventSource(req.getSource()),
                 req.getText(),
                 req.getSpeechDurationMs());
     }
@@ -25,9 +24,10 @@ public class TtsTransportEventMapper extends AbstractTransportEventMapper {
                 safeId(req.getEventId()),
                 safeTime(req.getCreatedAt()),
                 safeCorrelation(req.getCorrelationId()),
-                EventSource.TTS_SERVICE,
+                mapEventSource(req.getSource()),
                 req.getText(),
-                req.getVoiceId());
+                req.getVoiceId(),
+                req.getSynthesisDurationMs());
     }
 
     public TaiEvent toEvent(TtsPlaybackFailedEventRequest req) {
@@ -35,7 +35,7 @@ public class TtsTransportEventMapper extends AbstractTransportEventMapper {
                 safeId(req.getEventId()),
                 safeTime(req.getCreatedAt()),
                 safeCorrelation(req.getCorrelationId()),
-                EventSource.TTS_SERVICE,
+                mapEventSource(req.getSource()),
                 req.getErrorCode(),
                 req.getErrorMessage());
     }

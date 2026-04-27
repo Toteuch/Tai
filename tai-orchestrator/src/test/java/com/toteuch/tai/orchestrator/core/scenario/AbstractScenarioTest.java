@@ -55,6 +55,7 @@ abstract class AbstractScenarioTest {
                         Instant.now(),
                         correlationId,
                         EventSource.LLM_SERVICE,
+                        MODEL_NAME,
                         "LLM_ERROR",
                         "LLM failed"));
     }
@@ -72,7 +73,8 @@ abstract class AbstractScenarioTest {
                         1500L,
                         700.0,
                         "ACCEPTED",
-                        0));
+                        0,
+                        1000L));
     }
 
     protected void publishSttUnintelligible(String correlationId) {
@@ -87,7 +89,8 @@ abstract class AbstractScenarioTest {
                         1200L,
                         600.0,
                         "UNSUPPORTED_LANGUAGE",
-                        3));
+                        3,
+                        1000L));
     }
 
     protected void publishSttNoise(String correlationId) {
@@ -100,7 +103,8 @@ abstract class AbstractScenarioTest {
                         400L,
                         80.0,
                         "NOISE",
-                        999));
+                        999,
+                        1000L));
     }
 
     protected void publishTtsStarted(String correlationId, String text) {
@@ -111,7 +115,8 @@ abstract class AbstractScenarioTest {
                         correlationId,
                         EventSource.TTS_SERVICE,
                         text,
-                        "en_GB-alba-medium"));
+                        "en_GB-alba-medium",
+                        600L));
     }
 
     protected void publishTtsCompleted(String correlationId, String text) {

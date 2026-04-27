@@ -34,14 +34,16 @@ public class TtsPlaybackService {
     public void speakAsync(String correlationId, String text) {
         log.info("TTS speech requested | correlationId={}", correlationId);
         state.setActiveCorrelationId(correlationId);
+        Instant start = Instant.now();
         Path wavFile = piperSynthesisService.synthesize(correlationId, text);
+        long ms = Duration.between(start, Instant.now()).toMillis();
         try {
             if (!state.isActive(correlationId)) {
                 log.info("TTS speech superseded before playback | correlationId={}", correlationId);
                 return;
             }
 
-            eventClient.sendPlaybackStarted(correlationId, text);
+            eventClient.sendPlaybackStarted(correlationId, text, ms);
 
             Instant playbackStartedAt = Instant.now();
             playbackService.playBlocking(wavFile);

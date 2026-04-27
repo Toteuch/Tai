@@ -2,7 +2,6 @@ package com.toteuch.tai.orchestrator.core.handler.inbound.stt;
 
 import com.toteuch.tai.orchestrator.core.EventHandler;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptAcceptedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserUtteranceAcceptedEvent;
@@ -30,15 +29,16 @@ public class SttTranscriptAcceptedEventHandler implements EventHandler<SttTransc
     @Override
     public void handle(SttTranscriptAcceptedEvent event) {
         perfLog.info(
-                "STT utterance completed received | correlationId={} durationMs={}",
+                "STT utterance completed received | correlationId={} transcriptionDurationMs={} durationMs={}",
                 event.correlationId(),
+                event.transcriptionDurationMs(),
                 event.durationMs());
         eventPublisher.publish(
                 new UserUtteranceAcceptedEvent(
                         UUID.randomUUID().toString(),
                         Instant.now(),
                         event.correlationId(),
-                        EventSource.ORCHESTRATOR,
+                        event.source(),
                         event.text()));
     }
 }

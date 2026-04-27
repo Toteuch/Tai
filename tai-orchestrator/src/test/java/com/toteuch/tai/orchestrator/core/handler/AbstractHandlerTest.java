@@ -44,6 +44,7 @@ public abstract class AbstractHandlerTest {
                         Instant.now(),
                         correlationId,
                         EventSource.LLM_SERVICE,
+                        MODEL_NAME,
                         "LLM_ERROR",
                         "LLM failed"));
     }

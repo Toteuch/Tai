@@ -2,7 +2,6 @@ package com.toteuch.tai.orchestrator.core.handler.inbound.ui;
 
 import com.toteuch.tai.orchestrator.core.EventHandler;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.inbound.ui.UiManualTextInputReceivedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserUtteranceAcceptedEvent;
@@ -36,7 +35,7 @@ public class UiManualTextInputReceivedEventHandler
                         UUID.randomUUID().toString(),
                         Instant.now(),
                         event.correlationId(),
-                        EventSource.UI,
+                        event.source(),
                         event.text()));
     }
 }

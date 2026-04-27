@@ -96,6 +96,7 @@ public class OrchestratorSttEventClient {
         request.setAverageEnergy(segment.averageEnergy());
         request.setReason(decision.reason());
         request.setSuspicionScore(decision.suspicionScore());
+        request.setTranscriptionDurationMs(transcription.transcriptionDurationMs());
 
         post(
                 properties.getOrchestrator().getCallbacks().getTranscriptAcceptedPath(),
@@ -115,6 +116,7 @@ public class OrchestratorSttEventClient {
         if (transcription != null) {
             request.setLanguage(transcription.language());
             request.setLanguageProbability(transcription.languageProbability());
+            request.setTranscriptionDurationMs(transcription.transcriptionDurationMs());
         }
 
         request.setDurationMs(segment.durationMs());

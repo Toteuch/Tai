@@ -20,7 +20,8 @@ public record TtsPlaybackStartedEvent(
         String correlationId,
         EventSource source,
         String text,
-        String voiceId)
+        String voiceId,
+        Long synthesisDurationMs)
         implements TaiEvent {
     @Override
     public EventType type() {

@@ -8,6 +8,7 @@ public class SttTranscriptAcceptedEventRequest extends AbstractTransportEventReq
     private Double averageEnergy;
     private String reason;
     private Integer suspicionScore;
+    private Long transcriptionDurationMs;
 
     public String getText() {
         return text;
@@ -63,5 +64,13 @@ public class SttTranscriptAcceptedEventRequest extends AbstractTransportEventReq
 
     public void setSuspicionScore(Integer suspicionScore) {
         this.suspicionScore = suspicionScore;
+    }
+
+    public Long getTranscriptionDurationMs() {
+        return transcriptionDurationMs;
+    }
+
+    public void setTranscriptionDurationMs(Long transcriptionDurationMs) {
+        this.transcriptionDurationMs = transcriptionDurationMs;
     }
 }

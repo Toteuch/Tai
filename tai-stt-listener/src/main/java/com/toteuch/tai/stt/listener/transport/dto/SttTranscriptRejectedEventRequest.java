@@ -7,6 +7,7 @@ public class SttTranscriptRejectedEventRequest extends AbstractTransportEventReq
     private Double averageEnergy;
     private String reason;
     private Integer suspicionScore;
+    private Long transcriptionDurationMs;
 
     public String getLanguage() {
         return language;
@@ -54,5 +55,13 @@ public class SttTranscriptRejectedEventRequest extends AbstractTransportEventReq
 
     public void setSuspicionScore(Integer suspicionScore) {
         this.suspicionScore = suspicionScore;
+    }
+
+    public Long getTranscriptionDurationMs() {
+        return transcriptionDurationMs;
+    }
+
+    public void setTranscriptionDurationMs(Long transcriptionDurationMs) {
+        this.transcriptionDurationMs = transcriptionDurationMs;
     }
 }

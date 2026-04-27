@@ -41,7 +41,8 @@ class TtsInboundEventHandlersTest extends AbstractHandlerTest {
                         "corr-1",
                         EventSource.TTS_SERVICE,
                         "Hi!",
-                        "alba"));
+                        "alba",
+                        600L));
 
         AssistantSpeechStartedEvent published =
                 eventPublisher.assertSingleEventPublished(AssistantSpeechStartedEvent.class);
@@ -65,7 +66,8 @@ class TtsInboundEventHandlersTest extends AbstractHandlerTest {
                         "stale-corr",
                         EventSource.TTS_SERVICE,
                         "Late speech",
-                        "alba"));
+                        "alba",
+                        600L));
 
         eventPublisher.assertNoEventPublished();
     }

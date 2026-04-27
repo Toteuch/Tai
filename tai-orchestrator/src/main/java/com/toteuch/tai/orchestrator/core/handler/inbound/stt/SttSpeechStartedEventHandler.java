@@ -2,7 +2,6 @@ package com.toteuch.tai.orchestrator.core.handler.inbound.stt;
 
 import com.toteuch.tai.orchestrator.core.EventHandler;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.inbound.stt.SttSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserSpeechStartedEvent;
@@ -35,6 +34,6 @@ public class SttSpeechStartedEventHandler implements EventHandler<SttSpeechStart
                         UUID.randomUUID().toString(),
                         Instant.now(),
                         event.correlationId(),
-                        EventSource.ORCHESTRATOR));
+                        event.source()));
     }
 }

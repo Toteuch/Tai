@@ -5,6 +5,7 @@ import com.toteuch.tai.orchestrator.transport.events.AbstractTransportEventReque
 public class TtsPlaybackStartedEventRequest extends AbstractTransportEventRequest {
     private String text;
     private String voiceId;
+    private Long synthesisDurationMs;
 
     public String getText() {
         return text;
@@ -20,5 +21,13 @@ public class TtsPlaybackStartedEventRequest extends AbstractTransportEventReques
 
     public void setVoiceId(String voiceId) {
         this.voiceId = voiceId;
+    }
+
+    public Long getSynthesisDurationMs() {
+        return synthesisDurationMs;
+    }
+
+    public void setSynthesisDurationMs(Long synthesisDurationMs) {
+        this.synthesisDurationMs = synthesisDurationMs;
     }
 }

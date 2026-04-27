@@ -42,13 +42,14 @@ class SttInboundEventHandlersTest extends AbstractHandlerTest {
                         1400L,
                         600.0,
                         "ACCEPTED",
-                        0));
+                        0,
+                        1000L));
 
         UserUtteranceAcceptedEvent published =
                 eventPublisher.assertSingleEventPublished(UserUtteranceAcceptedEvent.class);
 
         assertThat(published.correlationId()).isEqualTo("corr-1");
-        assertThat(published.source()).isEqualTo(EventSource.ORCHESTRATOR);
+        assertThat(published.source()).isEqualTo(EventSource.STT_SERVICE);
         assertThat(published.text()).isEqualTo("Hello Tai");
     }
 
@@ -68,13 +69,14 @@ class SttInboundEventHandlersTest extends AbstractHandlerTest {
                         1200L,
                         500.0,
                         "UNSUPPORTED_LANGUAGE",
-                        3));
+                        3,
+                        1000L));
 
         ClarificationRequestedEvent published =
                 eventPublisher.assertSingleEventPublished(ClarificationRequestedEvent.class);
 
         assertThat(published.correlationId()).isEqualTo("corr-2");
-        assertThat(published.source()).isEqualTo(EventSource.ORCHESTRATOR);
+        assertThat(published.source()).isEqualTo(EventSource.STT_SERVICE);
     }
 
     @Test
@@ -90,7 +92,8 @@ class SttInboundEventHandlersTest extends AbstractHandlerTest {
                         500L,
                         70.0,
                         "NOISE",
-                        999));
+                        999,
+                        1000L));
 
         eventPublisher.assertNoEventPublished();
     }

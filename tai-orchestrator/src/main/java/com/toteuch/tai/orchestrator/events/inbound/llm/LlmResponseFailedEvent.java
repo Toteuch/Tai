@@ -20,6 +20,7 @@ public record LlmResponseFailedEvent(
         Instant occurredAt,
         String correlationId,
         EventSource source,
+        String modelName,
         String errorCode,
         String errorMessage)
         implements TaiEvent {

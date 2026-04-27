@@ -14,7 +14,7 @@ public record OllamaGenerationResult(
         return new OllamaGenerationResult(true, text, model, in, out, ms, null, null);
     }
 
-    public static OllamaGenerationResult failure(String code, String msg, Long ms) {
+    public static OllamaGenerationResult failure(String model, String code, String msg, Long ms) {
         return new OllamaGenerationResult(false, null, null, null, null, ms, code, msg);
     }
 }

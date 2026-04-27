@@ -2,7 +2,6 @@ package com.toteuch.tai.orchestrator.core.handler.inbound.tts;
 
 import com.toteuch.tai.orchestrator.core.EventHandler;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackCompletedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechCompletedEvent;
@@ -63,6 +62,6 @@ public class TtsPlaybackCompletedEventHandler implements EventHandler<TtsPlaybac
                         UUID.randomUUID().toString(),
                         Instant.now(),
                         event.correlationId(),
-                        EventSource.TTS_SERVICE));
+                        event.source()));
     }
 }

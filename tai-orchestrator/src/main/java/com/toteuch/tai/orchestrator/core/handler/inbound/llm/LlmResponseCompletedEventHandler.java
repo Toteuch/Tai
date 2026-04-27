@@ -2,7 +2,6 @@ package com.toteuch.tai.orchestrator.core.handler.inbound.llm;
 
 import com.toteuch.tai.orchestrator.core.EventHandler;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantReplyAcceptedEvent;
@@ -36,9 +35,12 @@ public class LlmResponseCompletedEventHandler implements EventHandler<LlmRespons
     @Override
     public void handle(LlmResponseCompletedEvent event) {
         perfLog.info(
-                "LLM generation completed | correlationId={} generationDurationMs={}",
+                "LLM generation completed | correlationId={} modelName={} generationDurationMs={} inputTokens={} outputTokens={}",
                 event.correlationId(),
-                event.generationDurationMs());
+                event.modelName(),
+                event.generationDurationMs(),
+                event.inputTokens(),
+                event.outputTokens());
 
         SessionContext sessionContext = sessionStore.get();
 
@@ -58,7 +60,7 @@ public class LlmResponseCompletedEventHandler implements EventHandler<LlmRespons
                         UUID.randomUUID().toString(),
                         Instant.now(),
                         event.correlationId(),
-                        EventSource.LLM_SERVICE,
+                        event.source(),
                         event.responseText()));
     }
 }
