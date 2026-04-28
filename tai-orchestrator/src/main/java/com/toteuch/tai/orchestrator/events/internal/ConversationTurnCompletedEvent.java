@@ -3,6 +3,7 @@ package com.toteuch.tai.orchestrator.events.internal;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.TaiEvent;
+import com.toteuch.tai.orchestrator.session.TurnMetricsOutcome;
 import java.time.Instant;
 
 /**
@@ -13,7 +14,11 @@ import java.time.Instant;
  * or has been intentionally skipped.</p>
  */
 public record ConversationTurnCompletedEvent(
-        String eventId, Instant occurredAt, String correlationId, EventSource source)
+        String eventId,
+        Instant occurredAt,
+        String correlationId,
+        EventSource source,
+        TurnMetricsOutcome outcome)
         implements TaiEvent {
     @Override
     public EventType type() {

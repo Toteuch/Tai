@@ -11,6 +11,7 @@ import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
+import com.toteuch.tai.orchestrator.session.TurnMetricsOutcome;
 import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -73,7 +74,8 @@ public class AssistantReplyAcceptedEventHandler
                             UUID.randomUUID().toString(),
                             Instant.now(),
                             event.correlationId(),
-                            EventSource.ORCHESTRATOR));
+                            EventSource.ORCHESTRATOR,
+                            TurnMetricsOutcome.COMPLETED));
         }
     }
 

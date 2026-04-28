@@ -10,6 +10,7 @@ import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
 import com.toteuch.tai.orchestrator.session.TurnMetrics;
+import com.toteuch.tai.orchestrator.session.TurnMetricsOutcome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -43,6 +44,7 @@ public class UserSpeechStartedEventHandler implements EventHandler<UserSpeechSta
         turnMetrics.setUserSpeechStartAt(event.occurredAt());
 
         if (activeTurn != null && !sessionContext.isStillActiveTurn(newCorrelationId)) {
+            TurnMetricsOutcome outcome = null;
             if (sessionContext.isTtsEnabled()
                     && (sessionContext.getSpeakingState() == SpeakingState.SPEAKING
                             || sessionContext.getSpeakingState() == SpeakingState.PREPARING)) {
@@ -52,6 +54,7 @@ public class UserSpeechStartedEventHandler implements EventHandler<UserSpeechSta
                         activeTurn.getCorrelationId());
                 activeTurn.setAssistantPlaybackInterrupted(true);
                 sessionContext.setSpeakingState(SpeakingState.SILENT);
+                outcome = TurnMetricsOutcome.INTERRUPTED;
                 perfLog.debug(
                         "TTS stop speech called | correlationId={} activeTurnCorrelationId={}",
                         event.correlationId(),
@@ -65,8 +68,12 @@ public class UserSpeechStartedEventHandler implements EventHandler<UserSpeechSta
                 sessionContext.setThinkingState(ThinkingState.IDLE);
                 activeTurn.setSupersededBeforeAssistantReply(true);
                 activeTurn.setSupersededByCorrelationId(newCorrelationId);
+                outcome = TurnMetricsOutcome.SUPERSEDED;
             }
-            sessionContext.getTurnMetrics(activeTurn.getCorrelationId()).log();
+            if (outcome == null) {
+                outcome = TurnMetricsOutcome.UNKNOWN;
+            }
+            sessionContext.logMetrics(activeTurn.getCorrelationId(), outcome);
             sessionContext.addTurn(sessionContext.getActiveTurn());
             sessionContext.setActiveTurn(null);
         }

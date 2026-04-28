@@ -30,7 +30,8 @@ public class HttpTtsClient implements TtsClient {
 
             traceLog.trace("TTS speak request sent | correlationId={}", correlationId);
         } catch (Exception e) {
-            errorLog.error("Failed to call TTS speak endpoint | correlationId={}", correlationId, e);
+            errorLog.error(
+                    "Failed to call TTS speak endpoint | correlationId={}", correlationId, e);
         }
     }
 

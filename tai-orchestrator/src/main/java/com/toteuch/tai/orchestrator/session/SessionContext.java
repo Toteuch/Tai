@@ -91,9 +91,13 @@ public class SessionContext {
         return metricsByCorrelationId.computeIfAbsent(correlationId, TurnMetrics::new);
     }
 
-    public void logMetrics(String correlationId) {
-        getTurnMetrics(correlationId).log();
-        metricsByCorrelationId.remove(correlationId);
+    public void logMetrics(String correlationId, TurnMetricsOutcome outcome) {
+        TurnMetrics metrics = metricsByCorrelationId.remove(correlationId);
+        if (metrics == null) {
+            return;
+        }
+        metrics.setOutcome(outcome);
+        metrics.log();
     }
 
     public boolean isObscenityFilterEnabled() {

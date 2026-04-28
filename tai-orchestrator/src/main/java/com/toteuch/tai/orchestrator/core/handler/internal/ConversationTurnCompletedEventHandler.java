@@ -44,7 +44,7 @@ public class ConversationTurnCompletedEventHandler
                     sessionContext.getSpeakingState());
         }
 
-        sessionContext.logMetrics(event.correlationId());
+        sessionContext.logMetrics(event.correlationId(), event.outcome());
 
         ConversationTurn activeTurn = sessionContext.getActiveTurn();
 

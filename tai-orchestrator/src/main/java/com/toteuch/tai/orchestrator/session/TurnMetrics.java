@@ -18,41 +18,7 @@ public class TurnMetrics {
     Long llmGenerationMs;
     Long ttsSynthesisMs;
     Long ttsSpeechDurationMs;
-
-    public void log() {
-        String message = String.format("TURN metrics | correlationId=%s", correlationId);
-        long totalTurnMs = 0L;
-        if (userSpeechStartAt != null) {
-            totalTurnMs += Duration.between(userSpeechStartAt, Instant.now()).toMillis();
-        } else if (userUtteranceAcceptedAt != null) {
-            totalTurnMs += Duration.between(userUtteranceAcceptedAt, Instant.now()).toMillis();
-        }
-
-        message += String.format(" totalTurnMs=%d", totalTurnMs);
-        message += String.format(" startedFrom=%s", metricsStartSource());
-        if (transcriptDurationMs != null) {
-            message += String.format(" transcriptDurationMs=%d", transcriptDurationMs);
-        }
-        if (speechToTranscriptMs != null) {
-            message += String.format(" speechToTranscriptMs=%d", speechToTranscriptMs);
-        }
-        if (llmGenerationMs != null) {
-            message += String.format(" llmGenerationMs=%d", llmGenerationMs);
-        }
-        if (ttsSynthesisMs != null) {
-            message += String.format(" ttsSynthesisMs=%d", ttsSynthesisMs);
-        }
-        if (userUtteranceAcceptedAt != null && ttsSpeechStartAt != null) {
-            message +=
-                    String.format(
-                            " assistantFirstAudioLatencyMs=%d",
-                            Duration.between(userUtteranceAcceptedAt, ttsSpeechStartAt).toMillis());
-        }
-        if (ttsSpeechDurationMs != null) {
-            message += String.format(" ttsSpeechDurationMs=%d", ttsSpeechDurationMs);
-        }
-        perfLog.info(message);
-    }
+    TurnMetricsOutcome outcome;
 
     public TurnMetrics(String correlationId) {
         this.correlationId = correlationId;
@@ -105,6 +71,50 @@ public class TurnMetrics {
     public void setTtsSpeechDurationMs(Long ttsSpeechDurationMs) {
         this.ttsSpeechDurationMs =
                 safeSet("ttsSpeechDurationMs", this.ttsSpeechDurationMs, ttsSpeechDurationMs);
+    }
+
+    public void setOutcome(TurnMetricsOutcome outcome) {
+        this.outcome = safeSet("outcome", this.outcome, outcome);
+    }
+
+    protected void log() {
+        String message = String.format("TURN metrics | correlationId=%s", correlationId);
+        long totalTurnMs = 0L;
+        if (userSpeechStartAt != null) {
+            totalTurnMs += Duration.between(userSpeechStartAt, Instant.now()).toMillis();
+        } else if (userUtteranceAcceptedAt != null) {
+            totalTurnMs += Duration.between(userUtteranceAcceptedAt, Instant.now()).toMillis();
+        }
+
+        if (outcome == null) {
+            this.outcome = TurnMetricsOutcome.UNKNOWN;
+        }
+        message += String.format(" outcome=%s", outcome);
+
+        message += String.format(" totalTurnMs=%d", totalTurnMs);
+        message += String.format(" startedFrom=%s", metricsStartSource());
+        if (transcriptDurationMs != null) {
+            message += String.format(" transcriptDurationMs=%d", transcriptDurationMs);
+        }
+        if (speechToTranscriptMs != null) {
+            message += String.format(" speechToTranscriptMs=%d", speechToTranscriptMs);
+        }
+        if (llmGenerationMs != null) {
+            message += String.format(" llmGenerationMs=%d", llmGenerationMs);
+        }
+        if (ttsSynthesisMs != null) {
+            message += String.format(" ttsSynthesisMs=%d", ttsSynthesisMs);
+        }
+        if (userUtteranceAcceptedAt != null && ttsSpeechStartAt != null) {
+            message +=
+                    String.format(
+                            " assistantFirstAudioLatencyMs=%d",
+                            Duration.between(userUtteranceAcceptedAt, ttsSpeechStartAt).toMillis());
+        }
+        if (ttsSpeechDurationMs != null) {
+            message += String.format(" ttsSpeechDurationMs=%d", ttsSpeechDurationMs);
+        }
+        perfLog.info(message);
     }
 
     private String metricsStartSource() {

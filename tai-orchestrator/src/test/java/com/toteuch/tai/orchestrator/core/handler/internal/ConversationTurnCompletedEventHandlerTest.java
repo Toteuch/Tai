@@ -7,6 +7,7 @@ import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.internal.ConversationTurnCompletedEvent;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
+import com.toteuch.tai.orchestrator.session.TurnMetricsOutcome;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,8 @@ class ConversationTurnCompletedEventHandlerTest extends AbstractHandlerTest {
                         UUID.randomUUID().toString(),
                         Instant.now(),
                         "corr-1",
-                        EventSource.ORCHESTRATOR));
+                        EventSource.ORCHESTRATOR,
+                        TurnMetricsOutcome.COMPLETED));
 
         assertThat(context.getTurns()).containsExactly(turn);
         assertThat(context.getActiveTurn()).isNull();
@@ -47,7 +49,8 @@ class ConversationTurnCompletedEventHandlerTest extends AbstractHandlerTest {
                         UUID.randomUUID().toString(),
                         Instant.now(),
                         "corr-1",
-                        EventSource.ORCHESTRATOR));
+                        EventSource.ORCHESTRATOR,
+                        TurnMetricsOutcome.COMPLETED));
 
         assertThat(context.getTurns()).isEmpty();
         assertThat(context.getActiveTurn()).isNull();

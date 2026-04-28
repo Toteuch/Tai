@@ -9,7 +9,7 @@ whisper:
   beam-size: 5
   vad-filter: false
   condition-on-previous-text: false
-  initial-prompt: "The assistant is named Tai. English is expected. Common words: Tai, Thaï, LLM, TTS, STT."
+  initial-prompt: "The assistant is named Tai. The user is named Toteuch. English is expected. Common words: Tai, Thaï, LLM, TTS, STT."
   language: en
   temperature: 0.0
 
