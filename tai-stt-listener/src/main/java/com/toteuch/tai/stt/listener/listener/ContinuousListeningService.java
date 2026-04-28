@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.stt.listener.listener;
 
 import com.toteuch.tai.stt.listener.audio.SpeechSegment;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.stt.listener.transport;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

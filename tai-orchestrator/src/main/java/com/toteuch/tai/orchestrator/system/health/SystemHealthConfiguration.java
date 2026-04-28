@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.system.health;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

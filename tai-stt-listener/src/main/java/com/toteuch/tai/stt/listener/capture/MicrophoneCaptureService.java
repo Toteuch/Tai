@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.stt.listener.capture;
 
 import com.toteuch.tai.stt.listener.audio.AudioMetrics;

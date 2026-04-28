@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;

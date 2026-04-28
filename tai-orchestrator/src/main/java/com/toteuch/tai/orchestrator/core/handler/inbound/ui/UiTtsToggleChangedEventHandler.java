@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.core.handler.inbound.ui;
 
 import com.toteuch.tai.orchestrator.core.EventHandler;

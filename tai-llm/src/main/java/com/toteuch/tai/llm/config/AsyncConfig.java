@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.llm.config;
 
 import java.util.concurrent.Executor;

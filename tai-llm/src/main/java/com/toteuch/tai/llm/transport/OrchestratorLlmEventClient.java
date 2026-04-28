@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.llm.transport;
 
 import com.toteuch.tai.llm.config.LlmProperties;

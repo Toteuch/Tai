@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.tts.piper.service;
 
 import com.toteuch.tai.tts.piper.config.TtsPiperProperties;

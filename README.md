@@ -11,7 +11,7 @@ The project aims to provide a voice-first assistant capable of:
 - answering through local speech synthesis
 - supporting barge-in when the user starts speaking
 - exposing observable runtime state and performance metrics
-- evolving toward a real-time UI, 3D avatar and screen vision capabilities
+- evolving toward a real-time UI, expressive 2D avatar and screen vision capabilities
 
 Tai is designed around a simple idea:
 
@@ -74,7 +74,7 @@ Orchestrator      → own conversation decisions
 LLM service       → generate assistant text
 TTS service       → synthesize and play speech
 UI                → display state and controls
-Avatar            → render visual presence
+Avatar            → render expressive 2D visual presence
 Vision            → analyze the screen on demand
 ```
 
@@ -225,18 +225,22 @@ Capabilities:
 
 ---
 
-### 👤 3D Avatar
+### 👤 2D Avatar
 
-The avatar layer is a visual presence for Tai.
+The avatar layer is Tai's visual presence.
+
+The target is an expressive 2D avatar with a VTuber-like rendering style.
 
 Capabilities:
 
-- VRM-based rendering
+- 2D rigged character rendering
 - idle animation
 - speech animation
 - lip sync
 - facial expressions
 - emotion and state visualization
+- subtle pseudo-3D head/body orientation
+- limited left/right turning without requiring a full 3D model
 
 The avatar remains a rendering layer, not a business logic layer.
 
@@ -338,24 +342,24 @@ Health and runtime state are exposed through service-level health endpoints and 
 | Health checks | Spring Actuator / service health endpoints |
 | Logging | Logback and dedicated domain loggers |
 | UI target | Web frontend |
-| Avatar target | VRM + Three.js |
+| Avatar target | Live2D / Cubism-style 2D avatar, or equivalent 2D rigging runtime |
 
 ---
 
 ## 🚀 Development Roadmap
 
-### 🎙️ V1 — Voice Assistant Core ✅
+### 🎙️ V1 — Voice Assistant Core 
 
-- Voice input ✅
-- STT pipeline ✅
-- Local LLM response generation ✅
-- Local TTS playback ✅
-- Event-driven orchestrator ✅
-- Session management ✅
-- Barge-in support ✅
-- Conversation logs ✅
-- Performance metrics ✅
-- Basic monitoring surface ✅
+- Voice input 
+- STT pipeline 
+- Local LLM response generation 
+- Local TTS playback 
+- Event-driven orchestrator 
+- Session management 
+- Barge-in support 
+- Conversation logs 
+- Performance metrics 
+- Basic monitoring surface 
 
 ---
 
@@ -370,12 +374,14 @@ Health and runtime state are exposed through service-level health endpoints and 
 
 ---
 
-### 👤 V3 — 3D Avatar
+### 👤 V3 — Expressive 2D Avatar
 
-- VRM avatar rendering
+- 2D rigged avatar rendering
 - Lip sync
-- Basic facial expressions
-- State-driven animations
+- Idle and speech animations
+- Facial expressions
+- State-driven visual reactions
+- Subtle pseudo-3D orientation
 - Avatar integration with assistant state
 
 ---
@@ -458,3 +464,9 @@ The architecture is designed to support local real-time interaction under multi-
 > Tai prioritizes architecture over model size.
 
 The goal is not to build the biggest AI, but a responsive, modular and controllable assistant that can evolve service by service.
+
+---
+
+## Trademark
+
+The Tai name and project identity are not licensed for use in a way that suggests official endorsement or affiliation without permission.

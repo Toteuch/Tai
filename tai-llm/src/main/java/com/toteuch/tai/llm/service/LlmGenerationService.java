@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.llm.service;
 
 import com.toteuch.tai.llm.api.dto.LlmGenerationRequest;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.services.health;
 
 import com.fasterxml.jackson.databind.JsonNode;

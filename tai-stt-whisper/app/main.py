@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import Header, Request
