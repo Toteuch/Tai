@@ -26,3 +26,31 @@ tai:
         base-url: http://localhost:8092
     tts:
         base-url: http://localhost:8093
+    system-health:
+        services:
+            orchestrator:
+                url: http://localhost:8080/actuator/health
+            stt-listener:
+                url: http://localhost:8094/actuator/health
+            stt-whisper:
+                url: http://localhost:8095/health
+            llm:
+                url: http://localhost:8092/actuator/health
+            tts-piper:
+                url: http://localhost:8093/actuator/health
+        connect-timeout-ms: 1000
+        read-timeout-ms: 2000
+management:
+    endpoints:
+        web:
+            exposure:
+                include: health
+    endpoint:
+        health:
+            show-details: always
+
+springdoc:
+    swagger-ui:
+        path: /docs
+    api-docs:
+        path: /v3/api-docs

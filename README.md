@@ -344,7 +344,7 @@ Health and runtime state are exposed through service-level health endpoints and 
 
 ## 🚀 Development Roadmap
 
-### 🎙️ V1 — Voice Assistant Core
+### 🎙️ V1 — Voice Assistant Core ✅
 
 - Voice input ✅
 - STT pipeline ✅
@@ -355,7 +355,7 @@ Health and runtime state are exposed through service-level health endpoints and 
 - Barge-in support ✅
 - Conversation logs ✅
 - Performance metrics ✅
-- Basic monitoring surface
+- Basic monitoring surface ✅
 
 ---
 

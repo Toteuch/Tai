@@ -25,6 +25,7 @@ The orchestrator owns:
 - TTS request/stop orchestration
 - conversation history persistence in memory
 - centralized conversation and performance logs
+- debug system health aggregation
 
 ---
 
@@ -56,6 +57,10 @@ Main runtime areas:
 | `ContextAssembler` | Builds LLM input from system prompt, history and active turn |
 | `LlmClient` | Sends generation requests to the LLM service |
 | `TtsClient` | Sends speech and stop requests to the TTS service |
+| Debug controllers | Expose debug and observability endpoints |
+| System health aggregator | Collects health status from configured Tai services |
+| Actuator health | Exposes local orchestrator health |
+| Swagger UI | Exposes OpenAPI endpoint documentation |
 | Performance logger | Writes performance metrics |
 | Conversation logger | Writes conversation history logs |
 
@@ -190,6 +195,70 @@ POST /events/tts/playback-failed
 ```
 
 The callback payloads carry a `correlationId` used to match inbound events with the current active turn and metrics entry.
+
+---
+
+## Debug and observability endpoints
+
+### Actuator health
+
+```http
+GET /actuator/health
+```
+
+Returns the local health status of the orchestrator process.
+
+### Swagger UI
+
+```text
+http://localhost:8080/docs
+```
+
+OpenAPI JSON:
+
+```text
+http://localhost:8080/v3/api-docs
+```
+
+### System health debug endpoint
+
+```http
+GET /debug/system/health
+```
+
+Returns a consolidated debug view of configured Tai services.
+
+The response contains one entry per configured service:
+
+- service status
+- health endpoint URL
+- response time
+- error message when the health check fails
+
+Example:
+
+```json
+{
+  "status": "DEGRADED",
+  "checkedAt": "2026-04-28T10:15:30.123Z",
+  "services": {
+    "orchestrator": {
+      "status": "UP",
+      "url": "http://localhost:8080/actuator/health",
+      "responseTimeMs": 8,
+      "errorMessage": null
+    },
+    "sttWhisper": {
+      "status": "TIMEOUT",
+      "url": "http://localhost:8095/health",
+      "responseTimeMs": 2001,
+      "errorMessage": "request timed out"
+    }
+  }
+}
+```
+
+The global status is `UP` when all configured services are up. It is `DEGRADED` when at least one configured service is unavailable, timed out, or reports a non-up status.
 
 ---
 

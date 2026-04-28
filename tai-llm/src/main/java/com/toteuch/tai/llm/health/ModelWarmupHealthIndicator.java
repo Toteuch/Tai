@@ -19,10 +19,17 @@ public class ModelWarmupHealthIndicator implements HealthIndicator {
     @Override
     public Health health() {
         Health.Builder b = state.isWarm() ? Health.up() : Health.status("DEGRADED");
-        return b.withDetail("model", props.getOllama().getModel())
+        return b.withDetail("model", safeGetOnState(props.getOllama().getModel()))
                 .withDetail("warm", state.isWarm())
-                .withDetail("lastWarmupAt", state.getLastWarmupAt())
-                .withDetail("lastError", state.getLastError())
+                .withDetail("lastWarmupAt", safeGetOnState(state.getLastWarmupAt()))
+                .withDetail("lastError", safeGetOnState(state.getLastError()))
                 .build();
+    }
+
+    private Object safeGetOnState(Object o) {
+        if (o == null) {
+            o = "";
+        }
+        return o;
     }
 }
