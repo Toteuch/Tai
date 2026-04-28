@@ -4,24 +4,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.5</version>
-        <relativePath/>
+        <groupId>com.toteuch.tai</groupId>
+        <artifactId>tai-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.toteuch.tai</groupId>
     <artifactId>tai-tts-piper</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
     <name>tai-tts-piper</name>
-    <description>Tai TTS Piper microservice</description>
-
-    <properties>
-        <java.version>21</java.version>
-        <springdoc.version>3.0.0</springdoc.version>
-        <spotless.version>2.46.1</spotless.version>
-        <google-java-format.version>1.35.0</google-java-format.version>
-    </properties>
+    <description>tai-tts-piper</description>
 
     <dependencies>
         <dependency>
