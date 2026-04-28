@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -20,7 +21,8 @@ public class OllamaClient {
     private final RestClient client;
     private final LlmProperties props;
 
-    public OllamaClient(RestClient ollamaRestClient, LlmProperties props) {
+    public OllamaClient(
+            @Qualifier("ollamaRestClient") RestClient ollamaRestClient, LlmProperties props) {
         this.client = ollamaRestClient;
         this.props = props;
     }

@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -18,7 +19,9 @@ public class OrchestratorLlmEventClient {
     private final RestClient client;
     private final LlmProperties props;
 
-    public OrchestratorLlmEventClient(RestClient orchestratorRestClient, LlmProperties props) {
+    public OrchestratorLlmEventClient(
+            @Qualifier("orchestratorRestClient") RestClient orchestratorRestClient,
+            LlmProperties props) {
         this.client = orchestratorRestClient;
         this.props = props;
     }
