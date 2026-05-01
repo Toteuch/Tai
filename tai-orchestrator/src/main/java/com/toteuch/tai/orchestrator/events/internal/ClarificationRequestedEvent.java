@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.events.internal;
 
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.EventType;
-import com.toteuch.tai.orchestrator.events.TaiEvent;
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.EventType;
+import com.toteuch.tai.events.TaiEvent;
 import java.time.Instant;
 
 public record ClarificationRequestedEvent(
@@ -11,6 +11,7 @@ public record ClarificationRequestedEvent(
         Instant occurredAt,
         String correlationId,
         EventSource source,
+        Long speechDurationMs,
         Long transcriptDurationMs)
         implements TaiEvent {
     @Override

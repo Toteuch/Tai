@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.EventType;
 import com.toteuch.tai.orchestrator.core.EventHandler;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.internal.AssistantReplyFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.ConversationTurnCompletedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
@@ -20,8 +20,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class AssistantReplyFailedEventHandler implements EventHandler<AssistantReplyFailedEvent> {
     private static final Logger errorLog = LoggerFactory.getLogger("tai.error");
-    private static final Logger contextLog = LoggerFactory.getLogger("tai.context");
-    private static final Logger perfLog = LoggerFactory.getLogger("tai.performance");
 
     private final SessionStore sessionStore;
     private final TaiEventPublisher eventPublisher;

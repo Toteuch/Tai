@@ -3,11 +3,11 @@ package com.toteuch.tai.orchestrator.core.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.TaiEvent;
+import com.toteuch.tai.events.llm.LlmResponseCompletedEvent;
+import com.toteuch.tai.events.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.TaiEvent;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import java.time.Instant;
@@ -46,9 +46,9 @@ public abstract class AbstractHandlerTest {
                         correlationId,
                         EventSource.LLM_SERVICE,
                         MODEL_NAME,
+                        0L,
                         "LLM_ERROR",
-                        "LLM failed",
-                        0L));
+                        "LLM failed"));
     }
 
     protected static class CapturingTaiEventPublisher implements TaiEventPublisher {

@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.core.scenario;
 
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.llm.LlmResponseCompletedEvent;
+import com.toteuch.tai.events.llm.LlmResponseFailedEvent;
+import com.toteuch.tai.events.stt.SttSpeechStartedEvent;
+import com.toteuch.tai.events.stt.SttTranscriptAcceptedEvent;
+import com.toteuch.tai.events.stt.SttTranscriptNoiseEvent;
+import com.toteuch.tai.events.stt.SttTranscriptUnintelligibleEvent;
+import com.toteuch.tai.events.tts.TtsPlaybackCompletedEvent;
+import com.toteuch.tai.events.tts.TtsPlaybackFailedEvent;
+import com.toteuch.tai.events.tts.TtsPlaybackStartedEvent;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.stt.SttSpeechStartedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptAcceptedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptNoiseEvent;
-import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptUnintelligibleEvent;
-import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackCompletedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackFailedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackStartedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
 import com.toteuch.tai.orchestrator.services.tts.TtsClient;
@@ -57,9 +57,9 @@ abstract class AbstractScenarioTest {
                         correlationId,
                         EventSource.LLM_SERVICE,
                         MODEL_NAME,
+                        0L,
                         "LLM_ERROR",
-                        "LLM failed",
-                        0L));
+                        "LLM failed"));
     }
 
     protected void publishSttAccepted(String correlationId, String text) {
@@ -73,9 +73,6 @@ abstract class AbstractScenarioTest {
                         "en",
                         0.98,
                         1500L,
-                        700.0,
-                        "ACCEPTED",
-                        0,
                         1000L));
     }
 
@@ -88,10 +85,10 @@ abstract class AbstractScenarioTest {
                         EventSource.STT_SERVICE,
                         "fi",
                         0.30,
-                        1200L,
                         600.0,
                         "UNSUPPORTED_LANGUAGE",
                         3,
+                        1200L,
                         1000L));
     }
 
@@ -102,10 +99,10 @@ abstract class AbstractScenarioTest {
                         Instant.now(),
                         correlationId,
                         EventSource.STT_SERVICE,
-                        400L,
                         80.0,
                         "NOISE",
                         999,
+                        1200L,
                         1000L));
     }
 
@@ -117,7 +114,6 @@ abstract class AbstractScenarioTest {
                         correlationId,
                         EventSource.TTS_SERVICE,
                         text,
-                        "en_GB-alba-medium",
                         600L));
     }
 
@@ -151,7 +147,7 @@ abstract class AbstractScenarioTest {
                         Instant.now(),
                         correlationId,
                         EventSource.STT_SERVICE,
-                        50L,
+                        2.0,
                         10.0));
     }
 

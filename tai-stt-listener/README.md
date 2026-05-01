@@ -383,18 +383,15 @@ Payload:
 
 ```json
 {
-  "eventId": "...",
-  "createdAt": "2026-04-27T18:40:15.123Z",
-  "source": "STT_SERVICE",
-  "correlationId": "test-1",
-  "text": "Hello Tai",
-  "language": "en",
-  "languageProbability": 0.85,
-  "durationMs": 3200,
-  "averageEnergy": 132.22,
-  "reason": "ACCEPTED",
-  "suspicionScore": 0,
-  "transcriptionDurationMs": 390
+    "eventId": "...",
+    "occurredAt": "2026-04-27T18:40:15.123Z",
+    "source": "STT_SERVICE",
+    "correlationId": "test-1",
+    "transcript": "Hello Tai",
+    "language": "en",
+    "languageProbability": 0.85,
+    "userSpeechDurationMs": 3200,
+    "transcriptionDurationMs": 390
 }
 ```
 

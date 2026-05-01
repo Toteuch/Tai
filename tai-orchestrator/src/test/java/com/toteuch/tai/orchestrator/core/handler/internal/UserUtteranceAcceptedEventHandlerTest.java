@@ -8,10 +8,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.llm.LlmResponseCompletedEvent;
+import com.toteuch.tai.events.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserUtteranceAcceptedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
 import com.toteuch.tai.orchestrator.services.llm.LlmMessage;
@@ -47,6 +47,7 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
                         "corr-1",
                         EventSource.STT_SERVICE,
                         "Hello",
+                        0L,
                         0L));
 
         assertThat(context.getActiveTurn()).isNotNull();
@@ -86,6 +87,7 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
                         "corr-1",
                         EventSource.STT_SERVICE,
                         "Hello",
+                        0L,
                         0L));
 
         verify(llmClient).generateReply(eq("corr-1"), anyList());

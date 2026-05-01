@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
+import com.toteuch.tai.events.EventType;
 import com.toteuch.tai.orchestrator.core.EventHandler;
-import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.internal.ClarificationRequestedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
 import com.toteuch.tai.orchestrator.services.llm.LlmMessage;
@@ -44,6 +44,10 @@ public class ClarificationRequestedEventHandler
         sessionContext
                 .getTurnMetrics(event.correlationId())
                 .setTranscriptDurationMs(event.transcriptDurationMs());
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setUserSpeechDurationMs(event.speechDurationMs());
+
         // This turn mustn't be added in SessionContext.turns, to not be added in the conversation
         // history
         ConversationTurn newTurn =

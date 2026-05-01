@@ -3,8 +3,8 @@ package com.toteuch.tai.orchestrator.core.handler.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.toteuch.tai.events.EventSource;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
@@ -31,6 +31,7 @@ class AssistantSpeechStartedEventHandlerTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-1",
                         EventSource.TTS_SERVICE,
+                        "Hello",
                         0L));
 
         assertThat(context.getSpeakingState()).isEqualTo(SpeakingState.SPEAKING);

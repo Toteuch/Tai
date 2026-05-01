@@ -3,14 +3,14 @@ package com.toteuch.tai.orchestrator.core.handler.inbound;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.tts.TtsPlaybackCompletedEvent;
+import com.toteuch.tai.events.tts.TtsPlaybackFailedEvent;
+import com.toteuch.tai.events.tts.TtsPlaybackStartedEvent;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
-import com.toteuch.tai.orchestrator.core.handler.inbound.tts.TtsPlaybackCompletedEventHandler;
-import com.toteuch.tai.orchestrator.core.handler.inbound.tts.TtsPlaybackFailedEventHandler;
-import com.toteuch.tai.orchestrator.core.handler.inbound.tts.TtsPlaybackStartedEventHandler;
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackCompletedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackFailedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackStartedEvent;
+import com.toteuch.tai.orchestrator.core.handler.tts.TtsPlaybackCompletedEventHandler;
+import com.toteuch.tai.orchestrator.core.handler.tts.TtsPlaybackFailedEventHandler;
+import com.toteuch.tai.orchestrator.core.handler.tts.TtsPlaybackStartedEventHandler;
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechCompletedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechStartedEvent;
@@ -42,7 +42,6 @@ class TtsInboundEventHandlersTest extends AbstractHandlerTest {
                         "corr-1",
                         EventSource.TTS_SERVICE,
                         "Hi!",
-                        "alba",
                         600L));
 
         AssistantSpeechStartedEvent published =
@@ -67,7 +66,6 @@ class TtsInboundEventHandlersTest extends AbstractHandlerTest {
                         "stale-corr",
                         EventSource.TTS_SERVICE,
                         "Late speech",
-                        "alba",
                         600L));
 
         eventPublisher.assertNoEventPublished();

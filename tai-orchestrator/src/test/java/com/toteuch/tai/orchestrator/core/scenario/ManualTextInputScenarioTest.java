@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
-import com.toteuch.tai.orchestrator.events.EventSource;
+import com.toteuch.tai.events.EventSource;
 import com.toteuch.tai.orchestrator.events.inbound.ui.UiManualTextInputReceivedEvent;
 import java.time.Instant;
 import java.util.UUID;

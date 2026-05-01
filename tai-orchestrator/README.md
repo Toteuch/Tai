@@ -4,11 +4,11 @@
 
 The **Tai Orchestrator** is the central event-driven service of Tai.
 
-It receives inbound events from the STT, LLM and TTS services, translates them into internal events, updates the session context, and coordinates the next command to send.
+It receives inbound events from the STT, LLM and TTS services, maps those external facts to internal events, updates the session context, and coordinates the next command to send.
 
 ```text
 inbound service event
-  → internal event
+  → internal event mapping
   → focused handler
   → session update
   → optional outbound service command
@@ -68,7 +68,7 @@ Main runtime areas:
 
 ## Event model
 
-The orchestrator separates inbound facts from internal decisions.
+The orchestrator separates external service facts from internal decisions.
 
 ```text
 Inbound event
@@ -134,7 +134,7 @@ Important fields:
 | speaking state | Whether TTS is preparing/speaking/silent |
 | turn metrics map | Metrics keyed by correlation id |
 
-A conversation turn is persisted into history only when `ConversationTurnCompletedEvent` is handled.
+- Conversation turns are persisted on explicit completion or interruption events only.
 
 ---
 
@@ -147,7 +147,7 @@ Metrics are updated by internal events and logged at turn completion.
 Typical metric line:
 
 ```text
-TURN metrics | correlationId=... totalTurnMs=... startedFrom=USER_SPEECH_STARTED transcriptDurationMs=... speechToTranscriptMs=... llmGenerationMs=... ttsSynthesisMs=... assistantFirstAudioLatencyMs=... ttsSpeechDurationMs=...
+TURN metrics | correlationId=... totalTurnMs=... startedFrom=USER_SPEECH_STARTED userSpeechDurationMs=... transcriptDurationMs=... speechToTranscriptMs=... llmGenerationMs=... ttsSynthesisMs=... assistantFirstAudioLatencyMs=... ttsSpeechDurationMs=...
 ```
 
 Current fields:
@@ -157,6 +157,7 @@ Current fields:
 | `correlationId` | Correlation id of the turn |
 | `totalTurnMs` | Duration from speech start or accepted utterance to metrics logging |
 | `startedFrom` | Metrics start source: `USER_SPEECH_STARTED` or `USER_UTTERANCE_ACCEPTED` |
+| `userSpeechDurationMs` | Duration of the user's captured speech segment reported by the accepted STT transcript event |
 | `transcriptDurationMs` | STT transcription duration reported by the STT pipeline |
 | `speechToTranscriptMs` | Time between speech-start and accepted transcript |
 | `llmGenerationMs` | LLM generation duration |

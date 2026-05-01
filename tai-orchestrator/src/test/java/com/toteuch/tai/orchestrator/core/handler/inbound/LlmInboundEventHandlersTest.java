@@ -3,12 +3,12 @@ package com.toteuch.tai.orchestrator.core.handler.inbound;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.llm.LlmResponseCompletedEvent;
+import com.toteuch.tai.events.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
-import com.toteuch.tai.orchestrator.core.handler.inbound.llm.LlmResponseCompletedEventHandler;
-import com.toteuch.tai.orchestrator.core.handler.inbound.llm.LlmResponseFailedEventHandler;
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
+import com.toteuch.tai.orchestrator.core.handler.llm.LlmResponseCompletedEventHandler;
+import com.toteuch.tai.orchestrator.core.handler.llm.LlmResponseFailedEventHandler;
 import com.toteuch.tai.orchestrator.events.internal.AssistantReplyAcceptedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantReplyFailedEvent;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
@@ -90,9 +90,9 @@ class LlmInboundEventHandlersTest extends AbstractHandlerTest {
                         "corr-2",
                         EventSource.LLM_SERVICE,
                         MODEL_NAME,
+                        0L,
                         "LLM_ERROR",
-                        "LLM failed",
-                        0L));
+                        "LLM failed"));
 
         AssistantReplyFailedEvent published =
                 eventPublisher.assertSingleEventPublished(AssistantReplyFailedEvent.class);
@@ -118,9 +118,9 @@ class LlmInboundEventHandlersTest extends AbstractHandlerTest {
                         "stale-corr",
                         EventSource.LLM_SERVICE,
                         MODEL_NAME,
+                        0L,
                         "LLM_ERROR",
-                        "LLM failed",
-                        0L));
+                        "LLM failed"));
 
         eventPublisher.assertNoEventPublished();
     }

@@ -7,10 +7,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.llm.LlmResponseCompletedEvent;
+import com.toteuch.tai.events.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.ClarificationRequestedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
 import com.toteuch.tai.orchestrator.session.SessionContext;
@@ -36,6 +36,7 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-1",
                         EventSource.ORCHESTRATOR,
+                        2800L,
                         0L));
 
         assertThat(context.getActiveTurn()).isNotNull();
@@ -69,6 +70,7 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-1",
                         EventSource.ORCHESTRATOR,
+                        2800L,
                         0L));
 
         verify(llmClient).generateReply(eq("corr-1"), anyList());

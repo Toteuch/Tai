@@ -303,6 +303,7 @@ Tai is designed to make latency visible.
 
 The orchestrator centralizes turn-level performance metrics, including:
 
+- user speech duration
 - STT transcription duration
 - speech-to-transcript latency
 - LLM generation duration

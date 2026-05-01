@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.transport.debug;
 
+import com.toteuch.tai.events.EventSource;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.inbound.ui.UiManualTextInputReceivedEvent;
 import java.time.Instant;
 import java.util.UUID;

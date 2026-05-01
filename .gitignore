@@ -119,3 +119,19 @@ htmlcov/
 **/input/
 **/tmp/
 **/*.wav
+
+# =========================
+
+# Bash
+
+# =========================
+
+export-references.sh
+export_references/
+
+# =========================
+
+# Bash
+
+# =========================
+**/tai-system-prompt.txt

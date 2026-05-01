@@ -14,6 +14,7 @@ public class TurnMetrics {
     Instant userSpeechStartAt;
     Instant userUtteranceAcceptedAt;
     Instant ttsSpeechStartAt;
+    Long userSpeechDurationMs;
     Long speechToTranscriptMs;
     Long transcriptDurationMs;
     Long llmGenerationMs;
@@ -74,6 +75,11 @@ public class TurnMetrics {
                 safeSet("ttsSpeechDurationMs", this.ttsSpeechDurationMs, ttsSpeechDurationMs);
     }
 
+    public void setUserSpeechDurationMs(Long userSpeechDurationMs) {
+        this.userSpeechDurationMs =
+                safeSet("userSpeechDurationMs", this.userSpeechDurationMs, userSpeechDurationMs);
+    }
+
     public void setOutcome(TurnMetricsOutcome outcome) {
         this.outcome = safeSet("outcome", this.outcome, outcome);
     }
@@ -94,8 +100,11 @@ public class TurnMetrics {
 
         message += String.format(" totalTurnMs=%d", totalTurnMs);
         message += String.format(" startedFrom=%s", metricsStartSource());
+        if (userSpeechDurationMs != null) {
+            message += String.format(" userSpeechDurationMs=%d", userSpeechDurationMs);
+        }
         if (transcriptDurationMs != null) {
-            message += String.format(" transcriptDurationMs=%d", transcriptDurationMs);
+            message += String.format(" transcriptionDurationMs=%d", transcriptDurationMs);
         }
         if (speechToTranscriptMs != null) {
             message += String.format(" speechToTranscriptMs=%d", speechToTranscriptMs);

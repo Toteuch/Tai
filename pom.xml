@@ -8,12 +8,13 @@
 
     <groupId>com.toteuch.tai</groupId>
     <artifactId>tai-parent</artifactId>
-    <version>${revision}</version>
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Tai Parent</name>
 
     <modules>
+        <module>tai-events</module>
         <module>tai-orchestrator</module>
         <module>tai-llm</module>
         <module>tai-tts-piper</module>
@@ -21,8 +22,6 @@
     </modules>
 
     <properties>
-        <revision>1.0.0</revision>
-
         <java.version>21</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
 
@@ -35,6 +34,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.toteuch.tai</groupId>
+                <artifactId>tai-events</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
