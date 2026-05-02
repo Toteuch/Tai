@@ -9,7 +9,8 @@ import org.springframework.web.client.RestClient;
 @Component
 public class HttpTtsClient implements TtsClient {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpTtsClient.class);
+    private static final Logger traceLog = LoggerFactory.getLogger("tai.trace");
+    private static final Logger errorLog = LoggerFactory.getLogger("tai.error");
 
     private final RestClient restClient;
 
@@ -27,9 +28,9 @@ public class HttpTtsClient implements TtsClient {
                     .retrieve()
                     .toBodilessEntity();
 
-            log.info("TTS speak request sent | correlationId={}", correlationId);
+            traceLog.trace("TTS speak request sent | correlationId={}", correlationId);
         } catch (Exception e) {
-            log.error("Failed to call TTS speak endpoint | correlationId={}", correlationId, e);
+            errorLog.error("Failed to call TTS speak endpoint | correlationId={}", correlationId, e);
         }
     }
 
@@ -43,9 +44,9 @@ public class HttpTtsClient implements TtsClient {
                     .retrieve()
                     .toBodilessEntity();
 
-            log.info("TTS stop request sent | correlationId={}", correlationId);
+            traceLog.trace("TTS stop request sent | correlationId={}", correlationId);
         } catch (Exception e) {
-            log.error("Failed to call TTS stop endpoint | correlationId={}", correlationId, e);
+            errorLog.error("Failed to call TTS stop endpoint | correlationId={}", correlationId, e);
         }
     }
 

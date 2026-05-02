@@ -10,7 +10,8 @@ import org.springframework.web.client.RestClient;
 @Component
 public class HttpLlmClient implements LlmClient {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpLlmClient.class);
+    private static final Logger traceLog = LoggerFactory.getLogger("tai.trace");
+    private static final Logger errorLog = LoggerFactory.getLogger("tai.error");
 
     private final RestClient restClient;
 
@@ -30,10 +31,10 @@ public class HttpLlmClient implements LlmClient {
                     .retrieve()
                     .toBodilessEntity();
 
-            log.info("LLM request sent | correlationId={}", correlationId);
+            traceLog.trace("LLM request sent | correlationId={}", correlationId);
 
         } catch (Exception e) {
-            log.error("Failed to call LLM service | correlationId={}", correlationId, e);
+            errorLog.error("Failed to call LLM service | correlationId={}", correlationId, e);
         }
     }
 

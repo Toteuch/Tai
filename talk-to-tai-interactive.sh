@@ -17,7 +17,6 @@ while true; do
   fi
 
   curl -s -X POST -G "${BASE_URL}/debug/text" \
-    --data-urlencode "sessionId=${SESSION_ID}" \
     --data-urlencode "text=${TEXT}"
 
   echo
