@@ -40,6 +40,15 @@ public class SttPipelineService {
 
             TranscriptionResult transcription =
                     whisperClient.transcribe(correlationId, segment.audioFile());
+            log.info(
+                    "Whisper result received | correlationId={} success={} text={} language={} languageProbability={} errorCode={} errorMessage={}",
+                    correlationId,
+                    transcription.success(),
+                    transcription.text(),
+                    transcription.language(),
+                    transcription.languageProbability(),
+                    transcription.errorCode(),
+                    transcription.errorMessage());
 
             GatekeeperDecision finalDecision = gatekeeper.evaluate(segment, transcription);
 

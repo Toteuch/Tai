@@ -2,24 +2,17 @@
 
 ## Overview
 
-The **Tai STT Whisper microservice** is a pure transcription service.
+The **Tai STT Whisper microservice** is a dedicated speech-to-text transcription service.
 
-It intentionally does only one thing:
+It receives WAV audio, runs `faster-whisper`, and returns a normalized transcription response.
 
 ```text
-audio file / uploaded WAV
-  → Whisper
+WAV audio
+  → faster-whisper
   → transcription result
 ```
 
-It does **not**:
-
-- capture microphone audio
-- apply gatekeeper rules
-- publish callbacks to the orchestrator
-- know anything about Tai event flows
-
-Those responsibilities stay in `tai-stt-listener`.
+The service is intentionally focused on transcription only.
 
 ---
 
@@ -30,16 +23,25 @@ FastAPI controller
   ↓
 WhisperTranscriber
   ↓
-faster-whisper model loaded once at startup
+faster-whisper model
   ↓
 TranscriptionResponse
 ```
 
 The Whisper model is loaded once when the service starts and stays loaded while the process is alive.
 
+Current runtime profile:
+
+```text
+model-size: small
+device: cuda
+compute-type: int8_float16
+language: en
+```
+
 ---
 
-## Exposed endpoints
+## Endpoints
 
 ### `GET /health`
 
@@ -53,48 +55,68 @@ Example:
 
 ```json
 {
-    "status": "UP",
-    "modelLoaded": true,
-    "modelSize": "small",
-    "device": "cpu",
-    "computeType": "int8",
-    "lastError": null
+  "status": "UP",
+  "modelLoaded": true,
+  "modelSize": "small",
+  "device": "cuda",
+  "computeType": "int8_float16",
+  "lastError": null
 }
 ```
 
 ---
 
-### `POST /whisper/transcribe-file`
+### `POST /whisper/transcribe-raw`
 
-Transcribes a file path accessible from the Whisper service.
+Transcribes raw WAV bytes.
 
-This is useful for local debug when the caller and the service share the same filesystem.
+This endpoint is used by service-to-service callers.
 
-```json
-{
-    "correlationId": "test-1",
-    "audioFile": ".../Tai/tai-stt-listener/input/mic.wav"
-}
+Request:
+
+```text
+Content-Type: audio/wav
+Body: raw WAV bytes
+X-Correlation-Id: <correlationId>
+X-Filename: <filename>
+```
+
+Example:
+
+```bash
+curl -X POST http://localhost:8095/whisper/transcribe-raw \
+  -H "Content-Type: audio/wav" \
+  -H "X-Correlation-Id: test-1" \
+  -H "X-Filename: mic.wav" \
+  --data-binary "@./input/mic.wav"
 ```
 
 ---
 
 ### `POST /whisper/transcribe-upload`
 
-Transcribes an uploaded audio file.
+Transcribes an uploaded WAV file.
 
-This is the preferred service-to-service contract because it does not require shared filesystem paths.
+This endpoint is mainly useful for manual testing through Swagger UI.
 
 Fields:
 
-- `file`: WAV file
-- `correlationId`: optional correlation id
+| Field | Required | Description |
+|---|---:|---|
+| `file` | yes | WAV file to transcribe |
+| `correlationId` | no | Correlation id copied to the response |
+
+Example:
+
+```bash
+curl -X POST http://localhost:8095/whisper/transcribe-upload \
+  -F "correlationId=test-1" \
+  -F "file=@./input/mic.wav;type=audio/wav"
+```
 
 ---
 
 ## Swagger UI
-
-FastAPI exposes Swagger UI at:
 
 ```text
 http://localhost:8095/docs
@@ -110,23 +132,41 @@ http://localhost:8095/openapi.json
 
 ## Response model
 
+### Success
+
 ```json
 {
-    "success": true,
-    "correlationId": "test-1",
-    "text": "Bonjour Tai",
-    "language": "fr",
-    "languageProbability": 0.98,
-    "transcriptionDurationMs": 1234,
-    "modelName": "small",
-    "errorCode": null,
-    "errorMessage": null
+  "success": true,
+  "correlationId": "test-1",
+  "text": "Hello Tai, how are you doing?",
+  "language": "en",
+  "languageProbability": 0.98,
+  "transcriptionDurationMs": 390,
+  "modelName": "small",
+  "errorCode": null,
+  "errorMessage": null
+}
+```
+
+### Failure
+
+```json
+{
+  "success": false,
+  "correlationId": "test-1",
+  "text": null,
+  "language": null,
+  "languageProbability": null,
+  "transcriptionDurationMs": 12,
+  "modelName": "small",
+  "errorCode": "WHISPER_TRANSCRIPTION_ERROR",
+  "errorMessage": "..."
 }
 ```
 
 ---
 
-## Properties
+## Configuration
 
 Configuration lives in:
 
@@ -134,44 +174,79 @@ Configuration lives in:
 config.yaml
 ```
 
+Current configuration:
+
 ```yaml
 server:
-    host: 127.0.0.1
-    port: 8095
+  host: 127.0.0.1
+  port: 8095
 
 whisper:
-    model-size: small
-    device: cpu
-    compute-type: int8
-    beam-size: 5
-    vad-filter: false
+  model-size: small
+  device: cuda
+  compute-type: int8_float16
+  beam-size: 5
+  temperature: 0.0
+  condition-on-previous-text: false
+  vad-filter: false
+  language: en
+  initial-prompt: "The assistant is named Tai. Expected language is English. Common words: Tai, LLM, TTS, STT."
 
 storage:
-    temp-dir: ./tmp
+  temp-dir: ./tmp
 ```
 
-| Property               | Description                                            |
-|------------------------|--------------------------------------------------------|
-| `server.host`          | Host used when launching with uvicorn                  |
-| `server.port`          | Port used when launching with uvicorn                  |
-| `whisper.model-size`   | Whisper model size loaded at startup                   |
-| `whisper.device`       | Runtime device, usually `cpu` or `cuda`                |
-| `whisper.compute-type` | Quantization/precision mode, for example `int8` on CPU |
-| `whisper.beam-size`    | Beam search size used during transcription             |
-| `whisper.vad-filter`   | Faster-whisper VAD filter option                       |
-| `storage.temp-dir`     | Temporary directory for uploaded files                 |
+| Property | Description |
+|---|---|
+| `server.host` | Host used by Uvicorn |
+| `server.port` | Port used by Uvicorn |
+| `whisper.model-size` | Whisper model size loaded at startup |
+| `whisper.device` | Runtime device: `cuda` or `cpu` |
+| `whisper.compute-type` | Quantization/precision mode used by faster-whisper |
+| `whisper.beam-size` | Beam search size used during transcription |
+| `whisper.temperature` | Whisper decoding temperature |
+| `whisper.condition-on-previous-text` | Whether Whisper conditions on previous text |
+| `whisper.vad-filter` | faster-whisper VAD option |
+| `whisper.language` | Forced transcription language |
+| `whisper.initial-prompt` | Prompt used to bias transcription vocabulary and context |
+| `storage.temp-dir` | Temporary directory used while processing uploaded/raw files |
 
 ---
 
-## Business flow with listener
+## Dependencies
 
-Target integration:
+The service depends on:
+
+- FastAPI
+- Uvicorn
+- Pydantic
+- faster-whisper
+- NVIDIA CUDA/cuDNN Python packages for GPU execution
+
+Current GPU dependency packages:
 
 ```text
-1. tai-stt-listener captures microphone audio
-2. tai-stt-listener pre-gatekeeper accepts the segment
-3. tai-stt-listener uploads the WAV to tai-stt-whisper
-4. tai-stt-whisper returns the transcript
-5. tai-stt-listener applies the final gatekeeper
-6. tai-stt-listener publishes the STT callback to the orchestrator
+nvidia-cublas-cu12
+nvidia-cudnn-cu12
 ```
+
+---
+
+## Performance notes
+
+The response includes:
+
+```text
+transcriptionDurationMs
+```
+
+This metric measures the transcription time inside this service.
+
+With the current GPU profile:
+
+```text
+small + cuda + int8_float16 + initial prompt
+```
+
+short utterances are typically transcribed in a few hundred milliseconds on the local RTX GPU setup.
+

@@ -20,7 +20,6 @@ tai:
     gatekeeper:
       allowed-languages:
         - en
-        - fr
       reject-audio-duration-ms: 250
       suspicious-audio-duration-ms: 500
       reject-average-energy-threshold: 15

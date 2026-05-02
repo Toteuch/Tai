@@ -58,10 +58,18 @@ class WhisperTranscriber:
         started = time.monotonic()
 
         try:
+            language = self._settings.whisper.language
+            if language is not None and language.strip() == "":
+                language = None
+
             segments, info = self._model.transcribe(
                 str(audio_file),
                 beam_size=self._settings.whisper.beam_size,
                 vad_filter=self._settings.whisper.vad_filter,
+                temperature=self._settings.whisper.temperature,
+                condition_on_previous_text=self._settings.whisper.condition_on_previous_text,
+                initial_prompt=self._settings.whisper.initial_prompt,
+                language=language,
             )
 
             text = "".join(segment.text for segment in segments).strip()

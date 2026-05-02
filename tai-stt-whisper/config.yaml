@@ -4,10 +4,14 @@ server:
 
 whisper:
   model-size: small
-  device: cpu
-  compute-type: int8
+  device: cuda
+  compute-type: int8_float16
   beam-size: 5
   vad-filter: false
+  condition-on-previous-text: false
+  initial-prompt: "The assistant is named Tai. English is expected. Common words: Tai, Thaï, LLM, TTS, STT."
+  language: en
+  temperature: 0.0
 
 storage:
   temp-dir: ./tmp

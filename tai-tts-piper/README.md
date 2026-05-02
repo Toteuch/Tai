@@ -2,18 +2,27 @@
 
 ## Overview
 
-The **Tai TTS Piper microservice** generates and plays speech using Piper.
+The **Tai TTS Piper microservice** is a dedicated text-to-speech service based on Piper.
 
-It is autonomous: Piper runtime, voices and generated WAV files live inside this module.
+It receives a text payload, synthesizes it into a WAV file with a local Piper voice, plays the WAV on the local audio output, and publishes playback callbacks.
 
 ```text
-Tai Orchestrator
-    → HTTP TtsClient
-    → Tai TTS Piper microservice
-    → local Piper executable
-    → local voices
-    → WAV playback
-    → callback to Orchestrator
+text
+  → Piper synthesis
+  → WAV file
+  → local audio playback
+  → playback callback
+```
+
+The service is self-contained for its Piper runtime:
+
+```text
+tai-tts-piper/
+  .venv/
+  voices/
+  output/
+  src/
+  pom.xml
 ```
 
 ---
@@ -32,13 +41,33 @@ Piper executable
 JavaAudioPlaybackService
   ↓
 OrchestratorTtsEventClient
-  ↓
-POST /events/tts/*
 ```
 
-## Exposed endpoints
+The `/tts/speak` endpoint returns quickly. Synthesis and playback are handled asynchronously.
+
+---
+
+## Main components
+
+| Component | Role |
+|---|---|
+| `TtsController` | Exposes speech and stop endpoints |
+| `TtsPlaybackService` | Orchestrates asynchronous synthesis, playback and callback publication |
+| `PiperSynthesisService` | Calls the local Piper executable and generates a WAV file |
+| `JavaAudioPlaybackService` | Plays the generated WAV file through local audio output |
+| `OrchestratorTtsEventClient` | Publishes TTS playback callbacks |
+| `PiperHealthIndicator` | Checks Piper executable, model and config files |
+| `PlaybackHealthIndicator` | Reports active playback state |
+
+---
+
+## Endpoints
 
 ### `POST /tts/speak`
+
+Starts speech synthesis and playback.
+
+Request:
 
 ```json
 {
@@ -47,7 +76,23 @@ POST /events/tts/*
 }
 ```
 
+Example:
+
+```bash
+curl -X POST http://localhost:8093/tts/speak \
+  -H "Content-Type: application/json" \
+  -d '{"correlationId":"test-1","text":"Hello, I am Tai."}'
+```
+
+The request is accepted immediately. The service then synthesizes and plays speech asynchronously.
+
+---
+
 ### `POST /tts/stop`
+
+Stops active playback when the request matches the active playback correlation id.
+
+Request:
 
 ```json
 {
@@ -55,49 +100,150 @@ POST /events/tts/*
 }
 ```
 
+Example:
+
+```bash
+curl -X POST http://localhost:8093/tts/stop \
+  -H "Content-Type: application/json" \
+  -d '{"correlationId":"test-1"}'
+```
+
+---
+
 ## Swagger UI
 
 ```text
 http://localhost:8093/docs
 ```
 
-## Generated events
+OpenAPI JSON:
 
-- `POST /events/tts/playback-started`
-- `POST /events/tts/playback-completed`
-- `POST /events/tts/playback-failed`
+```text
+http://localhost:8093/v3/api-docs
+```
 
-All callbacks include:
+---
+
+## Playback callbacks
+
+The service publishes playback callbacks to the configured callback target.
+
+### Playback started
+
+```http
+POST /events/tts/playback-started
+```
+
+Sent after synthesis succeeds and playback is about to start.
+
+Payload fields include:
 
 - `eventId`
 - `createdAt`
-- `source = TTS_SERVICE`
+- `source`
 - `correlationId`
+- `voiceId`
+- `synthesisDurationMs`
+
+---
+
+### Playback completed
+
+```http
+POST /events/tts/playback-completed
+```
+
+Sent when playback completes normally.
+
+Payload fields include:
+
+- `eventId`
+- `createdAt`
+- `source`
+- `correlationId`
+- `voiceId`
+- `speechDurationMs`
+
+---
+
+### Playback failed
+
+```http
+POST /events/tts/playback-failed
+```
+
+Sent when synthesis or playback fails.
+
+Payload fields include:
+
+- `eventId`
+- `createdAt`
+- `source`
+- `correlationId`
+- `voiceId`
+- `errorCode`
+- `errorMessage`
+- `speechDurationMs`
+
+---
 
 ## Business flows
 
 ### Nominal playback
 
 ```text
-1. Orchestrator calls POST /tts/speak
-2. TTS service accepts immediately
-3. Piper generates a WAV file
-4. TTS service sends playback-started
-5. TTS service plays WAV
-6. TTS service sends playback-completed
+POST /tts/speak
+  → request accepted
+  → Piper generates WAV
+  → playback-started callback
+  → WAV playback
+  → playback-completed callback
+  → generated WAV cleanup
 ```
 
-### Stop / barge-in
+---
+
+### Stop playback
 
 ```text
-1. Orchestrator calls POST /tts/stop
-2. TTS service stops active playback if correlationId matches
-3. Completion callback is suppressed for the stopped playback
+POST /tts/stop
+  → active playback correlation id checked
+  → playback stopped when it matches
+  → normal completion callback suppressed for stopped playback
 ```
 
-## Properties
+---
+
+### Failure
+
+```text
+POST /tts/speak
+  → synthesis or playback fails
+  → playback-failed callback
+```
+
+---
+
+## Generated WAV files
+
+Piper writes generated WAV files into the configured output directory.
+
+Current default:
+
+```text
+./output
+```
+
+Played WAV files are deleted after playback so the output directory does not grow indefinitely.
+
+---
+
+## Configuration
 
 ```yaml
+server:
+  port: 8093
+
 tai:
   tts:
     piper:
@@ -107,16 +253,40 @@ tai:
       output-dir: ./output
       voice-id: en_GB-alba-medium
       process-timeout-ms: 60000
+
+    orchestrator:
+      base-url: http://localhost:8080
+      connect-timeout-ms: 3000
+      read-timeout-ms: 10000
+      callbacks:
+        playback-started-path: /events/tts/playback-started
+        playback-completed-path: /events/tts/playback-completed
+        playback-failed-path: /events/tts/playback-failed
 ```
+
+### Piper properties
 
 | Property | Description |
 |---|---|
-| `tai.tts.piper.executable` | Piper executable inside this module |
-| `tai.tts.piper.model` | Piper ONNX voice model inside `voices/` |
-| `tai.tts.piper.config` | Piper voice JSON config inside `voices/` |
+| `tai.tts.piper.executable` | Local Piper executable path |
+| `tai.tts.piper.model` | Piper ONNX voice model path |
+| `tai.tts.piper.config` | Piper voice JSON config path |
 | `tai.tts.piper.output-dir` | Generated WAV output directory |
-| `tai.tts.piper.voice-id` | Logical voice id sent to the orchestrator |
-| `tai.tts.piper.process-timeout-ms` | Max synthesis duration before failure |
+| `tai.tts.piper.voice-id` | Logical voice id included in callbacks |
+| `tai.tts.piper.process-timeout-ms` | Maximum synthesis process duration before failure |
+
+### Callback properties
+
+| Property | Description |
+|---|---|
+| `tai.tts.orchestrator.base-url` | Base URL used for TTS callbacks |
+| `tai.tts.orchestrator.connect-timeout-ms` | HTTP connection timeout for callbacks |
+| `tai.tts.orchestrator.read-timeout-ms` | HTTP read timeout for callbacks |
+| `tai.tts.orchestrator.callbacks.playback-started-path` | Callback path for playback-started events |
+| `tai.tts.orchestrator.callbacks.playback-completed-path` | Callback path for playback-completed events |
+| `tai.tts.orchestrator.callbacks.playback-failed-path` | Callback path for playback-failed events |
+
+---
 
 ## Health
 
@@ -129,4 +299,10 @@ Health components:
 | Component | Meaning |
 |---|---|
 | `piper` | Checks Piper executable, model and config files |
-| `playback` | Reports active playback correlation id |
+| `playback` | Reports active playback state |
+
+Example:
+
+```bash
+curl http://localhost:8093/actuator/health
+```

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 from pydantic import BaseModel
@@ -19,7 +19,11 @@ class WhisperSettings(BaseModel):
     device: str = "cpu"
     compute_type: str = "int8"
     beam_size: int = 5
+    temperature: float = 0.0
+    condition_on_previous_text: bool = False
     vad_filter: bool = False
+    language: str | None = "en"
+    initial_prompt: str | None = "The assistant is named Tai. English is expected. Common words: Tai, Thaï, LLM, TTS, STT."
 
 
 class StorageSettings(BaseModel):
