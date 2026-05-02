@@ -1,13 +1,13 @@
 package com.toteuch.tai.orchestrator.core.scenario;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
+import org.junit.jupiter.api.Test;
 
 class LlmInterruptionScenarioTest extends AbstractScenarioTest {
 
@@ -36,9 +36,12 @@ class LlmInterruptionScenarioTest extends AbstractScenarioTest {
         publishTtsCompleted(secondCorrelationId, "Second valid reply.");
 
         assertThat(sessionStore.get().getTurns()).hasSize(2);
-        assertThat(sessionStore.get().getTurns().get(0).getCorrelationId()).isEqualTo(firstCorrelationId);
+        assertThat(sessionStore.get().getTurns().get(0).getCorrelationId())
+                .isEqualTo(firstCorrelationId);
         assertThat(sessionStore.get().getTurns().get(0).getAssistantMessage()).isNull();
-        assertThat(sessionStore.get().getTurns().get(1).getCorrelationId()).isEqualTo(secondCorrelationId);
-        assertThat(sessionStore.get().getTurns().get(1).getAssistantMessage()).isEqualTo("Second valid reply.");
+        assertThat(sessionStore.get().getTurns().get(1).getCorrelationId())
+                .isEqualTo(secondCorrelationId);
+        assertThat(sessionStore.get().getTurns().get(1).getAssistantMessage())
+                .isEqualTo("Second valid reply.");
     }
 }

@@ -3,21 +3,21 @@ package com.toteuch.tai.orchestrator.events.inbound.stt;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.TaiEvent;
-
 import java.time.Instant;
 
 public record SttTranscriptUnintelligibleEvent(
-    String eventId,
-    Instant occurredAt,
-    String correlationId,
-    EventSource source,
-    String language,
-    Double languageProbability,
-    Long durationMs,
-    Double averageEnergy,
-    String reason,
-    Integer suspicionScore
-) implements TaiEvent {
+        String eventId,
+        Instant occurredAt,
+        String correlationId,
+        EventSource source,
+        String language,
+        Double languageProbability,
+        Long durationMs,
+        Double averageEnergy,
+        String reason,
+        Integer suspicionScore,
+        Long transcriptionDurationMs)
+        implements TaiEvent {
     @Override
     public EventType type() {
         return EventType.STT_TRANSCRIPT_UNINTELLIGIBLE;

@@ -3,7 +3,6 @@ package com.toteuch.tai.orchestrator.events.inbound.llm;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.TaiEvent;
-
 import java.time.Instant;
 
 /**
@@ -20,16 +19,16 @@ import java.time.Instant;
  * @param generationDurationMs the total generation duration in milliseconds, if available
  */
 public record LlmResponseCompletedEvent(
-    String eventId,
-    Instant occurredAt,
-    String correlationId,
-    EventSource source,
-    String responseText,
-    String modelName,
-    Integer inputTokens,
-    Integer outputTokens,
-    Long generationDurationMs
-) implements TaiEvent {
+        String eventId,
+        Instant occurredAt,
+        String correlationId,
+        EventSource source,
+        String responseText,
+        String modelName,
+        Integer inputTokens,
+        Integer outputTokens,
+        Long generationDurationMs)
+        implements TaiEvent {
     @Override
     public EventType type() {
         return EventType.LLM_RESPONSE_COMPLETED;

@@ -1,14 +1,14 @@
 package com.toteuch.tai.orchestrator.core.scenario;
 
-import com.toteuch.tai.orchestrator.session.ConversationTurn;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
+import com.toteuch.tai.orchestrator.session.ConversationTurn;
+import org.junit.jupiter.api.Test;
 
 class BargeInScenarioTest extends AbstractScenarioTest {
 
@@ -28,7 +28,6 @@ class BargeInScenarioTest extends AbstractScenarioTest {
 
         publishSttUnintelligible(clarificationCorrelationId);
         publishLlmSuccess(clarificationCorrelationId, "Can you say that again?");
-
 
         verify(ttsClient).speak(clarificationCorrelationId, "Can you say that again?");
 
@@ -81,7 +80,8 @@ class BargeInScenarioTest extends AbstractScenarioTest {
     }
 
     @Test
-    void should_handle_barge_in_during_llm_generation_from_stt_unintelligible_event() throws Exception {
+    void should_handle_barge_in_during_llm_generation_from_stt_unintelligible_event()
+            throws Exception {
         String firstCorrelationId = "barge-llm-1";
         String clarificationCorrelationId = "barge-llm-clarification";
 

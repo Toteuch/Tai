@@ -5,7 +5,8 @@ import java.util.List;
 public final class AudioMetrics {
     private AudioMetrics() {}
 
-    public static double averageAbsoluteEnergy(byte[] audio, int sampleSizeBits, boolean bigEndian) {
+    public static double averageAbsoluteEnergy(
+            byte[] audio, int sampleSizeBits, boolean bigEndian) {
         if (audio == null || audio.length == 0) {
             return 0.0;
         }
@@ -46,9 +47,7 @@ public final class AudioMetrics {
             return 0.0;
         }
 
-        long voicedChunks = energies.stream()
-            .filter(energy -> energy >= threshold)
-            .count();
+        long voicedChunks = energies.stream().filter(energy -> energy >= threshold).count();
 
         return (double) voicedChunks / energies.size();
     }

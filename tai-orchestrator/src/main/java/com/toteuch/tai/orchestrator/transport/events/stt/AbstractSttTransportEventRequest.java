@@ -10,6 +10,7 @@ public abstract class AbstractSttTransportEventRequest extends AbstractTransport
     private Double averageEnergy;
     private String reason;
     private Integer suspicionScore;
+    private Long transcriptionDurationMs;
 
     public String getLanguage() {
         return language;
@@ -57,5 +58,13 @@ public abstract class AbstractSttTransportEventRequest extends AbstractTransport
 
     public void setSuspicionScore(Integer suspicionScore) {
         this.suspicionScore = suspicionScore;
+    }
+
+    public Long getTranscriptionDurationMs() {
+        return transcriptionDurationMs;
+    }
+
+    public void setTranscriptionDurationMs(Long transcriptionDurationMs) {
+        this.transcriptionDurationMs = transcriptionDurationMs;
     }
 }

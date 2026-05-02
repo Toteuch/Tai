@@ -1,17 +1,16 @@
 package com.toteuch.tai.orchestrator.core.publisher;
 
-import com.toteuch.tai.orchestrator.core.EventHandler;
-import com.toteuch.tai.orchestrator.events.EventType;
-import com.toteuch.tai.orchestrator.events.TaiEvent;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.toteuch.tai.orchestrator.core.EventHandler;
+import com.toteuch.tai.orchestrator.events.EventType;
+import com.toteuch.tai.orchestrator.events.TaiEvent;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class EventDispatcherTest {
 
@@ -41,8 +40,8 @@ class EventDispatcherTest {
         when(event.type()).thenReturn(EventType.USER_UTTERANCE_ACCEPTED);
 
         assertThatThrownBy(() -> dispatcher.dispatch(event))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("No handler registered");
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("No handler registered");
     }
 
     @Test

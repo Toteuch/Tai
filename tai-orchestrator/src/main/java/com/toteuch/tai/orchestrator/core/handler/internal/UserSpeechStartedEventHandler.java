@@ -9,6 +9,7 @@ import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
+import com.toteuch.tai.orchestrator.session.TurnMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -38,31 +39,34 @@ public class UserSpeechStartedEventHandler implements EventHandler<UserSpeechSta
         ConversationTurn activeTurn = sessionStore.get().getActiveTurn();
         String newCorrelationId = event.correlationId();
 
-        if (activeTurn != null
-            && !sessionContext.isStillActiveTurn(newCorrelationId)) {
+        TurnMetrics turnMetrics = sessionContext.getTurnMetrics(newCorrelationId);
+        turnMetrics.setUserSpeechStartAt(event.occurredAt());
+
+        if (activeTurn != null && !sessionContext.isStillActiveTurn(newCorrelationId)) {
             if (sessionContext.isTtsEnabled()
-                && (sessionContext.getSpeakingState() == SpeakingState.SPEAKING
-                || sessionContext.getSpeakingState() == SpeakingState.PREPARING)) {
-                contextLog.info("Barge-in detected during assistant speech | correlationId={} interruptedCorrelationId={}",
-                    newCorrelationId,
-                    activeTurn.getCorrelationId()
-                );
+                    && (sessionContext.getSpeakingState() == SpeakingState.SPEAKING
+                            || sessionContext.getSpeakingState() == SpeakingState.PREPARING)) {
+                contextLog.info(
+                        "Barge-in detected during assistant speech | correlationId={} interruptedCorrelationId={}",
+                        newCorrelationId,
+                        activeTurn.getCorrelationId());
                 activeTurn.setAssistantPlaybackInterrupted(true);
                 sessionContext.setSpeakingState(SpeakingState.SILENT);
-                perfLog.info("TTS stop speech called | correlationId={} activeTurnCorrelationId={}",
-                    event.correlationId(),
-                    activeTurn.getCorrelationId()
-                );
+                perfLog.debug(
+                        "TTS stop speech called | correlationId={} activeTurnCorrelationId={}",
+                        event.correlationId(),
+                        activeTurn.getCorrelationId());
                 ttsClient.stop(activeTurn.getCorrelationId());
             } else if (sessionContext.getThinkingState() == ThinkingState.GENERATING) {
-                contextLog.info("Barge-in detected during assistant thinking | correlationId={} interruptedCorrelationId={}",
-                    newCorrelationId,
-                    activeTurn.getCorrelationId()
-                );
+                contextLog.info(
+                        "Barge-in detected during assistant thinking | correlationId={} interruptedCorrelationId={}",
+                        newCorrelationId,
+                        activeTurn.getCorrelationId());
                 sessionContext.setThinkingState(ThinkingState.IDLE);
                 activeTurn.setSupersededBeforeAssistantReply(true);
                 activeTurn.setSupersededByCorrelationId(newCorrelationId);
             }
+            sessionContext.getTurnMetrics(activeTurn.getCorrelationId()).log();
             sessionContext.addTurn(sessionContext.getActiveTurn());
             sessionContext.setActiveTurn(null);
         }

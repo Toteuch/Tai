@@ -4,8 +4,19 @@ public class TtsPlaybackCompletedEventRequest extends AbstractTransportEventRequ
     private String text;
     private Long speechDurationMs;
 
-    public String getText() { return text; }
-    public void setText(String text) { this.text = text; }
-    public Long getSpeechDurationMs() { return speechDurationMs; }
-    public void setSpeechDurationMs(Long speechDurationMs) { this.speechDurationMs = speechDurationMs; }
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public Long getSpeechDurationMs() {
+        return speechDurationMs;
+    }
+
+    public void setSpeechDurationMs(Long speechDurationMs) {
+        this.speechDurationMs = speechDurationMs;
+    }
 }

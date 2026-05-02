@@ -1,16 +1,15 @@
 package com.toteuch.tai.orchestrator.core.scenario;
 
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.inbound.ui.UiManualTextInputReceivedEvent;
-import org.junit.jupiter.api.Test;
-
-import java.time.Instant;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+
+import com.toteuch.tai.orchestrator.events.EventSource;
+import com.toteuch.tai.orchestrator.events.inbound.ui.UiManualTextInputReceivedEvent;
+import java.time.Instant;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 class ManualTextInputScenarioTest extends AbstractScenarioTest {
 
@@ -20,13 +19,13 @@ class ManualTextInputScenarioTest extends AbstractScenarioTest {
         String userText = "Hello Tai";
         String reply = "Hi!";
 
-        eventPublisher.publish(new UiManualTextInputReceivedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            correlationId,
-            EventSource.UI,
-            userText
-        ));
+        eventPublisher.publish(
+                new UiManualTextInputReceivedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        correlationId,
+                        EventSource.UI,
+                        userText));
 
         verify(llmClient).generateReply(eq(correlationId), anyList());
         publishLlmSuccess(correlationId, reply);

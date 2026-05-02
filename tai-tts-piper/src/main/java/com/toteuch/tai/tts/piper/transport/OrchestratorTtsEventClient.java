@@ -1,14 +1,17 @@
 package com.toteuch.tai.tts.piper.transport;
 
 import com.toteuch.tai.tts.piper.config.TtsPiperProperties;
-import com.toteuch.tai.tts.piper.transport.dto.*;
+import com.toteuch.tai.tts.piper.transport.dto.AbstractTransportEventRequest;
+import com.toteuch.tai.tts.piper.transport.dto.TransportEventSource;
+import com.toteuch.tai.tts.piper.transport.dto.TtsPlaybackCompletedEventRequest;
+import com.toteuch.tai.tts.piper.transport.dto.TtsPlaybackFailedEventRequest;
+import com.toteuch.tai.tts.piper.transport.dto.TtsPlaybackStartedEventRequest;
+import java.time.Instant;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Component
 public class OrchestratorTtsEventClient {
@@ -17,16 +20,18 @@ public class OrchestratorTtsEventClient {
     private final RestClient orchestratorRestClient;
     private final TtsPiperProperties properties;
 
-    public OrchestratorTtsEventClient(RestClient orchestratorRestClient, TtsPiperProperties properties) {
+    public OrchestratorTtsEventClient(
+            RestClient orchestratorRestClient, TtsPiperProperties properties) {
         this.orchestratorRestClient = orchestratorRestClient;
         this.properties = properties;
     }
 
-    public void sendPlaybackStarted(String correlationId, String text) {
+    public void sendPlaybackStarted(String correlationId, String text, long ms) {
         TtsPlaybackStartedEventRequest request = new TtsPlaybackStartedEventRequest();
         fillCommon(request, correlationId);
         request.setText(text);
         request.setVoiceId(properties.getPiper().getVoiceId());
+        request.setSynthesisDurationMs(ms);
         post(properties.getOrchestrator().getCallbacks().getPlaybackStartedPath(), request);
     }
 
@@ -38,11 +43,13 @@ public class OrchestratorTtsEventClient {
         post(properties.getOrchestrator().getCallbacks().getPlaybackCompletedPath(), request);
     }
 
-    public void sendPlaybackFailed(String correlationId, String errorCode, String errorMessage) {
+    public void sendPlaybackFailed(
+            String correlationId, String errorCode, String errorMessage, long speechDurationMs) {
         TtsPlaybackFailedEventRequest request = new TtsPlaybackFailedEventRequest();
         fillCommon(request, correlationId);
         request.setErrorCode(errorCode);
         request.setErrorMessage(errorMessage);
+        request.setSpeechDurationMs(speechDurationMs);
         post(properties.getOrchestrator().getCallbacks().getPlaybackFailedPath(), request);
     }
 
@@ -55,11 +62,7 @@ public class OrchestratorTtsEventClient {
 
     private void post(String path, Object request) {
         try {
-            orchestratorRestClient.post()
-                .uri(path)
-                .body(request)
-                .retrieve()
-                .toBodilessEntity();
+            orchestratorRestClient.post().uri(path).body(request).retrieve().toBodilessEntity();
         } catch (Exception e) {
             log.warn("Failed to send TTS callback | path={}", path, e);
         }

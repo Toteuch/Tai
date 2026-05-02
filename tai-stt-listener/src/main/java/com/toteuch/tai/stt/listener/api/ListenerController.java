@@ -18,18 +18,17 @@ public class ListenerController {
 
     @PostMapping("/start")
     @Operation(
-        summary = "Start continuous microphone listening",
-        description = "Opens the microphone and starts waiting for speech segments continuously."
-    )
+            summary = "Start continuous microphone listening",
+            description =
+                    "Opens the microphone and starts waiting for speech segments continuously.")
     public ListenerControlResponse start() {
         return ListenerControlResponse.from(listeningService.start());
     }
 
     @PostMapping("/stop")
     @Operation(
-        summary = "Stop continuous microphone listening",
-        description = "Stops the continuous listener and closes the microphone line."
-    )
+            summary = "Stop continuous microphone listening",
+            description = "Stops the continuous listener and closes the microphone line.")
     public ListenerControlResponse stop() {
         return ListenerControlResponse.from(listeningService.stop());
     }

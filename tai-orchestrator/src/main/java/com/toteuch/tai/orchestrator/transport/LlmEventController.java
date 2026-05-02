@@ -15,10 +15,7 @@ public class LlmEventController {
     private final TaiEventPublisher eventPublisher;
     private final LlmTransportEventMapper mapper;
 
-    public LlmEventController(
-        TaiEventPublisher eventPublisher,
-        LlmTransportEventMapper mapper
-    ) {
+    public LlmEventController(TaiEventPublisher eventPublisher, LlmTransportEventMapper mapper) {
         this.eventPublisher = eventPublisher;
         this.mapper = mapper;
     }

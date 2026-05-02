@@ -1,9 +1,8 @@
 package com.toteuch.tai.stt.listener.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "tai.stt")
 public class SttListenerProperties {
@@ -12,7 +11,6 @@ public class SttListenerProperties {
     private Whisper whisper = new Whisper();
     private Orchestrator orchestrator = new Orchestrator();
     private Listener listener = new Listener();
-
 
     public Capture getCapture() {
         return capture;
@@ -210,7 +208,8 @@ public class SttListenerProperties {
             return suspiciousLanguageProbabilityThreshold;
         }
 
-        public void setSuspiciousLanguageProbabilityThreshold(double suspiciousLanguageProbabilityThreshold) {
+        public void setSuspiciousLanguageProbabilityThreshold(
+                double suspiciousLanguageProbabilityThreshold) {
             this.suspiciousLanguageProbabilityThreshold = suspiciousLanguageProbabilityThreshold;
         }
 

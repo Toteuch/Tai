@@ -1,16 +1,15 @@
 package com.toteuch.tai.tts.piper.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
+import java.nio.file.Path;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineEvent;
-import java.nio.file.Path;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JavaAudioPlaybackService {
@@ -22,26 +21,29 @@ public class JavaAudioPlaybackService {
         CountDownLatch playbackFinished = new CountDownLatch(1);
         Clip clip = null;
 
-        try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(wavFile.toFile())) {
+        try (AudioInputStream audioInputStream =
+                AudioSystem.getAudioInputStream(wavFile.toFile())) {
             log.info("Opening WAV playback | file={}", wavFile.toAbsolutePath());
 
             clip = AudioSystem.getClip();
             Clip finalClip = clip;
 
-            clip.addLineListener(event -> {
-                if (event.getType() == LineEvent.Type.STOP || event.getType() == LineEvent.Type.CLOSE) {
-                    playbackFinished.countDown();
-                }
-            });
+            clip.addLineListener(
+                    event -> {
+                        if (event.getType() == LineEvent.Type.STOP
+                                || event.getType() == LineEvent.Type.CLOSE) {
+                            playbackFinished.countDown();
+                        }
+                    });
 
             clip.open(audioInputStream);
             currentClip.set(clip);
 
-            log.info("Starting WAV playback | file={} frameLength={} microsecondLength={}",
-                wavFile.toAbsolutePath(),
-                clip.getFrameLength(),
-                clip.getMicrosecondLength()
-            );
+            log.info(
+                    "Starting WAV playback | file={} frameLength={} microsecondLength={}",
+                    wavFile.toAbsolutePath(),
+                    clip.getFrameLength(),
+                    clip.getMicrosecondLength());
 
             clip.start();
 

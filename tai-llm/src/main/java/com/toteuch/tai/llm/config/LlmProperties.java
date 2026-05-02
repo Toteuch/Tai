@@ -120,7 +120,12 @@ public class LlmProperties {
     }
 
     public static class Ollama {
-        private String baseUrl = "http://localhost:11434", chatPath = "/api/chat", tagsPath = "/api/tags", model = "tai-llama", keepAlive = "-1", warmUpPrompt = "Say ready.";
+        private String baseUrl = "http://localhost:11434",
+                chatPath = "/api/chat",
+                tagsPath = "/api/tags",
+                model = "tai-llama",
+                keepAlive = "-1",
+                warmUpPrompt = "Say ready.";
         private boolean stream = false, warmUpOnStartup = true;
         private int connectTimeoutMs = 3000, readTimeoutMs = 120000;
 

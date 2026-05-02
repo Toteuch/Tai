@@ -1,11 +1,7 @@
 package com.toteuch.tai.stt.listener.gatekeeper;
 
 public record GatekeeperDecision(
-    boolean accepted,
-    String reason,
-    int suspicionScore,
-    RejectionCategory rejectionCategory
-) {
+        boolean accepted, String reason, int suspicionScore, RejectionCategory rejectionCategory) {
     public static GatekeeperDecision accepted(int suspicionScore) {
         return new GatekeeperDecision(true, "ACCEPTED", suspicionScore, RejectionCategory.NONE);
     }
@@ -19,6 +15,7 @@ public record GatekeeperDecision(
     }
 
     public static GatekeeperDecision suspicious(String reason, int suspicionScore) {
-        return new GatekeeperDecision(false, reason, suspicionScore, RejectionCategory.UNINTELLIGIBLE);
+        return new GatekeeperDecision(
+                false, reason, suspicionScore, RejectionCategory.UNINTELLIGIBLE);
     }
 }

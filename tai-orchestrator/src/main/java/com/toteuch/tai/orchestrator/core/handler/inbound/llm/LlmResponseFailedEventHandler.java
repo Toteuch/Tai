@@ -2,7 +2,6 @@ package com.toteuch.tai.orchestrator.core.handler.inbound.llm;
 
 import com.toteuch.tai.orchestrator.core.EventHandler;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantReplyFailedEvent;
@@ -12,9 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-import java.util.UUID;
-
 @Component
 public class LlmResponseFailedEventHandler implements EventHandler<LlmResponseFailedEvent> {
     private static final Logger decisionLog = LoggerFactory.getLogger("tai.decision");
@@ -23,7 +19,8 @@ public class LlmResponseFailedEventHandler implements EventHandler<LlmResponseFa
     private final SessionStore sessionStore;
     private final TaiEventPublisher eventPublisher;
 
-    public LlmResponseFailedEventHandler(SessionStore sessionStore, TaiEventPublisher eventPublisher) {
+    public LlmResponseFailedEventHandler(
+            SessionStore sessionStore, TaiEventPublisher eventPublisher) {
         this.sessionStore = sessionStore;
         this.eventPublisher = eventPublisher;
     }
@@ -35,24 +32,29 @@ public class LlmResponseFailedEventHandler implements EventHandler<LlmResponseFa
 
     @Override
     public void handle(LlmResponseFailedEvent event) {
-        perfLog.info("LLM generation failed | correlationId={}", event.correlationId());
+        perfLog.debug(
+                "LLM generation completed | correlationId={} modelName={}",
+                event.correlationId(),
+                event.modelName());
         SessionContext sessionContext = sessionStore.get();
 
         if (!sessionContext.isStillActiveTurn(event.correlationId())) {
-            decisionLog.info("{} ignored | correlationId={} activeTurnCorrelationId={}",
-                this.getClass().getSimpleName(),
-                event.correlationId(),
-                sessionContext.getActiveTurn().getCorrelationId());
+            decisionLog.info(
+                    "{} ignored | correlationId={} activeTurnCorrelationId={}",
+                    this.getClass().getSimpleName(),
+                    event.correlationId(),
+                    sessionContext.getActiveTurn().getCorrelationId());
             return;
         }
 
-        eventPublisher.publish(new AssistantReplyFailedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            event.correlationId(),
-            EventSource.LLM_SERVICE,
-            event.errorCode(),
-            event.errorMessage()
-        ));
+        eventPublisher.publish(
+                new AssistantReplyFailedEvent(
+                        event.eventId(),
+                        event.occurredAt(),
+                        event.correlationId(),
+                        event.source(),
+                        event.errorCode(),
+                        event.errorMessage(),
+                        event.generationDurationMs()));
     }
 }

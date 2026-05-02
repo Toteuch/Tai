@@ -19,7 +19,7 @@ public class UiTtsToggleChangedEventHandler implements EventHandler<UiTtsToggleC
 
     @Override
     public void handle(UiTtsToggleChangedEvent event) {
-        perfLog.info("TTS toggle change received | correlationId={}", event.correlationId());
+        perfLog.debug("TTS toggle change received | correlationId={}", event.correlationId());
         errorLog.error("{} not supported yet", this.getClass().getSimpleName());
     }
 }

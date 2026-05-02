@@ -2,7 +2,6 @@ package com.toteuch.tai.orchestrator.core.handler.inbound.tts;
 
 import com.toteuch.tai.orchestrator.core.EventHandler;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechFailedEvent;
@@ -11,9 +10,6 @@ import com.toteuch.tai.orchestrator.session.SessionStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Component
 public class TtsPlaybackFailedEventHandler implements EventHandler<TtsPlaybackFailedEvent> {
@@ -24,9 +20,7 @@ public class TtsPlaybackFailedEventHandler implements EventHandler<TtsPlaybackFa
     private final TaiEventPublisher eventPublisher;
 
     public TtsPlaybackFailedEventHandler(
-        SessionStore sessionStore,
-        TaiEventPublisher eventPublisher
-    ) {
+            SessionStore sessionStore, TaiEventPublisher eventPublisher) {
         this.sessionStore = sessionStore;
         this.eventPublisher = eventPublisher;
     }
@@ -38,31 +32,34 @@ public class TtsPlaybackFailedEventHandler implements EventHandler<TtsPlaybackFa
 
     @Override
     public void handle(TtsPlaybackFailedEvent event) {
-        perfLog.info("TTS speech failed | correlationId={}", event.correlationId());
+        perfLog.debug("TTS speech failed | correlationId={}", event.correlationId());
         SessionContext sessionContext = sessionStore.get();
 
         if (sessionContext.getActiveTurn() == null) {
-            decisionLog.info("{} ignored : no active turn | correlationId={}",
-                this.getClass().getSimpleName(),
-                event.correlationId());
+            decisionLog.info(
+                    "{} ignored : no active turn | correlationId={}",
+                    this.getClass().getSimpleName(),
+                    event.correlationId());
             return;
         }
 
         if (!sessionContext.isStillActiveTurn(event.correlationId())) {
-            decisionLog.info("{} ignored | correlationId={} activeTurnCorrelationId={}",
-                this.getClass().getSimpleName(),
-                event.correlationId(),
-                sessionContext.getActiveTurn().getCorrelationId());
+            decisionLog.info(
+                    "{} ignored | correlationId={} activeTurnCorrelationId={}",
+                    this.getClass().getSimpleName(),
+                    event.correlationId(),
+                    sessionContext.getActiveTurn().getCorrelationId());
             return;
         }
 
-        eventPublisher.publish(new AssistantSpeechFailedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            event.correlationId(),
-            EventSource.TTS_SERVICE,
-            event.errorCode(),
-            event.errorMessage()
-        ));
+        eventPublisher.publish(
+                new AssistantSpeechFailedEvent(
+                        event.eventId(),
+                        event.occurredAt(),
+                        event.correlationId(),
+                        event.source(),
+                        event.errorCode(),
+                        event.errorMessage(),
+                        event.speechDurationMs()));
     }
 }

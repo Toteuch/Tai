@@ -2,11 +2,12 @@ package com.toteuch.tai.orchestrator.session;
 
 import com.toteuch.tai.orchestrator.services.llm.LlmMessage;
 import com.toteuch.tai.orchestrator.support.ContextAssembler;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SessionContext {
     private static final Logger contextLog = LoggerFactory.getLogger("tai.context");
@@ -18,6 +19,7 @@ public class SessionContext {
     private boolean ttsEnabled = true;
     private boolean obscenityFilterEnabled = false;
     private ConversationTurn activeTurn;
+    private final Map<String, TurnMetrics> metricsByCorrelationId = new HashMap<>();
 
     public List<ConversationTurn> getTurns() {
         return turns;
@@ -43,15 +45,15 @@ public class SessionContext {
 
     public void setThinkingState(ThinkingState thinkingState) {
         if (this.thinkingState != thinkingState) {
-            contextLog.debug("ThinkingState changed | newState={} oldState={}",
-                thinkingState,
-                this.thinkingState
-            );
+            contextLog.debug(
+                    "ThinkingState changed | newState={} oldState={}",
+                    thinkingState,
+                    this.thinkingState);
         } else {
-            contextLog.error("ThinkingState changed | newState={} oldState={}",
-                thinkingState,
-                this.thinkingState
-            );
+            contextLog.error(
+                    "ThinkingState changed | newState={} oldState={}",
+                    thinkingState,
+                    this.thinkingState);
         }
         this.thinkingState = thinkingState;
     }
@@ -62,15 +64,15 @@ public class SessionContext {
 
     public void setSpeakingState(SpeakingState speakingState) {
         if (this.speakingState != speakingState) {
-            contextLog.debug("SpeakingState changed | newState={} oldState={}",
-                speakingState,
-                this.speakingState
-            );
+            contextLog.debug(
+                    "SpeakingState changed | newState={} oldState={}",
+                    speakingState,
+                    this.speakingState);
         } else {
-            contextLog.error("SpeakingState changed | newState={} oldState={}",
-                speakingState,
-                this.speakingState
-            );
+            contextLog.error(
+                    "SpeakingState changed | newState={} oldState={}",
+                    speakingState,
+                    this.speakingState);
         }
 
         this.speakingState = speakingState;
@@ -83,6 +85,15 @@ public class SessionContext {
     public void setTtsEnabled(boolean ttsEnabled) {
         contextLog.info("TtsEnabled changed to {}", ttsEnabled);
         this.ttsEnabled = ttsEnabled;
+    }
+
+    public TurnMetrics getTurnMetrics(String correlationId) {
+        return metricsByCorrelationId.computeIfAbsent(correlationId, TurnMetrics::new);
+    }
+
+    public void logMetrics(String correlationId) {
+        getTurnMetrics(correlationId).log();
+        metricsByCorrelationId.remove(correlationId);
     }
 
     public boolean isObscenityFilterEnabled() {
@@ -105,32 +116,50 @@ public class SessionContext {
 
     private void logConversation(ConversationTurn turn) {
         StringBuilder logBuilder = new StringBuilder();
-        logBuilder.append("""
-            
+        logBuilder.append(
+                """
+
             === TAI TURN START ===
             """);
-        logBuilder.append(String.format("""
+        logBuilder.append(
+                String.format(
+                        """
             correlationId=%s
-            """, turn.getCorrelationId()));
-        logBuilder.append(String.format("""
+            """,
+                        turn.getCorrelationId()));
+        logBuilder.append(
+                String.format(
+                        """
             history=%s
-            """, formatHistoryOverview()));
+            """,
+                        formatHistoryOverview()));
         if (convLog.isDebugEnabled()) {
-            logBuilder.append(String.format("""
+            logBuilder.append(
+                    String.format(
+                            """
                     historyDetails=
                     ---------------
                 %s
                     ---------------
-                """, formatFullHistory()));
+                """,
+                            formatFullHistory()));
         }
-        logBuilder.append(String.format("""
+        logBuilder.append(
+                String.format(
+                        """
             userMessage=%s
-            """, turn.getUserMessage()));
-        logBuilder.append(String.format("""
+            """,
+                        turn.getUserMessage()));
+        logBuilder.append(
+                String.format(
+                        """
                 assistantReply=%s
                 """,
-            turn.getAssistantMessage() != null ? turn.getAssistantMessage() : "<empty>"));
-        logBuilder.append("""
+                        turn.getAssistantMessage() != null
+                                ? turn.getAssistantMessage()
+                                : "<empty>"));
+        logBuilder.append(
+                """
             === TAI TURN END ===""");
         convLog.info(logBuilder.toString());
     }
@@ -141,16 +170,22 @@ public class SessionContext {
         historyOverview.append(String.format("%s messages=", messages.size()));
         messages.forEach(m -> historyOverview.append(m.role()).append(", "));
         return historyOverview.lastIndexOf(", ") > -1
-            ? historyOverview.subSequence(0, historyOverview.lastIndexOf(", ")).toString() + "]"
-            : historyOverview + "]";
+                ? historyOverview.subSequence(0, historyOverview.lastIndexOf(", ")).toString() + "]"
+                : historyOverview + "]";
     }
 
     private String formatFullHistory() {
         StringBuilder fullHistory = new StringBuilder();
         List<LlmMessage> messages = ContextAssembler.assemble(this, true);
-        messages.forEach(m -> {
-            fullHistory.append("\t").append(m.role()).append(": ").append(m.content()).append("\n");
-        });
+        messages.forEach(
+                m -> {
+                    fullHistory
+                            .append("\t")
+                            .append(m.role())
+                            .append(": ")
+                            .append(m.content())
+                            .append("\n");
+                });
         return fullHistory.toString();
     }
 }

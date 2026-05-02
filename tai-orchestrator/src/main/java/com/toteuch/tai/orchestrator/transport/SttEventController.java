@@ -18,10 +18,7 @@ public class SttEventController {
     private final TaiEventPublisher eventPublisher;
     private final SttTransportEventMapper mapper;
 
-    public SttEventController(
-        TaiEventPublisher eventPublisher,
-        SttTransportEventMapper mapper
-    ) {
+    public SttEventController(TaiEventPublisher eventPublisher, SttTransportEventMapper mapper) {
         this.eventPublisher = eventPublisher;
         this.mapper = mapper;
     }
@@ -32,7 +29,8 @@ public class SttEventController {
     }
 
     @PostMapping("/transcript-unintelligible")
-    public void onTranscriptUnintelligible(@RequestBody SttTranscriptUnintelligibleEventRequest request) {
+    public void onTranscriptUnintelligible(
+            @RequestBody SttTranscriptUnintelligibleEventRequest request) {
         eventPublisher.publish(mapper.toEvent(request));
     }
 

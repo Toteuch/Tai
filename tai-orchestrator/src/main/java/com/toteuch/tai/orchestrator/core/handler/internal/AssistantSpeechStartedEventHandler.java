@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AssistantSpeechStartedEventHandler implements EventHandler<AssistantSpeechStartedEvent> {
+public class AssistantSpeechStartedEventHandler
+        implements EventHandler<AssistantSpeechStartedEvent> {
     private static final Logger contextLog = LoggerFactory.getLogger("tai.context");
 
     private final SessionStore sessionStore;
@@ -28,6 +29,12 @@ public class AssistantSpeechStartedEventHandler implements EventHandler<Assistan
     @Override
     public void handle(AssistantSpeechStartedEvent event) {
         SessionContext sessionContext = sessionStore.get();
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setTtsSpeechStartAt(event.occurredAt());
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setTtsSynthesisMs(event.synthesisDurationMs());
 
         sessionContext.setSpeakingState(SpeakingState.SPEAKING);
         sessionContext.getActiveTurn().setAssistantPlaybackStarted(true);

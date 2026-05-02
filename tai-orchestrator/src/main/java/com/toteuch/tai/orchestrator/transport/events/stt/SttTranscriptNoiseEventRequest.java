@@ -1,4 +1,3 @@
 package com.toteuch.tai.orchestrator.transport.events.stt;
 
-public class SttTranscriptNoiseEventRequest extends AbstractSttTransportEventRequest {
-}
+public class SttTranscriptNoiseEventRequest extends AbstractSttTransportEventRequest {}

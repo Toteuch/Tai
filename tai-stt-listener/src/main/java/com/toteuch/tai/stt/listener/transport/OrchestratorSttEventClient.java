@@ -11,10 +11,6 @@ import com.toteuch.tai.stt.listener.transport.dto.SttSpeechStartedEventRequest;
 import com.toteuch.tai.stt.listener.transport.dto.SttTranscriptAcceptedEventRequest;
 import com.toteuch.tai.stt.listener.transport.dto.SttTranscriptRejectedEventRequest;
 import com.toteuch.tai.stt.listener.transport.dto.TransportEventSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -22,6 +18,9 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 @Component
 public class OrchestratorSttEventClient {
@@ -31,24 +30,23 @@ public class OrchestratorSttEventClient {
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
-    public OrchestratorSttEventClient(
-        SttListenerProperties properties,
-        ObjectMapper objectMapper
-    ) {
+    public OrchestratorSttEventClient(SttListenerProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
         this.objectMapper = objectMapper;
-        this.httpClient = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_1_1)
-            .connectTimeout(Duration.ofMillis(properties.getOrchestrator().getConnectTimeoutMs()))
-            .build();
+        this.httpClient =
+                HttpClient.newBuilder()
+                        .version(HttpClient.Version.HTTP_1_1)
+                        .connectTimeout(
+                                Duration.ofMillis(
+                                        properties.getOrchestrator().getConnectTimeoutMs()))
+                        .build();
     }
 
     public void sendCallback(
-        String correlationId,
-        SpeechSegment segment,
-        TranscriptionResult transcription,
-        GatekeeperDecision decision
-    ) {
+            String correlationId,
+            SpeechSegment segment,
+            TranscriptionResult transcription,
+            GatekeeperDecision decision) {
         if (decision.accepted()) {
             sendAccepted(correlationId, segment, transcription, decision);
             return;
@@ -56,47 +54,39 @@ public class OrchestratorSttEventClient {
 
         if (decision.rejectionCategory() == RejectionCategory.UNINTELLIGIBLE) {
             sendRejected(
-                properties.getOrchestrator().getCallbacks().getTranscriptUnintelligiblePath(),
-                correlationId,
-                segment,
-                transcription,
-                decision
-            );
+                    properties.getOrchestrator().getCallbacks().getTranscriptUnintelligiblePath(),
+                    correlationId,
+                    segment,
+                    transcription,
+                    decision);
             return;
         }
 
         sendRejected(
-            properties.getOrchestrator().getCallbacks().getTranscriptNoisePath(),
-            correlationId,
-            segment,
-            transcription,
-            decision
-        );
+                properties.getOrchestrator().getCallbacks().getTranscriptNoisePath(),
+                correlationId,
+                segment,
+                transcription,
+                decision);
     }
 
-    public void sendSpeechStarted(
-        String correlationId,
-        double averageEnergy,
-        double peakEnergy
-    ) {
+    public void sendSpeechStarted(String correlationId, double averageEnergy, double peakEnergy) {
         SttSpeechStartedEventRequest request = new SttSpeechStartedEventRequest();
         fillCommon(request, correlationId);
         request.setAverageEnergy(averageEnergy);
         request.setPeakEnergy(peakEnergy);
 
         post(
-            properties.getOrchestrator().getCallbacks().getSpeechStartedPath(),
-            request,
-            correlationId
-        );
+                properties.getOrchestrator().getCallbacks().getSpeechStartedPath(),
+                request,
+                correlationId);
     }
 
     private void sendAccepted(
-        String correlationId,
-        SpeechSegment segment,
-        TranscriptionResult transcription,
-        GatekeeperDecision decision
-    ) {
+            String correlationId,
+            SpeechSegment segment,
+            TranscriptionResult transcription,
+            GatekeeperDecision decision) {
         SttTranscriptAcceptedEventRequest request = new SttTranscriptAcceptedEventRequest();
         fillCommon(request, correlationId);
         request.setText(transcription.text());
@@ -106,27 +96,27 @@ public class OrchestratorSttEventClient {
         request.setAverageEnergy(segment.averageEnergy());
         request.setReason(decision.reason());
         request.setSuspicionScore(decision.suspicionScore());
+        request.setTranscriptionDurationMs(transcription.transcriptionDurationMs());
 
         post(
-            properties.getOrchestrator().getCallbacks().getTranscriptAcceptedPath(),
-            request,
-            correlationId
-        );
+                properties.getOrchestrator().getCallbacks().getTranscriptAcceptedPath(),
+                request,
+                correlationId);
     }
 
     private void sendRejected(
-        String path,
-        String correlationId,
-        SpeechSegment segment,
-        TranscriptionResult transcription,
-        GatekeeperDecision decision
-    ) {
+            String path,
+            String correlationId,
+            SpeechSegment segment,
+            TranscriptionResult transcription,
+            GatekeeperDecision decision) {
         SttTranscriptRejectedEventRequest request = new SttTranscriptRejectedEventRequest();
         fillCommon(request, correlationId);
 
         if (transcription != null) {
             request.setLanguage(transcription.language());
             request.setLanguageProbability(transcription.languageProbability());
+            request.setTranscriptionDurationMs(transcription.transcriptionDurationMs());
         }
 
         request.setDurationMs(segment.durationMs());
@@ -150,31 +140,35 @@ public class OrchestratorSttEventClient {
 
             URI uri = URI.create(properties.getOrchestrator().getBaseUrl() + path);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                .uri(uri)
-                .version(HttpClient.Version.HTTP_1_1)
-                .timeout(Duration.ofMillis(properties.getOrchestrator().getReadTimeoutMs()))
-                .header("Accept", "application/json")
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .build();
+            HttpRequest request =
+                    HttpRequest.newBuilder()
+                            .uri(uri)
+                            .version(HttpClient.Version.HTTP_1_1)
+                            .timeout(
+                                    Duration.ofMillis(
+                                            properties.getOrchestrator().getReadTimeoutMs()))
+                            .header("Accept", "application/json")
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(json))
+                            .build();
 
-            HttpResponse<String> response = httpClient.send(
-                request,
-                HttpResponse.BodyHandlers.ofString()
-            );
+            HttpResponse<String> response =
+                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 log.warn(
-                    "STT callback failed | correlationId={} path={} status={} body={}",
-                    correlationId,
-                    path,
-                    response.statusCode(),
-                    response.body()
-                );
+                        "STT callback failed | correlationId={} path={} status={} body={}",
+                        correlationId,
+                        path,
+                        response.statusCode(),
+                        response.body());
             }
         } catch (Exception e) {
-            log.warn("Failed to send STT callback | correlationId={} path={}", correlationId, path, e);
+            log.warn(
+                    "Failed to send STT callback | correlationId={} path={}",
+                    correlationId,
+                    path,
+                    e);
         }
     }
 }

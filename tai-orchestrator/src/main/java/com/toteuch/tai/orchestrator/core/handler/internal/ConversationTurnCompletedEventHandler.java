@@ -13,14 +13,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ConversationTurnCompletedEventHandler implements EventHandler<ConversationTurnCompletedEvent> {
+public class ConversationTurnCompletedEventHandler
+        implements EventHandler<ConversationTurnCompletedEvent> {
     private static final Logger errorLog = LoggerFactory.getLogger("tai.error");
 
     private final SessionStore sessionStore;
 
-    public ConversationTurnCompletedEventHandler(
-        SessionStore sessionStore
-    ) {
+    public ConversationTurnCompletedEventHandler(SessionStore sessionStore) {
         this.sessionStore = sessionStore;
     }
 
@@ -34,12 +33,19 @@ public class ConversationTurnCompletedEventHandler implements EventHandler<Conve
         SessionContext sessionContext = sessionStore.get();
         if (sessionContext.getThinkingState() != ThinkingState.IDLE) {
             sessionContext.setThinkingState(ThinkingState.IDLE);
-            errorLog.error("ThinkingState should be IDLE | thinkingState={}", sessionContext.getThinkingState());
+            errorLog.error(
+                    "ThinkingState should be IDLE | thinkingState={}",
+                    sessionContext.getThinkingState());
         }
         if (sessionContext.getSpeakingState() != SpeakingState.SILENT) {
             sessionContext.setSpeakingState(SpeakingState.SILENT);
-            errorLog.error("SpeakingState should be SILENT | speakingState={}", sessionContext.getSpeakingState());
+            errorLog.error(
+                    "SpeakingState should be SILENT | speakingState={}",
+                    sessionContext.getSpeakingState());
         }
+
+        sessionContext.logMetrics(event.correlationId());
+
         ConversationTurn activeTurn = sessionContext.getActiveTurn();
 
         if (activeTurn != null && activeTurn.isPersistInHistory()) {

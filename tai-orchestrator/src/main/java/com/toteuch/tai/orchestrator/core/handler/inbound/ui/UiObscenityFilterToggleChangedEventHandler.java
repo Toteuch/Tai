@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UiObscenityFilterToggleChangedEventHandler implements EventHandler<UiObscenityFilterToggleChangedEvent> {
+public class UiObscenityFilterToggleChangedEventHandler
+        implements EventHandler<UiObscenityFilterToggleChangedEvent> {
     private static final Logger errorLog = LoggerFactory.getLogger("tai.error");
     private static final Logger perfLog = LoggerFactory.getLogger("tai.performance");
 
@@ -19,7 +20,9 @@ public class UiObscenityFilterToggleChangedEventHandler implements EventHandler<
 
     @Override
     public void handle(UiObscenityFilterToggleChangedEvent event) {
-        perfLog.info("Obscenity filter toggle change received | correlationId={}", event.correlationId());
+        perfLog.debug(
+                "Obscenity filter toggle change received | correlationId={}",
+                event.correlationId());
         errorLog.error("{} not supported yet", this.getClass().getSimpleName());
     }
 }

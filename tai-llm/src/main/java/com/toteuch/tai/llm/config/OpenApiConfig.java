@@ -8,6 +8,11 @@ import org.springframework.context.annotation.*;
 public class OpenApiConfig {
     @Bean
     public OpenAPI taiLlmOpenApi() {
-        return new OpenAPI().info(new Info().title("Tai LLM Service API").version("0.1.0").description("Asynchronous LLM microservice backed by Ollama."));
+        return new OpenAPI()
+                .info(
+                        new Info()
+                                .title("Tai LLM Service API")
+                                .version("0.1.0")
+                                .description("Asynchronous LLM microservice backed by Ollama."));
     }
 }

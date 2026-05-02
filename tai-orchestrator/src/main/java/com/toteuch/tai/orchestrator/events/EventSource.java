@@ -5,5 +5,6 @@ public enum EventSource {
     LLM_SERVICE,
     TTS_SERVICE,
     UI,
-    ORCHESTRATOR
+    ORCHESTRATOR,
+    UNKNOWN
 }

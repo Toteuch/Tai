@@ -1,13 +1,13 @@
 package com.toteuch.tai.orchestrator.core.scenario;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
+import org.junit.jupiter.api.Test;
 
 class TtsInterruptionScenarioTest extends AbstractScenarioTest {
 
@@ -37,15 +37,19 @@ class TtsInterruptionScenarioTest extends AbstractScenarioTest {
         publishTtsStarted(secondCorrelationId, "Second reply.");
         publishTtsCompleted(secondCorrelationId, "Second reply.");
 
-        assertThat(sessionStore.get().getTurns()).anySatisfy(turn -> {
-            assertThat(turn.getCorrelationId()).isEqualTo(firstCorrelationId);
-            assertThat(turn.isAssistantPlaybackInterrupted()).isTrue();
-        });
+        assertThat(sessionStore.get().getTurns())
+                .anySatisfy(
+                        turn -> {
+                            assertThat(turn.getCorrelationId()).isEqualTo(firstCorrelationId);
+                            assertThat(turn.isAssistantPlaybackInterrupted()).isTrue();
+                        });
 
-        assertThat(sessionStore.get().getTurns()).anySatisfy(turn -> {
-            assertThat(turn.getCorrelationId()).isEqualTo(secondCorrelationId);
-            assertThat(turn.getAssistantMessage()).isEqualTo("Second reply.");
-        });
+        assertThat(sessionStore.get().getTurns())
+                .anySatisfy(
+                        turn -> {
+                            assertThat(turn.getCorrelationId()).isEqualTo(secondCorrelationId);
+                            assertThat(turn.getAssistantMessage()).isEqualTo("Second reply.");
+                        });
 
         assertThat(sessionStore.get().getActiveTurn()).isNull();
     }

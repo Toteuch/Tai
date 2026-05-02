@@ -1,17 +1,16 @@
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class AssistantSpeechStartedEventHandlerTest extends AbstractHandlerTest {
 
@@ -23,14 +22,15 @@ class AssistantSpeechStartedEventHandlerTest extends AbstractHandlerTest {
         context.setSpeakingState(SpeakingState.PREPARING);
 
         AssistantSpeechStartedEventHandler handler =
-            new AssistantSpeechStartedEventHandler(fixedSessionStore(context));
+                new AssistantSpeechStartedEventHandler(fixedSessionStore(context));
 
-        handler.handle(new AssistantSpeechStartedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            "corr-1",
-            EventSource.TTS_SERVICE
-        ));
+        handler.handle(
+                new AssistantSpeechStartedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        "corr-1",
+                        EventSource.TTS_SERVICE,
+                        0L));
 
         assertThat(context.getSpeakingState()).isEqualTo(SpeakingState.SPEAKING);
         assertThat(turn.isAssistantPlaybackStarted()).isTrue();

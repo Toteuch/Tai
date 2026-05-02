@@ -3,7 +3,6 @@ package com.toteuch.tai.orchestrator.events.internal;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.TaiEvent;
-
 import java.time.Instant;
 
 /**
@@ -16,12 +15,13 @@ import java.time.Instant;
  * @param replyText the accepted assistant reply text
  */
 public record AssistantReplyAcceptedEvent(
-    String eventId,
-    Instant occurredAt,
-    String correlationId,
-    EventSource source,
-    String replyText
-) implements TaiEvent {
+        String eventId,
+        Instant occurredAt,
+        String correlationId,
+        EventSource source,
+        String replyText,
+        Long llmGenerationMs)
+        implements TaiEvent {
     @Override
     public EventType type() {
         return EventType.ASSISTANT_REPLY_ACCEPTED;

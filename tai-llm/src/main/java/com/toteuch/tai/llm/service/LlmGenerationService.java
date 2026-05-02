@@ -14,7 +14,8 @@ public class LlmGenerationService {
     private final OrchestratorLlmEventClient events;
     private final ModelWarmupState warmup;
 
-    public LlmGenerationService(OllamaClient ollama, OrchestratorLlmEventClient events, ModelWarmupState warmup) {
+    public LlmGenerationService(
+            OllamaClient ollama, OrchestratorLlmEventClient events, ModelWarmupState warmup) {
         this.ollama = ollama;
         this.events = events;
         this.warmup = warmup;
@@ -31,7 +32,10 @@ public class LlmGenerationService {
         } else {
             warmup.markFailed(r.errorCode() + ": " + r.errorMessage());
             events.sendFailed(req.correlationId(), r);
-            log.warn("LLM failure callback sent | correlationId={} errorCode={}", req.correlationId(), r.errorCode());
+            log.warn(
+                    "LLM failure callback sent | correlationId={} errorCode={}",
+                    req.correlationId(),
+                    r.errorCode());
         }
     }
 }

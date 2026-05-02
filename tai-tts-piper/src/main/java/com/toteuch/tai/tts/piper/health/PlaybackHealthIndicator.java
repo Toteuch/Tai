@@ -17,8 +17,8 @@ public class PlaybackHealthIndicator implements HealthIndicator {
     public Health health() {
         if (state.getActiveCorrelationId() != null) {
             return Health.up()
-                .withDetail("activeCorrelationId", state.getActiveCorrelationId())
-                .build();
+                    .withDetail("activeCorrelationId", state.getActiveCorrelationId())
+                    .build();
         }
         return Health.up().build();
     }

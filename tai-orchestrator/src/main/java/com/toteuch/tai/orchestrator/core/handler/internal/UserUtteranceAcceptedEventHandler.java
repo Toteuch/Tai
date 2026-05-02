@@ -10,12 +10,11 @@ import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
 import com.toteuch.tai.orchestrator.support.ContextAssembler;
+import java.time.Instant;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
-import java.util.List;
 
 @Component
 public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtteranceAcceptedEvent> {
@@ -26,10 +25,7 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
     private final LlmClient llmClient;
 
     public UserUtteranceAcceptedEventHandler(
-        SessionStore sessionStore,
-        ContextAssembler contextAssembler,
-        LlmClient llmClient
-    ) {
+            SessionStore sessionStore, ContextAssembler contextAssembler, LlmClient llmClient) {
         this.sessionStore = sessionStore;
         this.contextAssembler = contextAssembler;
         this.llmClient = llmClient;
@@ -45,14 +41,23 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
 
         SessionContext sessionContext = sessionStore.get();
 
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setUserUtteranceAcceptedAt(event.occurredAt());
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setTranscriptDurationMs(event.transcriptDurationMs());
+
         String normalizedText = normalizeTaiName(event.text());
 
-        ConversationTurn newTurn = new ConversationTurn(event.correlationId(), normalizedText, Instant.now(), true);
+        ConversationTurn newTurn =
+                new ConversationTurn(event.correlationId(), normalizedText, Instant.now(), true);
         sessionContext.setActiveTurn(newTurn);
 
-        List<LlmMessage> messages = contextAssembler.assemble(sessionContext, normalizedText, false);
+        List<LlmMessage> messages =
+                contextAssembler.assemble(sessionContext, normalizedText, false);
         sessionContext.setThinkingState(ThinkingState.GENERATING);
-        perfLog.info("LLM generation called | correlationId={}", event.correlationId());
+        perfLog.debug("LLM generation called | correlationId={}", event.correlationId());
         llmClient.generateReply(sessionContext.getActiveTurn().getCorrelationId(), messages);
     }
 
@@ -61,9 +66,6 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
             return text;
         }
 
-        return text
-            .replace("Ty", "Tai")
-            .replace("Thaï", "Tai")
-            .replace("Thai", "Tai");
+        return text.replace("Ty", "Tai").replace("Thaï", "Tai").replace("Thai", "Tai");
     }
 }

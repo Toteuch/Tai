@@ -3,7 +3,6 @@ package com.toteuch.tai.orchestrator.events.internal;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.TaiEvent;
-
 import java.time.Instant;
 
 /**
@@ -16,12 +15,13 @@ import java.time.Instant;
  * @param text the accepted user utterance text
  */
 public record UserUtteranceAcceptedEvent(
-    String eventId,
-    Instant occurredAt,
-    String correlationId,
-    EventSource source,
-    String text
-) implements TaiEvent {
+        String eventId,
+        Instant occurredAt,
+        String correlationId,
+        EventSource source,
+        String text,
+        Long transcriptDurationMs)
+        implements TaiEvent {
     @Override
     public EventType type() {
         return EventType.USER_UTTERANCE_ACCEPTED;

@@ -1,5 +1,7 @@
 package com.toteuch.tai.orchestrator.core.handler;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.TaiEvent;
@@ -7,13 +9,10 @@ import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent
 import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractHandlerTest {
 
@@ -25,28 +24,30 @@ public abstract class AbstractHandlerTest {
     }
 
     protected void publishLlmCompletedEvent(String correlationId, String text) {
-        eventPublisher.publish(new LlmResponseCompletedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            correlationId,
-            EventSource.LLM_SERVICE,
-            text,
-            MODEL_NAME,
-            1,
-            2,
-            100L
-        ));
+        eventPublisher.publish(
+                new LlmResponseCompletedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        correlationId,
+                        EventSource.LLM_SERVICE,
+                        text,
+                        MODEL_NAME,
+                        1,
+                        2,
+                        100L));
     }
 
     protected void publishLlmFailedEvent(String correlationId) {
-        eventPublisher.publish(new LlmResponseFailedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            correlationId,
-            EventSource.LLM_SERVICE,
-            "LLM_ERROR",
-            "LLM failed"
-        ));
+        eventPublisher.publish(
+                new LlmResponseFailedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        correlationId,
+                        EventSource.LLM_SERVICE,
+                        MODEL_NAME,
+                        "LLM_ERROR",
+                        "LLM failed",
+                        0L));
     }
 
     protected static class CapturingTaiEventPublisher implements TaiEventPublisher {

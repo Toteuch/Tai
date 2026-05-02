@@ -16,9 +16,7 @@ public class ContinuousListenerHealthIndicator implements HealthIndicator {
     private final SttListenerProperties properties;
 
     public ContinuousListenerHealthIndicator(
-        ContinuousListeningService listeningService,
-        SttListenerProperties properties
-    ) {
+            ContinuousListeningService listeningService, SttListenerProperties properties) {
         this.listeningService = listeningService;
         this.properties = properties;
     }
@@ -35,9 +33,11 @@ public class ContinuousListenerHealthIndicator implements HealthIndicator {
         builder.withDetail("lastSegmentAt", safe(status.lastSegmentAt()));
         builder.withDetail("lastError", safe(status.lastError()));
         builder.withDetail("autoStart", properties.getListener().isAutoStart());
-        builder.withDetail("publishFinalCallbacks", properties.getListener().isPublishFinalCallbacks());
-        builder.withDetail("publishSpeechStartedCallbacks", properties.getListener().isPublishSpeechStartedCallbacks()
-        );
+        builder.withDetail(
+                "publishFinalCallbacks", properties.getListener().isPublishFinalCallbacks());
+        builder.withDetail(
+                "publishSpeechStartedCallbacks",
+                properties.getListener().isPublishSpeechStartedCallbacks());
 
         SttPipelineSummary lastResult = status.lastResult();
 
@@ -65,10 +65,7 @@ public class ContinuousListenerHealthIndicator implements HealthIndicator {
             return Health.down();
         }
 
-        if (
-            status.state() == ListeningState.STOPPED
-                && properties.getListener().isAutoStart()
-        ) {
+        if (status.state() == ListeningState.STOPPED && properties.getListener().isAutoStart()) {
             return Health.status(Status.OUT_OF_SERVICE);
         }
 

@@ -1,15 +1,14 @@
 package com.toteuch.tai.tts.piper.service;
 
 import com.toteuch.tai.tts.piper.transport.OrchestratorTtsEventClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
 @Service
 public class TtsPlaybackService {
@@ -21,11 +20,10 @@ public class TtsPlaybackService {
     private final TtsPlaybackState state;
 
     public TtsPlaybackService(
-        PiperSynthesisService piperSynthesisService,
-        JavaAudioPlaybackService playbackService,
-        OrchestratorTtsEventClient eventClient,
-        TtsPlaybackState state
-    ) {
+            PiperSynthesisService piperSynthesisService,
+            JavaAudioPlaybackService playbackService,
+            OrchestratorTtsEventClient eventClient,
+            TtsPlaybackState state) {
         this.piperSynthesisService = piperSynthesisService;
         this.playbackService = playbackService;
         this.eventClient = eventClient;
@@ -36,28 +34,40 @@ public class TtsPlaybackService {
     public void speakAsync(String correlationId, String text) {
         log.info("TTS speech requested | correlationId={}", correlationId);
         state.setActiveCorrelationId(correlationId);
+        Instant start = Instant.now();
         Path wavFile = piperSynthesisService.synthesize(correlationId, text);
+        long ms = Duration.between(start, Instant.now()).toMillis();
+        Instant playbackStartedAt = null;
         try {
             if (!state.isActive(correlationId)) {
                 log.info("TTS speech superseded before playback | correlationId={}", correlationId);
                 return;
             }
 
-            eventClient.sendPlaybackStarted(correlationId, text);
+            eventClient.sendPlaybackStarted(correlationId, text, ms);
 
-            Instant playbackStartedAt = Instant.now();
+            playbackStartedAt = Instant.now();
             playbackService.playBlocking(wavFile);
             long speechDurationMs = Duration.between(playbackStartedAt, Instant.now()).toMillis();
 
             if (!state.isActive(correlationId)) {
-                log.info("TTS speech stopped before completion callback | correlationId={}", correlationId);
+                log.info(
+                        "TTS speech stopped before completion callback | correlationId={}",
+                        correlationId);
                 return;
             }
 
             eventClient.sendPlaybackCompleted(correlationId, text, speechDurationMs);
         } catch (Exception e) {
             log.warn("TTS playback failed | correlationId={}", correlationId, e);
-            eventClient.sendPlaybackFailed(correlationId, "PIPER_TTS_ERROR", e.getMessage());
+            long speechDurationMs;
+            if (playbackStartedAt != null) {
+                speechDurationMs = Duration.between(playbackStartedAt, Instant.now()).toMillis();
+            } else {
+                speechDurationMs = 0;
+            }
+            eventClient.sendPlaybackFailed(
+                    correlationId, "PIPER_TTS_ERROR", e.getMessage(), speechDurationMs);
         } finally {
             state.clearIfActive(correlationId);
             deleteGeneratedWav(correlationId, wavFile);
@@ -66,10 +76,10 @@ public class TtsPlaybackService {
 
     public void stop(String correlationId) {
         if (!state.isActive(correlationId)) {
-            log.info("Ignoring TTS stop for non-active playback | correlationId={} activeCorrelationId={}",
-                correlationId,
-                state.getActiveCorrelationId()
-            );
+            log.info(
+                    "Ignoring TTS stop for non-active playback | correlationId={} activeCorrelationId={}",
+                    correlationId,
+                    state.getActiveCorrelationId());
             return;
         }
 
@@ -85,13 +95,16 @@ public class TtsPlaybackService {
 
         try {
             Files.deleteIfExists(wavFile);
-            log.debug("Deleted generated WAV | correlationId={} file={}", correlationId, wavFile.toAbsolutePath());
+            log.debug(
+                    "Deleted generated WAV | correlationId={} file={}",
+                    correlationId,
+                    wavFile.toAbsolutePath());
         } catch (Exception e) {
-            log.warn("Failed to delete generated WAV | correlationId={} file={}",
-                correlationId,
-                wavFile.toAbsolutePath(),
-                e
-            );
+            log.warn(
+                    "Failed to delete generated WAV | correlationId={} file={}",
+                    correlationId,
+                    wavFile.toAbsolutePath(),
+                    e);
         }
     }
 }

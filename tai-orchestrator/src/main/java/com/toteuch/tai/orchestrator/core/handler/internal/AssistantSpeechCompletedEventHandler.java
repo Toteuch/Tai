@@ -9,24 +9,22 @@ import com.toteuch.tai.orchestrator.events.internal.ConversationTurnCompletedEve
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
+import java.time.Instant;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-import java.util.UUID;
-
 @Component
-public class AssistantSpeechCompletedEventHandler implements EventHandler<AssistantSpeechCompletedEvent> {
+public class AssistantSpeechCompletedEventHandler
+        implements EventHandler<AssistantSpeechCompletedEvent> {
     private static final Logger contextLog = LoggerFactory.getLogger("tai.context");
 
     private final SessionStore sessionStore;
     private final TaiEventPublisher eventPublisher;
 
     public AssistantSpeechCompletedEventHandler(
-        SessionStore sessionStore,
-        TaiEventPublisher eventPublisher
-    ) {
+            SessionStore sessionStore, TaiEventPublisher eventPublisher) {
         this.sessionStore = sessionStore;
         this.eventPublisher = eventPublisher;
     }
@@ -39,15 +37,18 @@ public class AssistantSpeechCompletedEventHandler implements EventHandler<Assist
     @Override
     public void handle(AssistantSpeechCompletedEvent event) {
         SessionContext sessionContext = sessionStore.get();
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setTtsSpeechDurationMs(event.speechDurationMs());
 
         sessionContext.setSpeakingState(SpeakingState.SILENT);
         sessionContext.getActiveTurn().setAssistantPlaybackCompleted(true);
 
-        eventPublisher.publish(new ConversationTurnCompletedEvent(
-            UUID.randomUUID().toString(),
-            Instant.now(),
-            event.correlationId(),
-            EventSource.ORCHESTRATOR
-        ));
+        eventPublisher.publish(
+                new ConversationTurnCompletedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        event.correlationId(),
+                        EventSource.ORCHESTRATOR));
     }
 }

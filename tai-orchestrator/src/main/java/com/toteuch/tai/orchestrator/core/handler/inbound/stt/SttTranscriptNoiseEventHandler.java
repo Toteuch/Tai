@@ -19,10 +19,11 @@ public class SttTranscriptNoiseEventHandler implements EventHandler<SttTranscrip
 
     @Override
     public void handle(SttTranscriptNoiseEvent event) {
-        perfLog.info("STT noise received | correlationId={} durationMs={}",
-            event.correlationId(),
-            event.durationMs()
-        );
+        perfLog.debug(
+                "STT noise received | correlationId={} transcriptionDurationMs={} durationMs={}",
+                event.correlationId(),
+                event.transcriptionDurationMs(),
+                event.durationMs());
         decisionLog.info("STT noise ignored | correlationId={}", event.correlationId());
     }
 }
