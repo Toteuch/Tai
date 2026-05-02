@@ -2,8 +2,8 @@
 package com.toteuch.tai.orchestrator.core.handler.ui;
 
 import com.toteuch.tai.events.EventType;
+import com.toteuch.tai.events.ui.UiTtsToggleChangedEvent;
 import com.toteuch.tai.orchestrator.core.EventHandler;
-import com.toteuch.tai.orchestrator.events.inbound.ui.UiTtsToggleChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

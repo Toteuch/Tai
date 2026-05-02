@@ -7,19 +7,26 @@ import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshReason;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AssistantSpeechStartedEventHandler
         implements EventHandler<AssistantSpeechStartedEvent> {
-    private static final Logger contextLog = LoggerFactory.getLogger("tai.context");
 
     private final SessionStore sessionStore;
+    private final ModuleRuntimeUpdater runtimeUpdater;
+    private final UiStateRefreshRequester uiStateRefreshRequester;
 
-    public AssistantSpeechStartedEventHandler(SessionStore sessionStore) {
+    public AssistantSpeechStartedEventHandler(
+            SessionStore sessionStore,
+            ModuleRuntimeUpdater runtimeUpdater,
+            UiStateRefreshRequester uiStateRefreshRequester) {
         this.sessionStore = sessionStore;
+        this.runtimeUpdater = runtimeUpdater;
+        this.uiStateRefreshRequester = uiStateRefreshRequester;
     }
 
     @Override
@@ -39,5 +46,9 @@ public class AssistantSpeechStartedEventHandler
 
         sessionContext.setSpeakingState(SpeakingState.SPEAKING);
         sessionContext.getActiveTurn().setAssistantPlaybackStarted(true);
+        runtimeUpdater.ttsSpeaking(event.correlationId());
+
+        uiStateRefreshRequester.requestRefresh(
+                UiStateRefreshReason.RUNTIME_EVENT, event.correlationId());
     }
 }

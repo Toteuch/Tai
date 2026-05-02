@@ -590,7 +590,7 @@ Health components:
 | Component | Meaning |
 |---|---|
 | `microphoneCapture` | Checks whether the configured Java Sound microphone line is supported |
-| `continuousListener` | Reports listener loop state and latest runtime details |
+| `continuousListener` | Reports continuous listener runtime state through Actuator |
 
 Expected `continuousListener` details:
 
@@ -604,3 +604,32 @@ Expected `continuousListener` details:
 - `autoStart`
 - `publishSpeechStartedCallbacks`
 - `publishFinalCallbacks`
+
+When continuous listening is stopped, the `continuousListener` component can report `OUT_OF_SERVICE` while the Java process, microphone capability and Actuator endpoint are still reachable.
+
+Example stopped health state:
+
+```json
+{
+  "status": "OUT_OF_SERVICE",
+  "components": {
+    "continuousListener": {
+      "status": "OUT_OF_SERVICE",
+      "details": {
+        "running": false,
+        "state": "STOPPED",
+        "activeCorrelationId": "",
+        "lastError": "",
+        "autoStart": true,
+        "publishFinalCallbacks": true,
+        "publishSpeechStartedCallbacks": true
+      }
+    },
+    "microphoneCapture": {
+      "status": "UP"
+    }
+  }
+}
+```
+
+The orchestrator UI health refresh treats this as a degraded but reachable module, not as a network failure. In the live UI projection, a stopped continuous listener is represented as a degraded module with an idle runtime activity rather than as actively listening.

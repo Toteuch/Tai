@@ -285,6 +285,21 @@ Example:
 
 ---
 
+## Orchestrator UI integration
+
+The LLM service does not expose UI-specific endpoints.
+
+Its runtime is reflected in the V2 UI through the orchestrator:
+
+- `UserUtteranceAcceptedEvent` starts LLM generation and marks the LLM module as generating.
+- `LlmResponseCompletedEvent` marks the LLM module as idle and lets the assistant reply continue to TTS.
+- `LlmResponseFailedEvent` marks the LLM module as degraded/error in the module runtime registry.
+- Stale LLM responses are ignored by the orchestrator when their `correlationId` no longer matches the active turn.
+
+The orchestrator also refreshes `GET /actuator/health` asynchronously to keep the UI module overview fresh without blocking live state publication.
+
+---
+
 ## Running locally
 
 ```bash

@@ -11,7 +11,10 @@ import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
 import com.toteuch.tai.orchestrator.session.TurnMetrics;
-import com.toteuch.tai.orchestrator.session.TurnMetricsOutcome;
+import com.toteuch.tai.orchestrator.session.TurnOutcome;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshReason;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -23,10 +26,18 @@ public class UserSpeechStartedEventHandler implements EventHandler<UserSpeechSta
 
     private final SessionStore sessionStore;
     private final TtsClient ttsClient;
+    private final ModuleRuntimeUpdater runtimeUpdater;
+    private final UiStateRefreshRequester uiStateRefreshRequester;
 
-    public UserSpeechStartedEventHandler(SessionStore sessionStore, TtsClient ttsClient) {
+    public UserSpeechStartedEventHandler(
+            SessionStore sessionStore,
+            TtsClient ttsClient,
+            ModuleRuntimeUpdater runtimeUpdater,
+            UiStateRefreshRequester uiStateRefreshRequester) {
         this.sessionStore = sessionStore;
         this.ttsClient = ttsClient;
+        this.runtimeUpdater = runtimeUpdater;
+        this.uiStateRefreshRequester = uiStateRefreshRequester;
     }
 
     @Override
@@ -43,9 +54,10 @@ public class UserSpeechStartedEventHandler implements EventHandler<UserSpeechSta
 
         TurnMetrics turnMetrics = sessionContext.getTurnMetrics(newCorrelationId);
         turnMetrics.setUserSpeechStartAt(event.occurredAt());
+        runtimeUpdater.sttListenerCapturing(event.correlationId());
 
         if (activeTurn != null && !sessionContext.isStillActiveTurn(newCorrelationId)) {
-            TurnMetricsOutcome outcome = null;
+            TurnOutcome outcome = null;
             if (sessionContext.isTtsEnabled()
                     && (sessionContext.getSpeakingState() == SpeakingState.SPEAKING
                             || sessionContext.getSpeakingState() == SpeakingState.PREPARING)) {
@@ -55,12 +67,13 @@ public class UserSpeechStartedEventHandler implements EventHandler<UserSpeechSta
                         activeTurn.getCorrelationId());
                 activeTurn.setAssistantPlaybackInterrupted(true);
                 sessionContext.setSpeakingState(SpeakingState.SILENT);
-                outcome = TurnMetricsOutcome.INTERRUPTED;
+                outcome = TurnOutcome.INTERRUPTED;
                 perfLog.debug(
                         "TTS stop speech called | correlationId={} activeTurnCorrelationId={}",
                         event.correlationId(),
                         activeTurn.getCorrelationId());
                 ttsClient.stop(activeTurn.getCorrelationId());
+                runtimeUpdater.ttsIdle();
             } else if (sessionContext.getThinkingState() == ThinkingState.GENERATING) {
                 contextLog.info(
                         "Barge-in detected during assistant thinking | correlationId={} interruptedCorrelationId={}",
@@ -69,14 +82,16 @@ public class UserSpeechStartedEventHandler implements EventHandler<UserSpeechSta
                 sessionContext.setThinkingState(ThinkingState.IDLE);
                 activeTurn.setSupersededBeforeAssistantReply(true);
                 activeTurn.setSupersededByCorrelationId(newCorrelationId);
-                outcome = TurnMetricsOutcome.SUPERSEDED;
+                outcome = TurnOutcome.SUPERSEDED;
             }
             if (outcome == null) {
-                outcome = TurnMetricsOutcome.UNKNOWN;
+                outcome = TurnOutcome.UNKNOWN;
             }
             sessionContext.logMetrics(activeTurn.getCorrelationId(), outcome);
-            sessionContext.addTurn(sessionContext.getActiveTurn());
+            sessionContext.addTurn(sessionContext.getActiveTurn(), outcome);
             sessionContext.setActiveTurn(null);
         }
+        uiStateRefreshRequester.requestRefresh(
+                UiStateRefreshReason.RUNTIME_EVENT, event.correlationId());
     }
 }

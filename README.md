@@ -10,8 +10,9 @@ The project aims to provide a voice-first assistant capable of:
 - reasoning with a local LLM
 - answering through local speech synthesis
 - supporting barge-in when the user starts speaking
-- exposing observable runtime state and performance metrics
-- evolving toward a real-time UI, expressive 2D avatar and screen vision capabilities
+- exposing observable runtime state, module health and performance metrics
+- providing a real-time UI control center for monitoring and interaction
+- evolving toward an expressive 2D avatar and screen vision capabilities
 
 Tai is designed around a simple idea:
 
@@ -42,6 +43,7 @@ The architecture favors:
 - event-driven communication
 - clear ownership of state and decisions
 - measurable performance at each step of the pipeline
+- small, stable contracts between modules
 
 ---
 
@@ -70,7 +72,7 @@ Each service has one primary responsibility:
 ```text
 STT listener       → capture and segment speech
 STT transcription → transcribe audio
-Orchestrator      → own conversation decisions
+Orchestrator      → own conversation decisions and UI projection
 LLM service       → generate assistant text
 TTS service       → synthesize and play speech
 UI                → display state and controls
@@ -85,7 +87,8 @@ The system is designed so individual capabilities can evolve independently:
 - Whisper can be replaced by another STT engine.
 - Piper can be replaced by another TTS engine.
 - Ollama models can be swapped.
-- UI and avatar layers can evolve without changing the conversation core.
+- The UI and avatar layers can evolve without changing the conversation core.
+- The orchestrator-owned UI projection can later move to a dedicated gateway.
 
 ---
 
@@ -106,6 +109,7 @@ The system is designed so individual capabilities can evolve independently:
 ┌────────────────────┐
 │ Orchestrator       │
 │ state + decisions  │
+│ UI projection      │
 └─────────┬──────────┘
           │ service call
           ▼
@@ -123,7 +127,7 @@ The system is designed so individual capabilities can evolve independently:
       ▼            ▼
 ┌────────────┐  ┌──────────┐
 │ UI/Avatar  │  │   TTS    │
-│ layer      │  │ service  │
+│ HTTP/SSE   │  │ service  │
 └────┬───────┘  └────┬─────┘
      │               │
      ▼               ▼
@@ -150,8 +154,10 @@ It owns:
 - TTS request and stop orchestration
 - conversation logs
 - performance metrics aggregation
+- module runtime state for UI rendering
+- live UI projection and Server-Sent Events for V2.0.0
 
-The orchestrator does not perform transcription, generation or speech synthesis itself. It coordinates specialized services.
+The orchestrator does not perform transcription, generation or speech synthesis itself. It coordinates specialized services and exposes the current assistant state to the UI.
 
 ---
 
@@ -213,15 +219,15 @@ Key concepts:
 
 The UI is the real-time control and monitoring surface for Tai.
 
-Capabilities:
+V2.0.0 is orchestrator-driven. The orchestrator exposes:
 
-- display global system state
-- display component health
-- show current conversation turn
-- show latest user transcript
-- show latest assistant reply
-- expose conversation history
-- expose runtime toggles and diagnostics
+- a current UI state snapshot
+- a live SSE stream of full UI snapshots
+- module details loaded on demand
+- conversation history loaded on demand
+- manual text input
+
+The dedicated `tai-ui-gateway` module is planned for a later V2.x release.
 
 ---
 
@@ -275,6 +281,7 @@ Screen analysis is intentionally modeled as an explicit capability, not as a per
 7. TTS synthesizes and plays speech
 8. Orchestrator finalizes the conversation turn
 9. Metrics and conversation logs are written
+10. The UI receives updated live snapshots during the flow
 ```
 
 ---
@@ -289,11 +296,42 @@ Tai tracks several runtime states to keep the system observable and controllable
 - interruption state
 - active conversation turn
 - session context
-- health status
+- module health status
+- module runtime activity
 - performance metrics
 - UI state
 - avatar state
 - emotion state
+
+---
+
+## 🖥️ V2 UI Runtime
+
+V2 introduces a real-time UI surface backed by the orchestrator.
+
+The live UI state is a full snapshot containing:
+
+- schema version
+- sequence number
+- generated time
+- global conversation status
+- module overview map
+- latest user utterance
+- latest displayable assistant utterance
+
+The snapshot intentionally does not include full conversation history or module technical details. Those are loaded on demand.
+
+Primary UI endpoints exposed by the orchestrator:
+
+```http
+GET  /ui/state
+GET  /ui/events
+GET  /ui/modules/{module}
+GET  /ui/history?limit=20&cursor=<correlationId>
+POST /ui/manual-input
+```
+
+The Stop Speak UI action is still planned. It will be exposed once the supporting orchestrator command flow is ready.
 
 ---
 
@@ -323,7 +361,7 @@ audio playback
 or orchestration
 ```
 
-Health and runtime state are exposed through service-level health endpoints and consolidated by the orchestration layer.
+Health and runtime state are exposed through service-level health endpoints and consolidated by the orchestration layer. The V2 UI consumes that consolidated state for live rendering.
 
 ---
 
@@ -342,14 +380,14 @@ Health and runtime state are exposed through service-level health endpoints and 
 | API documentation | OpenAPI / Swagger UI |
 | Health checks | Spring Actuator / service health endpoints |
 | Logging | Logback and dedicated domain loggers |
-| UI target | Web frontend |
+| UI target | Web frontend over HTTP + SSE |
 | Avatar target | Live2D / Cubism-style 2D avatar, or equivalent 2D rigging runtime |
 
 ---
 
 ## 🚀 Development Roadmap
 
-### 🎙️ V1 — Voice Assistant Core 
+### 🎙️ V1 — Voice Assistant Core
 
 - Voice input 
 - STT pipeline 
@@ -366,12 +404,21 @@ Health and runtime state are exposed through service-level health endpoints and 
 
 ### 🖥️ V2 — User Interface
 
-- System health dashboard
-- Conversation history
-- Current turn visualization
-- Thinking / speaking / listening states
-- Runtime controls
-- Debug panels
+- orchestrator-owned UI projection
+- live UI snapshot endpoint
+- SSE stream of UI snapshots
+- module runtime overview
+- asynchronous module health refresh
+- module details on demand
+- conversation history on demand
+- manual text input
+- placeholder-ready avatar and resource areas
+
+Planned within V2:
+
+- `tai-ui` frontend module
+- Stop Speak endpoint once the business flow is ready
+- `tai-ui-gateway` to move UI projection ownership out of the orchestrator
 
 ---
 
@@ -446,6 +493,7 @@ This keeps model execution local while allowing the application to decide how st
 - Observable runtime behavior
 - Clear separation between AI execution and orchestration decisions
 - Developer-friendly experimentation
+- UI-driven operational visibility without sacrificing service isolation
 
 ---
 

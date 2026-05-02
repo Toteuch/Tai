@@ -20,7 +20,6 @@ public class TurnMetrics {
     Long llmGenerationMs;
     Long ttsSynthesisMs;
     Long ttsSpeechDurationMs;
-    TurnMetricsOutcome outcome;
 
     public TurnMetrics(String correlationId) {
         this.correlationId = correlationId;
@@ -80,11 +79,7 @@ public class TurnMetrics {
                 safeSet("userSpeechDurationMs", this.userSpeechDurationMs, userSpeechDurationMs);
     }
 
-    public void setOutcome(TurnMetricsOutcome outcome) {
-        this.outcome = safeSet("outcome", this.outcome, outcome);
-    }
-
-    protected void log() {
+    protected void log(TurnOutcome outcome) {
         String message = String.format("TURN metrics | correlationId=%s", correlationId);
         long totalTurnMs = 0L;
         if (userSpeechStartAt != null) {
@@ -94,7 +89,7 @@ public class TurnMetrics {
         }
 
         if (outcome == null) {
-            this.outcome = TurnMetricsOutcome.UNKNOWN;
+            outcome = TurnOutcome.UNKNOWN;
         }
         message += String.format(" outcome=%s", outcome);
 

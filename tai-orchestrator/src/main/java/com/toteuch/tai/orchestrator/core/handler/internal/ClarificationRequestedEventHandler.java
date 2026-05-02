@@ -10,6 +10,9 @@ import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshReason;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import java.time.Instant;
 import java.util.List;
 import org.slf4j.Logger;
@@ -23,10 +26,18 @@ public class ClarificationRequestedEventHandler
 
     private final SessionStore sessionStore;
     private final LlmClient llmClient;
+    private final ModuleRuntimeUpdater runtimeUpdater;
+    private final UiStateRefreshRequester uiStateRefreshRequester;
 
-    public ClarificationRequestedEventHandler(SessionStore sessionStore, LlmClient llmClient) {
+    public ClarificationRequestedEventHandler(
+            SessionStore sessionStore,
+            LlmClient llmClient,
+            ModuleRuntimeUpdater runtimeUpdater,
+            UiStateRefreshRequester uiStateRefreshRequester) {
         this.sessionStore = sessionStore;
         this.llmClient = llmClient;
+        this.runtimeUpdater = runtimeUpdater;
+        this.uiStateRefreshRequester = uiStateRefreshRequester;
     }
 
     @Override
@@ -70,6 +81,11 @@ public class ClarificationRequestedEventHandler
                         new LlmMessage("user", "..."));
         sessionContext.setThinkingState(ThinkingState.GENERATING);
         perfLog.debug("LLM generation called | correlationId={}", event.correlationId());
+        runtimeUpdater.sttListenerListening();
+        runtimeUpdater.llmGenerating(event.correlationId());
         llmClient.generateReply(sessionContext.getActiveTurn().getCorrelationId(), messages);
+
+        uiStateRefreshRequester.requestRefresh(
+                UiStateRefreshReason.RUNTIME_EVENT, event.correlationId());
     }
 }

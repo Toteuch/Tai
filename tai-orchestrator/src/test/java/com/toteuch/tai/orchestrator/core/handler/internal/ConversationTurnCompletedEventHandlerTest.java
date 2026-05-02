@@ -2,13 +2,15 @@
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.toteuch.tai.events.EventSource;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
 import com.toteuch.tai.orchestrator.events.internal.ConversationTurnCompletedEvent;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
-import com.toteuch.tai.orchestrator.session.TurnMetricsOutcome;
+import com.toteuch.tai.orchestrator.session.TurnOutcome;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -21,8 +23,11 @@ class ConversationTurnCompletedEventHandlerTest extends AbstractHandlerTest {
         ConversationTurn turn = new ConversationTurn("corr-1", "Hello", Instant.now(), true);
         context.setActiveTurn(turn);
 
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
+
         ConversationTurnCompletedEventHandler handler =
-                new ConversationTurnCompletedEventHandler(fixedSessionStore(context));
+                new ConversationTurnCompletedEventHandler(
+                        fixedSessionStore(context), uiStateRefreshRequester);
 
         handler.handle(
                 new ConversationTurnCompletedEvent(
@@ -30,7 +35,7 @@ class ConversationTurnCompletedEventHandlerTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-1",
                         EventSource.ORCHESTRATOR,
-                        TurnMetricsOutcome.COMPLETED));
+                        TurnOutcome.COMPLETED));
 
         assertThat(context.getTurns()).containsExactly(turn);
         assertThat(context.getActiveTurn()).isNull();
@@ -42,8 +47,11 @@ class ConversationTurnCompletedEventHandlerTest extends AbstractHandlerTest {
         ConversationTurn turn = new ConversationTurn("corr-1", "...", Instant.now(), false);
         context.setActiveTurn(turn);
 
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
+
         ConversationTurnCompletedEventHandler handler =
-                new ConversationTurnCompletedEventHandler(fixedSessionStore(context));
+                new ConversationTurnCompletedEventHandler(
+                        fixedSessionStore(context), uiStateRefreshRequester);
 
         handler.handle(
                 new ConversationTurnCompletedEvent(
@@ -51,7 +59,7 @@ class ConversationTurnCompletedEventHandlerTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-1",
                         EventSource.ORCHESTRATOR,
-                        TurnMetricsOutcome.COMPLETED));
+                        TurnOutcome.COMPLETED));
 
         assertThat(context.getTurns()).isEmpty();
         assertThat(context.getActiveTurn()).isNull();

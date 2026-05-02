@@ -12,7 +12,7 @@ logging:
         # Global Tai domains
         tai:
             error: WARN
-            conversation: DEBUG #INFO for less detailed history
+            conversation: INFO #INFO for less detailed history
             context: DEBUG
             decision: INFO
             performance: INFO
@@ -40,6 +40,28 @@ tai:
                 url: http://localhost:8093/actuator/health
         connect-timeout-ms: 1000
         read-timeout-ms: 2000
+    ui:
+        health-refresh:
+            enabled: true
+            interval: 5s
+            freshness-threshold: 15s
+            request-timeout: 2s
+            error-refresh-min-delay: 3s
+            min-delay-between-attempts: 1s
+            ui-push-debounce: 75ms
+            endpoints:
+              orchestrator: http://localhost:8080/actuator/health
+              stt-listener: http://localhost:8094/actuator/health
+              stt-whisper: http://localhost:8095/health
+              llm: http://localhost:8092/actuator/health
+              tts-piper: http://localhost:8093/actuator/health
+        state-refresh:
+            enabled: true
+        manual-input:
+            max-length: 2000
+        sse:
+            timeout: 1h
+            reconnect-delay: 2s
 management:
     endpoints:
         web:

@@ -2,6 +2,7 @@
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.toteuch.tai.events.EventSource;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
@@ -9,6 +10,8 @@ import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.ConversationTurnCompletedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -20,8 +23,15 @@ class AssistantSpeechFailedEventHandlerTest extends AbstractHandlerTest {
         SessionContext context = new SessionContext();
         context.setSpeakingState(SpeakingState.SPEAKING);
 
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
+
         AssistantSpeechFailedEventHandler handler =
-                new AssistantSpeechFailedEventHandler(fixedSessionStore(context), eventPublisher);
+                new AssistantSpeechFailedEventHandler(
+                        fixedSessionStore(context),
+                        eventPublisher,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new AssistantSpeechFailedEvent(

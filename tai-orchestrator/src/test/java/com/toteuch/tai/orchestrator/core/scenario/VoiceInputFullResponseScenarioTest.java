@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
+import com.toteuch.tai.orchestrator.AbstractScenarioTest;
 import com.toteuch.tai.orchestrator.services.llm.LlmMessage;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;

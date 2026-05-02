@@ -108,15 +108,15 @@ htmlcov/
 # TTS
 
 # =========================
-**/voices/
-**/output/
+tai-tts-piper/voices/
+tai-tts-piper/output/
 
 # =========================
 
 # STT
 
 # =========================
-**/input/
+tai-stt-whisper/input/
 **/tmp/
 **/*.wav
 

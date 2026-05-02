@@ -10,7 +10,10 @@ import com.toteuch.tai.orchestrator.events.internal.ConversationTurnCompletedEve
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
-import com.toteuch.tai.orchestrator.session.TurnMetricsOutcome;
+import com.toteuch.tai.orchestrator.session.TurnOutcome;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshReason;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -23,11 +26,18 @@ public class AssistantReplyFailedEventHandler implements EventHandler<AssistantR
 
     private final SessionStore sessionStore;
     private final TaiEventPublisher eventPublisher;
+    private final ModuleRuntimeUpdater runtimeUpdate;
+    private final UiStateRefreshRequester uiStateRefreshRequester;
 
     public AssistantReplyFailedEventHandler(
-            SessionStore sessionStore, TaiEventPublisher eventPublisher) {
+            SessionStore sessionStore,
+            TaiEventPublisher eventPublisher,
+            ModuleRuntimeUpdater runtimeUpdater,
+            UiStateRefreshRequester uiStateRefreshRequester) {
         this.sessionStore = sessionStore;
         this.eventPublisher = eventPublisher;
+        this.runtimeUpdate = runtimeUpdater;
+        this.uiStateRefreshRequester = uiStateRefreshRequester;
     }
 
     @Override
@@ -49,6 +59,7 @@ public class AssistantReplyFailedEventHandler implements EventHandler<AssistantR
                 .setLlmGenerationMs(event.llmGenerationMs());
 
         sessionContext.setThinkingState(ThinkingState.IDLE);
+        runtimeUpdate.llmError();
 
         eventPublisher.publish(
                 new ConversationTurnCompletedEvent(
@@ -56,6 +67,8 @@ public class AssistantReplyFailedEventHandler implements EventHandler<AssistantR
                         Instant.now(),
                         event.correlationId(),
                         EventSource.ORCHESTRATOR,
-                        TurnMetricsOutcome.FAILED));
+                        TurnOutcome.FAILED));
+        uiStateRefreshRequester.requestRefresh(
+                UiStateRefreshReason.RUNTIME_EVENT, event.correlationId());
     }
 }

@@ -15,6 +15,8 @@ import com.toteuch.tai.orchestrator.events.internal.ClarificationRequestedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -26,9 +28,15 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
         SessionContext context = new SessionContext();
 
         LlmClient llmClient = mock(LlmClient.class);
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
 
         ClarificationRequestedEventHandler handler =
-                new ClarificationRequestedEventHandler(fixedSessionStore(context), llmClient);
+                new ClarificationRequestedEventHandler(
+                        fixedSessionStore(context),
+                        llmClient,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new ClarificationRequestedEvent(
@@ -60,9 +68,15 @@ class ClarificationRequestedEventHandlerTest extends AbstractHandlerTest {
         SessionContext context = new SessionContext();
 
         LlmClient llmClient = mock(LlmClient.class);
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
 
         ClarificationRequestedEventHandler handler =
-                new ClarificationRequestedEventHandler(fixedSessionStore(context), llmClient);
+                new ClarificationRequestedEventHandler(
+                        fixedSessionStore(context),
+                        llmClient,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new ClarificationRequestedEvent(

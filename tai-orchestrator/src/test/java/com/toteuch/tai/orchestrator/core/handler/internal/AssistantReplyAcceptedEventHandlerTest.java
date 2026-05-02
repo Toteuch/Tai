@@ -15,6 +15,8 @@ import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -28,10 +30,16 @@ class AssistantReplyAcceptedEventHandlerTest extends AbstractHandlerTest {
         context.setThinkingState(ThinkingState.GENERATING);
 
         TtsClient ttsClient = mock(TtsClient.class);
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
 
         AssistantReplyAcceptedEventHandler handler =
                 new AssistantReplyAcceptedEventHandler(
-                        fixedSessionStore(context), eventPublisher, ttsClient);
+                        fixedSessionStore(context),
+                        eventPublisher,
+                        ttsClient,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new AssistantReplyAcceptedEvent(
@@ -58,10 +66,16 @@ class AssistantReplyAcceptedEventHandlerTest extends AbstractHandlerTest {
         context.setActiveTurn(new ConversationTurn("corr-1", "Hello", Instant.now(), true));
 
         TtsClient ttsClient = mock(TtsClient.class);
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
 
         AssistantReplyAcceptedEventHandler handler =
                 new AssistantReplyAcceptedEventHandler(
-                        fixedSessionStore(context), eventPublisher, ttsClient);
+                        fixedSessionStore(context),
+                        eventPublisher,
+                        ttsClient,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new AssistantReplyAcceptedEvent(

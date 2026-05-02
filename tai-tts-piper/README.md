@@ -306,3 +306,37 @@ Example:
 ```bash
 curl http://localhost:8093/actuator/health
 ```
+
+A typical playback component can expose the active playback correlation id:
+
+```json
+{
+  "components": {
+    "playback": {
+      "status": "UP",
+      "details": {
+        "activeCorrelationId": "c9540aec-c84c-4051-9467-5701c46d095c"
+      }
+    }
+  },
+  "status": "UP"
+}
+```
+
+---
+
+## Orchestrator UI integration
+
+The TTS service does not own UI state directly.
+
+Its playback callbacks update the orchestrator runtime registry:
+
+| Callback | UI runtime effect |
+|---|---|
+| `playback-started` | `TTS_PIPER` becomes `SPEAKING` |
+| `playback-completed` | `TTS_PIPER` becomes `IDLE` / `Silent` |
+| `playback-failed` | `TTS_PIPER` becomes `DEGRADED` / `Error` |
+
+The orchestrator also refreshes the TTS Actuator health endpoint asynchronously. Health checks update module health and details, but they do not block live UI snapshot publication.
+
+The V2 UI Stop Speak control is planned on the orchestrator side. The TTS service already exposes `POST /tts/stop`, which the orchestrator uses for barge-in when it needs to stop active playback.

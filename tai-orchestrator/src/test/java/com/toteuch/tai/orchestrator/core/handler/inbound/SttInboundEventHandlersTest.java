@@ -2,6 +2,7 @@
 package com.toteuch.tai.orchestrator.core.handler.inbound;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.toteuch.tai.events.EventSource;
 import com.toteuch.tai.events.stt.SttSpeechStartedEvent;
@@ -18,6 +19,7 @@ import com.toteuch.tai.orchestrator.events.internal.UserSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserUtteranceAcceptedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -79,7 +81,9 @@ class SttInboundEventHandlersTest extends AbstractHandlerTest {
 
     @Test
     void noise_transcript_should_publish_no_event() {
-        SttTranscriptNoiseEventHandler handler = new SttTranscriptNoiseEventHandler();
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+
+        SttTranscriptNoiseEventHandler handler = new SttTranscriptNoiseEventHandler(runtimeUpdater);
 
         handler.handle(
                 new SttTranscriptNoiseEvent(

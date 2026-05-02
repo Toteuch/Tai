@@ -24,7 +24,7 @@ class SessionContextTest {
         SessionContext context = new SessionContext();
         ConversationTurn turn = new ConversationTurn("corr-1", "Hello", Instant.now(), true);
 
-        context.addTurn(turn);
+        context.addTurn(turn, TurnOutcome.COMPLETED);
 
         assertThat(context.getTurns()).containsExactly(turn);
     }

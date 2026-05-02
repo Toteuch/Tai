@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-package com.toteuch.tai.orchestrator.core.scenario;
+package com.toteuch.tai.orchestrator;
 
 import com.toteuch.tai.events.EventSource;
 import com.toteuch.tai.events.llm.LlmResponseCompletedEvent;
@@ -27,15 +27,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ActiveProfiles("test")
-abstract class AbstractScenarioTest {
+public abstract class AbstractScenarioTest {
 
-    protected static String MODEL_NAME = "tai-model";
+    public static String MODEL_NAME = "tai-model";
     @Autowired protected TaiEventPublisher eventPublisher;
     @Autowired protected SessionStore sessionStore;
     @MockitoBean protected LlmClient llmClient;
     @MockitoBean protected TtsClient ttsClient;
 
-    protected void publishLlmSuccess(String correlationId, String text) {
+    public void publishLlmSuccess(String correlationId, String text) {
         eventPublisher.publish(
                 new LlmResponseCompletedEvent(
                         UUID.randomUUID().toString(),
@@ -49,7 +49,7 @@ abstract class AbstractScenarioTest {
                         100L));
     }
 
-    protected void publishLlmFailure(String correlationId) {
+    public void publishLlmFailure(String correlationId) {
         eventPublisher.publish(
                 new LlmResponseFailedEvent(
                         UUID.randomUUID().toString(),
@@ -62,7 +62,7 @@ abstract class AbstractScenarioTest {
                         "LLM failed"));
     }
 
-    protected void publishSttAccepted(String correlationId, String text) {
+    public void publishSttAccepted(String correlationId, String text) {
         eventPublisher.publish(
                 new SttTranscriptAcceptedEvent(
                         UUID.randomUUID().toString(),
@@ -76,7 +76,7 @@ abstract class AbstractScenarioTest {
                         1000L));
     }
 
-    protected void publishSttUnintelligible(String correlationId) {
+    public void publishSttUnintelligible(String correlationId) {
         eventPublisher.publish(
                 new SttTranscriptUnintelligibleEvent(
                         UUID.randomUUID().toString(),
@@ -92,7 +92,7 @@ abstract class AbstractScenarioTest {
                         1000L));
     }
 
-    protected void publishSttNoise(String correlationId) {
+    public void publishSttNoise(String correlationId) {
         eventPublisher.publish(
                 new SttTranscriptNoiseEvent(
                         UUID.randomUUID().toString(),
@@ -106,7 +106,7 @@ abstract class AbstractScenarioTest {
                         1000L));
     }
 
-    protected void publishTtsStarted(String correlationId, String text) {
+    public void publishTtsStarted(String correlationId, String text) {
         eventPublisher.publish(
                 new TtsPlaybackStartedEvent(
                         UUID.randomUUID().toString(),
@@ -117,7 +117,7 @@ abstract class AbstractScenarioTest {
                         600L));
     }
 
-    protected void publishTtsCompleted(String correlationId, String text) {
+    public void publishTtsCompleted(String correlationId, String text) {
         eventPublisher.publish(
                 new TtsPlaybackCompletedEvent(
                         UUID.randomUUID().toString(),
@@ -128,7 +128,7 @@ abstract class AbstractScenarioTest {
                         1200L));
     }
 
-    protected void publishTtsFailed(String correlationId) {
+    public void publishTtsFailed(String correlationId) {
         eventPublisher.publish(
                 new TtsPlaybackFailedEvent(
                         UUID.randomUUID().toString(),
@@ -140,7 +140,7 @@ abstract class AbstractScenarioTest {
                         0L));
     }
 
-    protected void publishSttSpeechStarted(String correlationId) {
+    public void publishSttSpeechStarted(String correlationId) {
         eventPublisher.publish(
                 new SttSpeechStartedEvent(
                         UUID.randomUUID().toString(),
@@ -151,7 +151,7 @@ abstract class AbstractScenarioTest {
                         10.0));
     }
 
-    protected void publishUserSpeechStarted(String correlationId) {
+    public void publishUserSpeechStarted(String correlationId) {
         eventPublisher.publish(
                 new UserSpeechStartedEvent(
                         UUID.randomUUID().toString(),

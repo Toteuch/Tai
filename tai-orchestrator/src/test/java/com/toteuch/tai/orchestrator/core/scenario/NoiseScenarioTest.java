@@ -4,6 +4,7 @@ package com.toteuch.tai.orchestrator.core.scenario;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import com.toteuch.tai.orchestrator.AbstractScenarioTest;
 import org.junit.jupiter.api.Test;
 
 class NoiseScenarioTest extends AbstractScenarioTest {

@@ -1,3 +1,8 @@
 tai:
     logs:
         dir: target/test-logs
+    ui:
+        health-refresh:
+            enabled: false
+        state-refresh:
+            enabled: false

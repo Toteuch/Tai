@@ -7,7 +7,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 import com.toteuch.tai.events.EventSource;
-import com.toteuch.tai.orchestrator.events.inbound.ui.UiManualTextInputReceivedEvent;
+import com.toteuch.tai.events.ui.UiManualTextInputReceivedEvent;
+import com.toteuch.tai.orchestrator.AbstractScenarioTest;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

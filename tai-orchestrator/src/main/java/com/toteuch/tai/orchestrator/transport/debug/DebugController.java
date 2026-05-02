@@ -2,8 +2,8 @@
 package com.toteuch.tai.orchestrator.transport.debug;
 
 import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.ui.UiManualTextInputReceivedEvent;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.inbound.ui.UiManualTextInputReceivedEvent;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.PostMapping;

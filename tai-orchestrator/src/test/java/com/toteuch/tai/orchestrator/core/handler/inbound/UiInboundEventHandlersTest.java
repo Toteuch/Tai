@@ -4,13 +4,13 @@ package com.toteuch.tai.orchestrator.core.handler.inbound;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.ui.UiManualTextInputReceivedEvent;
+import com.toteuch.tai.events.ui.UiObscenityFilterToggleChangedEvent;
+import com.toteuch.tai.events.ui.UiTtsToggleChangedEvent;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
 import com.toteuch.tai.orchestrator.core.handler.ui.UiManualTextInputReceivedEventHandler;
 import com.toteuch.tai.orchestrator.core.handler.ui.UiObscenityFilterToggleChangedEventHandler;
 import com.toteuch.tai.orchestrator.core.handler.ui.UiTtsToggleChangedEventHandler;
-import com.toteuch.tai.orchestrator.events.inbound.ui.UiManualTextInputReceivedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.ui.UiObscenityFilterToggleChangedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.ui.UiTtsToggleChangedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserUtteranceAcceptedEvent;
 import java.time.Instant;
 import java.util.UUID;

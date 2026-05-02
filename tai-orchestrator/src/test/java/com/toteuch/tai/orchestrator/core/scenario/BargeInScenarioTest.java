@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.toteuch.tai.orchestrator.AbstractScenarioTest;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import org.junit.jupiter.api.Test;
 
