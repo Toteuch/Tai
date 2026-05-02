@@ -16,9 +16,13 @@ class LlmInterruptionScenarioTest extends AbstractScenarioTest {
         String firstCorrelationId = "llm-interrupt-1";
         String secondCorrelationId = "llm-interrupt-2";
 
+        publishSttSpeechStarted(firstCorrelationId);
+        verify(ttsClient, never()).stop(anyString());
         publishSttAccepted(firstCorrelationId, "First input");
         verify(llmClient).generateReply(eq(firstCorrelationId), anyList());
 
+        publishSttSpeechStarted(secondCorrelationId);
+        verify(ttsClient, never()).stop(eq(firstCorrelationId));
         publishSttAccepted(secondCorrelationId, "Second input");
         verify(llmClient).generateReply(eq(secondCorrelationId), anyList());
 

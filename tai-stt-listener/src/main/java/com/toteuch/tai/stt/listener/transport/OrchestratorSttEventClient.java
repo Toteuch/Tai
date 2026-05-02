@@ -7,6 +7,7 @@ import com.toteuch.tai.stt.listener.gatekeeper.GatekeeperDecision;
 import com.toteuch.tai.stt.listener.gatekeeper.RejectionCategory;
 import com.toteuch.tai.stt.listener.transcription.TranscriptionResult;
 import com.toteuch.tai.stt.listener.transport.dto.AbstractTransportEventRequest;
+import com.toteuch.tai.stt.listener.transport.dto.SttSpeechStartedEventRequest;
 import com.toteuch.tai.stt.listener.transport.dto.SttTranscriptAcceptedEventRequest;
 import com.toteuch.tai.stt.listener.transport.dto.SttTranscriptRejectedEventRequest;
 import com.toteuch.tai.stt.listener.transport.dto.TransportEventSource;
@@ -70,6 +71,23 @@ public class OrchestratorSttEventClient {
             segment,
             transcription,
             decision
+        );
+    }
+
+    public void sendSpeechStarted(
+        String correlationId,
+        double averageEnergy,
+        double peakEnergy
+    ) {
+        SttSpeechStartedEventRequest request = new SttSpeechStartedEventRequest();
+        fillCommon(request, correlationId);
+        request.setAverageEnergy(averageEnergy);
+        request.setPeakEnergy(peakEnergy);
+
+        post(
+            properties.getOrchestrator().getCallbacks().getSpeechStartedPath(),
+            request,
+            correlationId
         );
     }
 

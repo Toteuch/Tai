@@ -37,6 +37,12 @@ public class ContinuousListeningService {
         return thread;
     });
 
+    private final ExecutorService callbackExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "tai-stt-speech-started-callback");
+        thread.setDaemon(true);
+        return thread;
+    });
+
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicReference<ListeningState> state = new AtomicReference<>(ListeningState.STOPPED);
     private final AtomicReference<String> activeCorrelationId = new AtomicReference<>();
@@ -117,16 +123,35 @@ public class ContinuousListeningService {
             while (running.get()) {
                 state.set(ListeningState.WAITING_FOR_SPEECH);
 
+                AtomicReference<String> segmentCorrelationId = new AtomicReference<>();
+
                 SpeechSegment segment = segmentRecorder.recordNextSegment(
                     microphone,
-                    running::get
+                    running::get,
+                    signal -> {
+                        String correlationId = UUID.randomUUID().toString();
+
+                        segmentCorrelationId.set(correlationId);
+                        activeCorrelationId.set(correlationId);
+                        state.set(ListeningState.CAPTURING);
+
+                        publishSpeechStartedAsync(correlationId, signal);
+                    }
                 );
 
                 if (!running.get() || segment == null) {
+                    activeCorrelationId.set(null);
                     continue;
                 }
 
-                processSegment(segment);
+                String correlationId = segmentCorrelationId.get();
+
+                if (correlationId == null || correlationId.isBlank()) {
+                    correlationId = UUID.randomUUID().toString();
+                    activeCorrelationId.set(correlationId);
+                }
+
+                processSegment(segment, correlationId);
             }
 
             state.set(ListeningState.STOPPED);
@@ -151,9 +176,7 @@ public class ContinuousListeningService {
         }
     }
 
-    private void processSegment(SpeechSegment segment) {
-        String correlationId = UUID.randomUUID().toString();
-
+    private void processSegment(SpeechSegment segment, String correlationId) {
         activeCorrelationId.set(correlationId);
         lastSegmentAt.set(Instant.now());
         state.set(ListeningState.PROCESSING);
@@ -217,9 +240,42 @@ public class ContinuousListeningService {
         }
     }
 
+    private void publishSpeechStartedAsync(
+        String correlationId,
+        SpeechStartedSignal signal
+    ) {
+        if (!properties.getListener().isPublishSpeechStartedCallbacks()) {
+            return;
+        }
+
+        callbackExecutor.submit(() -> {
+            try {
+                eventClient.sendSpeechStarted(
+                    correlationId,
+                    signal.averageEnergy(),
+                    signal.peakEnergy()
+                );
+
+                log.info(
+                    "Speech started callback sent | correlationId={} averageEnergy={} peakEnergy={}",
+                    correlationId,
+                    signal.averageEnergy(),
+                    signal.peakEnergy()
+                );
+            } catch (Exception e) {
+                log.warn(
+                    "Failed to publish speech started callback | correlationId={}",
+                    correlationId,
+                    e
+                );
+            }
+        });
+    }
+
     @PreDestroy
     public void shutdown() {
         stop();
         executorService.shutdownNow();
+        callbackExecutor.shutdown();
     }
 }

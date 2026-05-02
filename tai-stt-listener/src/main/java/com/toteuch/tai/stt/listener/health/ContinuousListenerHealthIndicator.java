@@ -36,6 +36,8 @@ public class ContinuousListenerHealthIndicator implements HealthIndicator {
         builder.withDetail("lastError", safe(status.lastError()));
         builder.withDetail("autoStart", properties.getListener().isAutoStart());
         builder.withDetail("publishFinalCallbacks", properties.getListener().isPublishFinalCallbacks());
+        builder.withDetail("publishSpeechStartedCallbacks", properties.getListener().isPublishSpeechStartedCallbacks()
+        );
 
         SttPipelineSummary lastResult = status.lastResult();
 

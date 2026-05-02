@@ -30,7 +30,6 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
     void should_create_active_turn_call_llm_and_publish_completed_event() {
         SessionContext context = new SessionContext();
 
-        TtsClient ttsClient = mock(TtsClient.class);
         LlmClient llmClient = mock(LlmClient.class);
         ContextAssembler contextAssembler = mock(ContextAssembler.class);
 
@@ -39,8 +38,6 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
 
         UserUtteranceAcceptedEventHandler handler = new UserUtteranceAcceptedEventHandler(
             fixedSessionStore(context),
-            ttsClient,
-            eventPublisher,
             contextAssembler,
             llmClient
         );
@@ -81,8 +78,6 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
 
         UserUtteranceAcceptedEventHandler handler = new UserUtteranceAcceptedEventHandler(
             fixedSessionStore(context),
-            ttsClient,
-            eventPublisher,
             contextAssembler,
             llmClient
         );

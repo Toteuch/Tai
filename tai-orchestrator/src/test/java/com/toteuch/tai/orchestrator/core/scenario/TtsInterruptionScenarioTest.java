@@ -4,7 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 class TtsInterruptionScenarioTest extends AbstractScenarioTest {
@@ -14,6 +16,8 @@ class TtsInterruptionScenarioTest extends AbstractScenarioTest {
         String firstCorrelationId = "tts-interrupt-1";
         String secondCorrelationId = "tts-interrupt-2";
 
+        publishSttSpeechStarted(firstCorrelationId);
+        verify(ttsClient, never()).stop(anyString());
         publishSttAccepted(firstCorrelationId, "First input");
         verify(llmClient).generateReply(eq(firstCorrelationId), anyList());
 
@@ -22,8 +26,9 @@ class TtsInterruptionScenarioTest extends AbstractScenarioTest {
 
         publishTtsStarted(firstCorrelationId, "First reply.");
 
-        publishSttAccepted(secondCorrelationId, "Second input");
+        publishSttSpeechStarted(secondCorrelationId);
         verify(ttsClient).stop(firstCorrelationId);
+        publishSttAccepted(secondCorrelationId, "Second input");
         verify(llmClient).generateReply(eq(secondCorrelationId), anyList());
 
         publishLlmSuccess(secondCorrelationId, "Second reply.");

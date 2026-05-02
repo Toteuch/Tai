@@ -4,12 +4,14 @@ import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
 import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent;
 import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
+import com.toteuch.tai.orchestrator.events.inbound.stt.SttSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptAcceptedEvent;
 import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptNoiseEvent;
 import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptUnintelligibleEvent;
 import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackCompletedEvent;
 import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackFailedEvent;
 import com.toteuch.tai.orchestrator.events.inbound.tts.TtsPlaybackStartedEvent;
+import com.toteuch.tai.orchestrator.events.internal.UserSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
 import com.toteuch.tai.orchestrator.services.tts.TtsClient;
 import com.toteuch.tai.orchestrator.session.SessionStore;
@@ -136,6 +138,26 @@ abstract class AbstractScenarioTest {
             EventSource.TTS_SERVICE,
             "PIPER_TTS_ERROR",
             "Piper TTS failed"
+        ));
+    }
+
+    protected void publishSttSpeechStarted(String correlationId) {
+        eventPublisher.publish(new SttSpeechStartedEvent(
+            UUID.randomUUID().toString(),
+            Instant.now(),
+            correlationId,
+            EventSource.STT_SERVICE,
+            50L,
+            10.0
+        ));
+    }
+
+    protected void publishUserSpeechStarted(String correlationId) {
+        eventPublisher.publish(new UserSpeechStartedEvent(
+            UUID.randomUUID().toString(),
+            Instant.now(),
+            correlationId,
+            EventSource.STT_SERVICE
         ));
     }
 }

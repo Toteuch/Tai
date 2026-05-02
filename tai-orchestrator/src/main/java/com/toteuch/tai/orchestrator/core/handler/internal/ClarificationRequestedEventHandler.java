@@ -1,12 +1,10 @@
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
 import com.toteuch.tai.orchestrator.core.EventHandler;
-import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
 import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.internal.ClarificationRequestedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
 import com.toteuch.tai.orchestrator.services.llm.LlmMessage;
-import com.toteuch.tai.orchestrator.services.tts.TtsClient;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
@@ -23,19 +21,13 @@ public class ClarificationRequestedEventHandler implements EventHandler<Clarific
     private static final Logger perfLog = LoggerFactory.getLogger("tai.performance");
 
     private final SessionStore sessionStore;
-    private final TaiEventPublisher eventPublisher;
-    private final TtsClient ttsClient;
     private final LlmClient llmClient;
 
     public ClarificationRequestedEventHandler(
         SessionStore sessionStore,
-        TaiEventPublisher eventPublisher,
-        TtsClient ttsClient,
         LlmClient llmClient
     ) {
         this.sessionStore = sessionStore;
-        this.eventPublisher = eventPublisher;
-        this.ttsClient = ttsClient;
         this.llmClient = llmClient;
     }
 
@@ -47,18 +39,6 @@ public class ClarificationRequestedEventHandler implements EventHandler<Clarific
     @Override
     public void handle(ClarificationRequestedEvent event) {
         SessionContext sessionContext = sessionStore.get();
-
-        if (sessionContext.bargeIn(event.correlationId())) {
-            String previousCorrelationId = sessionContext.getActiveTurn().getCorrelationId();
-            sessionContext.addTurn(sessionContext.getActiveTurn());
-            sessionContext.setActiveTurn(null);
-
-            perfLog.info("TTS stop speech called | correlationId={} activeTurnCorrelationId={}",
-                event.correlationId(),
-                previousCorrelationId
-            );
-            ttsClient.stop(previousCorrelationId);
-        }
 
         // This turn mustn't be added in SessionContext.turns, to not be added in the conversation history
         ConversationTurn newTurn = new ConversationTurn(event.correlationId(), "...", Instant.now(), false);
