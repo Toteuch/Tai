@@ -18,9 +18,10 @@ const MANUAL_INPUT_LIMIT = 2000;
 
 type Props = {
   conversationStatus: ConversationStatus;
+  correlationId: string;
 };
 
-export function ManualInputPanel({ conversationStatus }: Props) {
+export function ManualInputPanel({ conversationStatus, correlationId }: Props) {
   const queryClient = useQueryClient();
   const inputDraft = useLocalUiStore((state) => state.inputDraft);
   const setInputDraft = useLocalUiStore((state) => state.setInputDraft);
@@ -99,7 +100,7 @@ export function ManualInputPanel({ conversationStatus }: Props) {
             variant={conversationStatus === 'SPEAKING' ? 'destructive' : 'outline'}
             disabled={!stopEnabled}
             title={stopConfigured ? 'Stop current assistant speech' : 'Stop Speak endpoint is not exposed yet'}
-            onClick={() => stopSpeakMutation.mutate()}
+            onClick={() => stopSpeakMutation.mutate(correlationId)}
           >
             <Square className="mr-2 h-4 w-4" />
             Stop Speak

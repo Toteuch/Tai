@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
-package com.toteuch.tai.orchestrator.core.handler.llm;
+package com.toteuch.tai.orchestrator.core.handler.ui;
 
 import com.toteuch.tai.events.EventType;
-import com.toteuch.tai.events.llm.LlmResponseFailedEvent;
+import com.toteuch.tai.events.ui.UiStopSpeakReceivedEvent;
 import com.toteuch.tai.orchestrator.core.EventHandler;
 import com.toteuch.tai.orchestrator.core.publisher.TaiEventPublisher;
-import com.toteuch.tai.orchestrator.events.internal.AssistantReplyFailedEvent;
+import com.toteuch.tai.orchestrator.events.internal.AssistantStopSpeakReceivedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import org.slf4j.Logger;
@@ -13,14 +13,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LlmResponseFailedEventHandler implements EventHandler<LlmResponseFailedEvent> {
-    private static final Logger decisionLog = LoggerFactory.getLogger("tai.decision");
+public class UiStopSpeakReceivedEventHandler implements EventHandler<UiStopSpeakReceivedEvent> {
     private static final Logger perfLog = LoggerFactory.getLogger("tai.performance");
+    private static final Logger decisionLog = LoggerFactory.getLogger("tai.decision");
 
     private final SessionStore sessionStore;
     private final TaiEventPublisher eventPublisher;
 
-    public LlmResponseFailedEventHandler(
+    public UiStopSpeakReceivedEventHandler(
             SessionStore sessionStore, TaiEventPublisher eventPublisher) {
         this.sessionStore = sessionStore;
         this.eventPublisher = eventPublisher;
@@ -28,15 +28,13 @@ public class LlmResponseFailedEventHandler implements EventHandler<LlmResponseFa
 
     @Override
     public EventType supports() {
-        return EventType.LLM_RESPONSE_FAILED;
+        return EventType.UI_STOP_SPEAK_RECEIVED;
     }
 
     @Override
-    public void handle(LlmResponseFailedEvent event) {
-        perfLog.debug(
-                "LLM generation completed | correlationId={} modelName={}",
-                event.correlationId(),
-                event.modelName());
+    public void handle(UiStopSpeakReceivedEvent event) {
+        perfLog.debug("Stop speak request received | correlationId={}", event.correlationId());
+
         SessionContext sessionContext = sessionStore.get();
 
         if (!sessionContext.isStillActiveTurn(event.correlationId())) {
@@ -44,18 +42,17 @@ public class LlmResponseFailedEventHandler implements EventHandler<LlmResponseFa
                     "{} ignored | correlationId={} activeTurnCorrelationId={}",
                     event.getClass().getSimpleName(),
                     event.correlationId(),
-                    sessionContext.getActiveTurn().getCorrelationId());
+                    sessionContext.getActiveTurn() != null
+                            ? sessionContext.getActiveTurn().getCorrelationId()
+                            : null);
             return;
         }
 
         eventPublisher.publish(
-                new AssistantReplyFailedEvent(
+                new AssistantStopSpeakReceivedEvent(
                         event.eventId(),
                         event.occurredAt(),
                         event.correlationId(),
-                        event.source(),
-                        event.errorCode(),
-                        event.errorMessage(),
-                        event.generationDurationMs()));
+                        event.source()));
     }
 }

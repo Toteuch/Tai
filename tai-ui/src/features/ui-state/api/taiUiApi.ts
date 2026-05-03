@@ -95,10 +95,17 @@ export function isStopSpeakConfigured(): boolean {
   return stopSpeakPath.length > 0;
 }
 
-export async function stopSpeak(): Promise<void> {
+export async function stopSpeak(correlationId: String): Promise<void> {
   if (!isStopSpeakConfigured()) {
     throw new Error('Stop Speak endpoint is not configured yet.');
   }
+
+  const payload = {
+    eventId: crypto.randomUUID(),
+    occurredAt: new Date().toISOString(),
+    correlationId: correlationId,
+    source: 'UI',
+  };
 
   const response = await fetch(buildOrchestratorUrl(stopSpeakPath), {
     method: 'POST',
@@ -106,6 +113,7 @@ export async function stopSpeak(): Promise<void> {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
+      body: JSON.stringify(payload),
   });
 
   if (!response.ok) {

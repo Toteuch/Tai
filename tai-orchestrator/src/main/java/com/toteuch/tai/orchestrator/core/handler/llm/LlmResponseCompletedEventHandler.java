@@ -46,7 +46,7 @@ public class LlmResponseCompletedEventHandler implements EventHandler<LlmRespons
         if (!sessionContext.isStillActiveTurn(event.correlationId())) {
             decisionLog.info(
                     "{} ignored | correlationId={} activeTurnCorrelationId={}",
-                    this.getClass().getSimpleName(),
+                    event.getClass().getSimpleName(),
                     event.correlationId(),
                     sessionContext.getActiveTurn() != null
                             ? sessionContext.getActiveTurn().getCorrelationId()

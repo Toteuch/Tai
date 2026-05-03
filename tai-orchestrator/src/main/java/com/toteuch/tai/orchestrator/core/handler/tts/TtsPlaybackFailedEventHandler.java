@@ -39,7 +39,7 @@ public class TtsPlaybackFailedEventHandler implements EventHandler<TtsPlaybackFa
         if (sessionContext.getActiveTurn() == null) {
             decisionLog.info(
                     "{} ignored : no active turn | correlationId={}",
-                    this.getClass().getSimpleName(),
+                    event.getClass().getSimpleName(),
                     event.correlationId());
             return;
         }
@@ -47,7 +47,7 @@ public class TtsPlaybackFailedEventHandler implements EventHandler<TtsPlaybackFa
         if (!sessionContext.isStillActiveTurn(event.correlationId())) {
             decisionLog.info(
                     "{} ignored | correlationId={} activeTurnCorrelationId={}",
-                    this.getClass().getSimpleName(),
+                    event.getClass().getSimpleName(),
                     event.correlationId(),
                     sessionContext.getActiveTurn().getCorrelationId());
             return;

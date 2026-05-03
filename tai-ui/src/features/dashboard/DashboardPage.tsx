@@ -102,7 +102,7 @@ export function DashboardPage() {
           <div className="grid min-h-0 gap-3 lg:grid-rows-[minmax(260px,0.98fr)_minmax(175px,0.55fr)_minmax(210px,0.62fr)] lg:overflow-hidden">
             <ModulesPanel modules={uiState.modules} />
             <LatestExchangesPanel uiState={uiState} />
-            <ManualInputPanel conversationStatus={uiState.conversationStatus} />
+            <ManualInputPanel conversationStatus={uiState.conversationStatus} correlationId={uiState.lastAssistantUtterance?.correlationId ?? crypto.randomUUID()} />
           </div>
 
           <div className="grid min-h-0 gap-3 lg:grid-rows-[minmax(420px,1fr)_minmax(210px,0.34fr)] lg:overflow-hidden">
