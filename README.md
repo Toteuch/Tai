@@ -109,7 +109,6 @@ The system is designed so individual capabilities can evolve independently:
 ┌────────────────────┐
 │ Orchestrator       │
 │ state + decisions  │
-│ UI projection      │
 └─────────┬──────────┘
           │ service call
           ▼
@@ -122,6 +121,7 @@ The system is designed so individual capabilities can evolve independently:
 ┌────────────────────┐
 │ Orchestrator       │
 │ state + decisions  │
+│ UI projection      │
 └─────┬────────────┬─┘
       │            │
       ▼            ▼
@@ -418,7 +418,6 @@ Health and runtime state are exposed through service-level health endpoints and 
 
 Planned within V2:
 
-- `tai-ui` frontend module
 - `tai-ui-gateway` to move UI projection ownership out of the orchestrator
 
 ---
