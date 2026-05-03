@@ -383,18 +383,15 @@ Payload:
 
 ```json
 {
-  "eventId": "...",
-  "createdAt": "2026-04-27T18:40:15.123Z",
-  "source": "STT_SERVICE",
-  "correlationId": "test-1",
-  "text": "Hello Tai",
-  "language": "en",
-  "languageProbability": 0.85,
-  "durationMs": 3200,
-  "averageEnergy": 132.22,
-  "reason": "ACCEPTED",
-  "suspicionScore": 0,
-  "transcriptionDurationMs": 390
+    "eventId": "...",
+    "occurredAt": "2026-04-27T18:40:15.123Z",
+    "source": "STT_SERVICE",
+    "correlationId": "test-1",
+    "transcript": "Hello Tai",
+    "language": "en",
+    "languageProbability": 0.85,
+    "userSpeechDurationMs": 3200,
+    "transcriptionDurationMs": 390
 }
 ```
 
@@ -593,7 +590,7 @@ Health components:
 | Component | Meaning |
 |---|---|
 | `microphoneCapture` | Checks whether the configured Java Sound microphone line is supported |
-| `continuousListener` | Reports listener loop state and latest runtime details |
+| `continuousListener` | Reports continuous listener runtime state through Actuator |
 
 Expected `continuousListener` details:
 
@@ -607,3 +604,30 @@ Expected `continuousListener` details:
 - `autoStart`
 - `publishSpeechStartedCallbacks`
 - `publishFinalCallbacks`
+
+When continuous listening is stopped, the `continuousListener` component can report `OUT_OF_SERVICE` while the Java process, microphone capability and Actuator endpoint are still reachable.
+
+Example stopped health state:
+
+```json
+{
+  "status": "OUT_OF_SERVICE",
+  "components": {
+    "continuousListener": {
+      "status": "OUT_OF_SERVICE",
+      "details": {
+        "running": false,
+        "state": "STOPPED",
+        "activeCorrelationId": "",
+        "lastError": "",
+        "autoStart": true,
+        "publishFinalCallbacks": true,
+        "publishSpeechStartedCallbacks": true
+      }
+    },
+    "microphoneCapture": {
+      "status": "UP"
+    }
+  }
+}
+```

@@ -2,14 +2,17 @@
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
+import com.toteuch.tai.events.EventSource;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.internal.AssistantSpeechCompletedEvent;
 import com.toteuch.tai.orchestrator.events.internal.ConversationTurnCompletedEvent;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -23,9 +26,15 @@ class AssistantSpeechCompletedEventHandlerTest extends AbstractHandlerTest {
         context.setActiveTurn(turn);
         context.setSpeakingState(SpeakingState.SPEAKING);
 
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
+
         AssistantSpeechCompletedEventHandler handler =
                 new AssistantSpeechCompletedEventHandler(
-                        fixedSessionStore(context), eventPublisher);
+                        fixedSessionStore(context),
+                        eventPublisher,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new AssistantSpeechCompletedEvent(

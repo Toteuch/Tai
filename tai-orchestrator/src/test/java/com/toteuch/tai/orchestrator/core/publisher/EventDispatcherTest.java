@@ -7,9 +7,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.toteuch.tai.events.EventType;
+import com.toteuch.tai.events.TaiEvent;
 import com.toteuch.tai.orchestrator.core.EventHandler;
-import com.toteuch.tai.orchestrator.events.EventType;
-import com.toteuch.tai.orchestrator.events.TaiEvent;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

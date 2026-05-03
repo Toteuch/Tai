@@ -306,3 +306,19 @@ Example:
 ```bash
 curl http://localhost:8093/actuator/health
 ```
+
+A typical playback component can expose the active playback correlation id:
+
+```json
+{
+  "components": {
+    "playback": {
+      "status": "UP",
+      "details": {
+        "activeCorrelationId": "c9540aec-c84c-4051-9467-5701c46d095c"
+      }
+    }
+  },
+  "status": "UP"
+}
+```

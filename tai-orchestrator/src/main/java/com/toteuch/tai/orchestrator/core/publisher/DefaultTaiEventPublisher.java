@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.core.publisher;
 
-import com.toteuch.tai.orchestrator.events.TaiEvent;
+import com.toteuch.tai.events.TaiEvent;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 

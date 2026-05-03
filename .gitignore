@@ -81,6 +81,7 @@ Thumbs.db
 
 .env
 .env.*
+!.env.example
 *.env
 
 # =========================
@@ -108,14 +109,30 @@ htmlcov/
 # TTS
 
 # =========================
-**/voices/
-**/output/
+tai-tts-piper/voices/
+tai-tts-piper/output/
 
 # =========================
 
 # STT
 
 # =========================
-**/input/
+tai-stt-whisper/input/
 **/tmp/
 **/*.wav
+
+# =========================
+
+# Bash
+
+# =========================
+
+export-references.sh
+export_references/
+
+# =========================
+
+# Bash
+
+# =========================
+**/tai-system-prompt.txt

@@ -3,6 +3,7 @@ package com.toteuch.tai.orchestrator.session;
 
 import com.toteuch.tai.orchestrator.services.llm.LlmMessage;
 import com.toteuch.tai.orchestrator.support.ContextAssembler;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 public class SessionContext {
     private static final Logger contextLog = LoggerFactory.getLogger("tai.context");
     private static final Logger convLog = LoggerFactory.getLogger("tai.conversation");
+    private static final Logger errorLog = LoggerFactory.getLogger("tai.error");
 
     private final List<ConversationTurn> turns = new ArrayList<>();
     private ThinkingState thinkingState = ThinkingState.IDLE;
@@ -34,7 +36,16 @@ public class SessionContext {
         this.activeTurn = activeTurn;
     }
 
-    public void addTurn(ConversationTurn turn) {
+    public void addTurn(ConversationTurn turn, TurnOutcome outcome) {
+        if (turn.getCompletedAt() == null) {
+            turn.setCompletedAt(Instant.now());
+        }
+        if (turn.getOutcome() == null) {
+            turn.setOutcome(outcome);
+        } else {
+            errorLog.error(
+                    "Turn already has an outcome | correlationId={}", turn.getCorrelationId());
+        }
         contextLog.info("Adding turn | correlationId={}", turn.getCorrelationId());
         logConversation(turn);
         this.turns.add(turn);
@@ -92,13 +103,12 @@ public class SessionContext {
         return metricsByCorrelationId.computeIfAbsent(correlationId, TurnMetrics::new);
     }
 
-    public void logMetrics(String correlationId, TurnMetricsOutcome outcome) {
+    public void logMetrics(String correlationId, TurnOutcome outcome) {
         TurnMetrics metrics = metricsByCorrelationId.remove(correlationId);
         if (metrics == null) {
             return;
         }
-        metrics.setOutcome(outcome);
-        metrics.log();
+        metrics.log(outcome);
     }
 
     public boolean isObscenityFilterEnabled() {
@@ -192,5 +202,12 @@ public class SessionContext {
                             .append("\n");
                 });
         return fullHistory.toString();
+    }
+
+    public void setOutcome(TurnOutcome outcome) {
+        if (this.activeTurn != null) {
+            this.activeTurn.setOutcome(outcome);
+            this.activeTurn.setCompletedAt(Instant.now());
+        }
     }
 }

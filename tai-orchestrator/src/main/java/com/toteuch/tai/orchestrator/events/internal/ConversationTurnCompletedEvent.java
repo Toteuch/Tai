@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.events.internal;
 
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.EventType;
-import com.toteuch.tai.orchestrator.events.TaiEvent;
-import com.toteuch.tai.orchestrator.session.TurnMetricsOutcome;
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.EventType;
+import com.toteuch.tai.events.TaiEvent;
+import com.toteuch.tai.orchestrator.session.TurnOutcome;
 import java.time.Instant;
 
 /**
@@ -19,7 +19,7 @@ public record ConversationTurnCompletedEvent(
         Instant occurredAt,
         String correlationId,
         EventSource source,
-        TurnMetricsOutcome outcome)
+        TurnOutcome outcome)
         implements TaiEvent {
     @Override
     public EventType type() {

@@ -2,22 +2,24 @@
 package com.toteuch.tai.orchestrator.core.handler.inbound;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.stt.SttSpeechStartedEvent;
+import com.toteuch.tai.events.stt.SttTranscriptAcceptedEvent;
+import com.toteuch.tai.events.stt.SttTranscriptNoiseEvent;
+import com.toteuch.tai.events.stt.SttTranscriptUnintelligibleEvent;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
-import com.toteuch.tai.orchestrator.core.handler.inbound.stt.SttSpeechStartedEventHandler;
-import com.toteuch.tai.orchestrator.core.handler.inbound.stt.SttTranscriptAcceptedEventHandler;
-import com.toteuch.tai.orchestrator.core.handler.inbound.stt.SttTranscriptNoiseEventHandler;
-import com.toteuch.tai.orchestrator.core.handler.inbound.stt.SttTranscriptUnintelligibleEventHandler;
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.inbound.stt.SttSpeechStartedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptAcceptedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptNoiseEvent;
-import com.toteuch.tai.orchestrator.events.inbound.stt.SttTranscriptUnintelligibleEvent;
+import com.toteuch.tai.orchestrator.core.handler.stt.SttSpeechStartedEventHandler;
+import com.toteuch.tai.orchestrator.core.handler.stt.SttTranscriptAcceptedEventHandler;
+import com.toteuch.tai.orchestrator.core.handler.stt.SttTranscriptNoiseEventHandler;
+import com.toteuch.tai.orchestrator.core.handler.stt.SttTranscriptUnintelligibleEventHandler;
 import com.toteuch.tai.orchestrator.events.internal.ClarificationRequestedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserUtteranceAcceptedEvent;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -41,9 +43,6 @@ class SttInboundEventHandlersTest extends AbstractHandlerTest {
                         "en",
                         0.98,
                         1400L,
-                        600.0,
-                        "ACCEPTED",
-                        0,
                         1000L));
 
         UserUtteranceAcceptedEvent published =
@@ -67,10 +66,10 @@ class SttInboundEventHandlersTest extends AbstractHandlerTest {
                         EventSource.STT_SERVICE,
                         "fi",
                         0.42,
-                        1200L,
                         500.0,
                         "UNSUPPORTED_LANGUAGE",
                         3,
+                        1200L,
                         1000L));
 
         ClarificationRequestedEvent published =
@@ -82,7 +81,9 @@ class SttInboundEventHandlersTest extends AbstractHandlerTest {
 
     @Test
     void noise_transcript_should_publish_no_event() {
-        SttTranscriptNoiseEventHandler handler = new SttTranscriptNoiseEventHandler();
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+
+        SttTranscriptNoiseEventHandler handler = new SttTranscriptNoiseEventHandler(runtimeUpdater);
 
         handler.handle(
                 new SttTranscriptNoiseEvent(
@@ -90,10 +91,10 @@ class SttInboundEventHandlersTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-3",
                         EventSource.STT_SERVICE,
-                        500L,
-                        70.0,
+                        500.0,
                         "NOISE",
                         999,
+                        820L,
                         1000L));
 
         eventPublisher.assertNoEventPublished();
@@ -109,10 +110,9 @@ class SttInboundEventHandlersTest extends AbstractHandlerTest {
                         Instant.now(),
                         "corr-4",
                         EventSource.STT_SERVICE,
-                        10L,
+                        28.0,
                         50.0));
 
-        UserSpeechStartedEvent published =
-                eventPublisher.assertSingleEventPublished(UserSpeechStartedEvent.class);
+        eventPublisher.assertSingleEventPublished(UserSpeechStartedEvent.class);
     }
 }

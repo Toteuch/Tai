@@ -8,17 +8,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.llm.LlmResponseCompletedEvent;
+import com.toteuch.tai.events.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
-import com.toteuch.tai.orchestrator.events.EventSource;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseCompletedEvent;
-import com.toteuch.tai.orchestrator.events.inbound.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.orchestrator.events.internal.UserUtteranceAcceptedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
 import com.toteuch.tai.orchestrator.services.llm.LlmMessage;
-import com.toteuch.tai.orchestrator.services.tts.TtsClient;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
 import com.toteuch.tai.orchestrator.support.ContextAssembler;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -32,13 +33,19 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
 
         LlmClient llmClient = mock(LlmClient.class);
         ContextAssembler contextAssembler = mock(ContextAssembler.class);
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
 
         when(contextAssembler.assemble(eq(context), eq("Hello"), eq(false)))
                 .thenReturn(List.of(new LlmMessage("user", "Hello")));
 
         UserUtteranceAcceptedEventHandler handler =
                 new UserUtteranceAcceptedEventHandler(
-                        fixedSessionStore(context), contextAssembler, llmClient);
+                        fixedSessionStore(context),
+                        contextAssembler,
+                        llmClient,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new UserUtteranceAcceptedEvent(
@@ -47,6 +54,7 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
                         "corr-1",
                         EventSource.STT_SERVICE,
                         "Hello",
+                        0L,
                         0L));
 
         assertThat(context.getActiveTurn()).isNotNull();
@@ -68,16 +76,21 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
     void should_publish_failed_event_when_llm_generation_fails() {
         SessionContext context = new SessionContext();
 
-        TtsClient ttsClient = mock(TtsClient.class);
         LlmClient llmClient = mock(LlmClient.class);
         ContextAssembler contextAssembler = mock(ContextAssembler.class);
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
 
         when(contextAssembler.assemble(eq(context), eq("Hello"), eq(false)))
                 .thenReturn(List.of(new LlmMessage("user", "Hello")));
 
         UserUtteranceAcceptedEventHandler handler =
                 new UserUtteranceAcceptedEventHandler(
-                        fixedSessionStore(context), contextAssembler, llmClient);
+                        fixedSessionStore(context),
+                        contextAssembler,
+                        llmClient,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new UserUtteranceAcceptedEvent(
@@ -86,6 +99,7 @@ class UserUtteranceAcceptedEventHandlerTest extends AbstractHandlerTest {
                         "corr-1",
                         EventSource.STT_SERVICE,
                         "Hello",
+                        0L,
                         0L));
 
         verify(llmClient).generateReply(eq("corr-1"), anyList());

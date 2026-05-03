@@ -14,12 +14,12 @@ public class TurnMetrics {
     Instant userSpeechStartAt;
     Instant userUtteranceAcceptedAt;
     Instant ttsSpeechStartAt;
+    Long userSpeechDurationMs;
     Long speechToTranscriptMs;
     Long transcriptDurationMs;
     Long llmGenerationMs;
     Long ttsSynthesisMs;
     Long ttsSpeechDurationMs;
-    TurnMetricsOutcome outcome;
 
     public TurnMetrics(String correlationId) {
         this.correlationId = correlationId;
@@ -74,11 +74,12 @@ public class TurnMetrics {
                 safeSet("ttsSpeechDurationMs", this.ttsSpeechDurationMs, ttsSpeechDurationMs);
     }
 
-    public void setOutcome(TurnMetricsOutcome outcome) {
-        this.outcome = safeSet("outcome", this.outcome, outcome);
+    public void setUserSpeechDurationMs(Long userSpeechDurationMs) {
+        this.userSpeechDurationMs =
+                safeSet("userSpeechDurationMs", this.userSpeechDurationMs, userSpeechDurationMs);
     }
 
-    protected void log() {
+    protected void log(TurnOutcome outcome) {
         String message = String.format("TURN metrics | correlationId=%s", correlationId);
         long totalTurnMs = 0L;
         if (userSpeechStartAt != null) {
@@ -88,14 +89,17 @@ public class TurnMetrics {
         }
 
         if (outcome == null) {
-            this.outcome = TurnMetricsOutcome.UNKNOWN;
+            outcome = TurnOutcome.UNKNOWN;
         }
         message += String.format(" outcome=%s", outcome);
 
         message += String.format(" totalTurnMs=%d", totalTurnMs);
         message += String.format(" startedFrom=%s", metricsStartSource());
+        if (userSpeechDurationMs != null) {
+            message += String.format(" userSpeechDurationMs=%d", userSpeechDurationMs);
+        }
         if (transcriptDurationMs != null) {
-            message += String.format(" transcriptDurationMs=%d", transcriptDurationMs);
+            message += String.format(" transcriptionDurationMs=%d", transcriptDurationMs);
         }
         if (speechToTranscriptMs != null) {
             message += String.format(" speechToTranscriptMs=%d", speechToTranscriptMs);

@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
+import com.toteuch.tai.events.EventType;
 import com.toteuch.tai.orchestrator.core.EventHandler;
-import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.internal.ConversationTurnCompletedEvent;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshReason;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -19,9 +21,12 @@ public class ConversationTurnCompletedEventHandler
     private static final Logger errorLog = LoggerFactory.getLogger("tai.error");
 
     private final SessionStore sessionStore;
+    private final UiStateRefreshRequester uiStateRefreshRequester;
 
-    public ConversationTurnCompletedEventHandler(SessionStore sessionStore) {
+    public ConversationTurnCompletedEventHandler(
+            SessionStore sessionStore, UiStateRefreshRequester uiStateRefreshRequester) {
         this.sessionStore = sessionStore;
+        this.uiStateRefreshRequester = uiStateRefreshRequester;
     }
 
     @Override
@@ -50,9 +55,11 @@ public class ConversationTurnCompletedEventHandler
         ConversationTurn activeTurn = sessionContext.getActiveTurn();
 
         if (activeTurn != null && activeTurn.isPersistInHistory()) {
-            sessionContext.addTurn(activeTurn);
+            sessionContext.addTurn(activeTurn, event.outcome());
         }
 
         sessionContext.setActiveTurn(null);
+        uiStateRefreshRequester.requestRefresh(
+                UiStateRefreshReason.RUNTIME_EVENT, event.correlationId());
     }
 }

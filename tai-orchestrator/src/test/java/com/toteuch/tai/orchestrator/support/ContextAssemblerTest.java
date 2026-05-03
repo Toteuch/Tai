@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.toteuch.tai.orchestrator.services.llm.LlmMessage;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
+import com.toteuch.tai.orchestrator.session.TurnOutcome;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +28,7 @@ class ContextAssemblerTest {
     }
 
     @Test
-    void shouldNotDuplicateCurrentUserPromptWhenActiveTurnAlreadyExistsInSession() {
+    void should_not_duplicate_current_user_prompt_when_active_turn_already_exists_in_session() {
         SessionContext sessionContext = new SessionContext();
 
         ConversationTurn previousTurn =
@@ -36,11 +37,10 @@ class ContextAssemblerTest {
         previousTurn.setAssistantReplyGenerated(true);
         previousTurn.setAssistantPlaybackStarted(true);
         previousTurn.setAssistantPlaybackCompleted(true);
-        sessionContext.addTurn(previousTurn);
+        sessionContext.addTurn(previousTurn, TurnOutcome.COMPLETED);
 
         ConversationTurn activeTurn =
                 new ConversationTurn("corr-current", "Explain RAM briefly", Instant.now(), true);
-        sessionContext.addTurn(activeTurn);
         sessionContext.setActiveTurn(activeTurn);
 
         List<LlmMessage> messages =
@@ -59,7 +59,7 @@ class ContextAssemblerTest {
     }
 
     @Test
-    void shouldKeepPreviousConversationHistoryWhileAddingCurrentPromptOnce() {
+    void should_keep_previous_conversation_history_while_adding_current_prompt_once() {
         SessionContext sessionContext = new SessionContext();
 
         ConversationTurn previousTurn =
@@ -68,11 +68,10 @@ class ContextAssemblerTest {
         previousTurn.setAssistantReplyGenerated(true);
         previousTurn.setAssistantPlaybackStarted(true);
         previousTurn.setAssistantPlaybackCompleted(true);
-        sessionContext.addTurn(previousTurn);
+        sessionContext.addTurn(previousTurn, TurnOutcome.COMPLETED);
 
         ConversationTurn activeTurn =
                 new ConversationTurn("corr-current", "Explain RAM briefly", Instant.now(), true);
-        sessionContext.addTurn(activeTurn);
         sessionContext.setActiveTurn(activeTurn);
 
         List<LlmMessage> messages =
@@ -103,17 +102,16 @@ class ContextAssemblerTest {
     }
 
     @Test
-    void shouldIncludeInterruptionSystemNoteForSupersededTurn() {
+    void should_include_interruption_system_note_for_superseded_turn() {
         SessionContext sessionContext = new SessionContext();
 
         ConversationTurn supersededTurn =
                 new ConversationTurn("corr-old", "Hello", Instant.now(), true);
         supersededTurn.setSupersededBeforeAssistantReply(true);
-        sessionContext.addTurn(supersededTurn);
+        sessionContext.addTurn(supersededTurn, TurnOutcome.SUPERSEDED);
 
         ConversationTurn activeTurn =
                 new ConversationTurn("corr-current", "Stop", Instant.now(), true);
-        sessionContext.addTurn(activeTurn);
         sessionContext.setActiveTurn(activeTurn);
 
         List<LlmMessage> messages = contextAssembler.assemble(sessionContext, "Stop", false);
@@ -129,7 +127,7 @@ class ContextAssemblerTest {
     }
 
     @Test
-    void shouldIncludePlaybackInterruptedSystemNoteForInterruptedAssistantReply() {
+    void should_include_playback_interrupted_system_note_for_interrupted_assistant_reply() {
         SessionContext sessionContext = new SessionContext();
 
         ConversationTurn interruptedTurn =
@@ -138,11 +136,10 @@ class ContextAssemblerTest {
         interruptedTurn.setAssistantReplyGenerated(true);
         interruptedTurn.setAssistantPlaybackStarted(true);
         interruptedTurn.setAssistantPlaybackInterrupted(true);
-        sessionContext.addTurn(interruptedTurn);
+        sessionContext.addTurn(interruptedTurn, TurnOutcome.INTERRUPTED);
 
         ConversationTurn activeTurn =
                 new ConversationTurn("corr-current", "No, wait", Instant.now(), true);
-        sessionContext.addTurn(activeTurn);
         sessionContext.setActiveTurn(activeTurn);
 
         List<LlmMessage> messages = contextAssembler.assemble(sessionContext, "No, wait", false);

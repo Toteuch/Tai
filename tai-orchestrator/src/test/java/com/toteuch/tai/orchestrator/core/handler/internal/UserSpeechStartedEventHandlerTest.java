@@ -8,14 +8,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.toteuch.tai.events.EventSource;
 import com.toteuch.tai.orchestrator.core.handler.AbstractHandlerTest;
-import com.toteuch.tai.orchestrator.events.EventSource;
 import com.toteuch.tai.orchestrator.events.internal.UserSpeechStartedEvent;
 import com.toteuch.tai.orchestrator.services.tts.TtsClient;
 import com.toteuch.tai.orchestrator.session.ConversationTurn;
 import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SpeakingState;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -27,9 +29,15 @@ public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
         SessionContext context = new SessionContext();
 
         TtsClient ttsClient = mock(TtsClient.class);
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
 
         UserSpeechStartedEventHandler handler =
-                new UserSpeechStartedEventHandler(fixedSessionStore(context), ttsClient);
+                new UserSpeechStartedEventHandler(
+                        fixedSessionStore(context),
+                        ttsClient,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new UserSpeechStartedEvent(
@@ -53,9 +61,15 @@ public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
         context.setSpeakingState(SpeakingState.SPEAKING);
 
         TtsClient ttsClient = mock(TtsClient.class);
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
 
         UserSpeechStartedEventHandler handler =
-                new UserSpeechStartedEventHandler(fixedSessionStore(context), ttsClient);
+                new UserSpeechStartedEventHandler(
+                        fixedSessionStore(context),
+                        ttsClient,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new UserSpeechStartedEvent(
@@ -89,9 +103,15 @@ public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
         context.setSpeakingState(SpeakingState.PREPARING);
 
         TtsClient ttsClient = mock(TtsClient.class);
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
 
         UserSpeechStartedEventHandler handler =
-                new UserSpeechStartedEventHandler(fixedSessionStore(context), ttsClient);
+                new UserSpeechStartedEventHandler(
+                        fixedSessionStore(context),
+                        ttsClient,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new UserSpeechStartedEvent(
@@ -122,9 +142,15 @@ public class UserSpeechStartedEventHandlerTest extends AbstractHandlerTest {
         context.setThinkingState(ThinkingState.GENERATING);
 
         TtsClient ttsClient = mock(TtsClient.class);
+        ModuleRuntimeUpdater runtimeUpdater = mock(ModuleRuntimeUpdater.class);
+        UiStateRefreshRequester uiStateRefreshRequester = mock(UiStateRefreshRequester.class);
 
         UserSpeechStartedEventHandler handler =
-                new UserSpeechStartedEventHandler(fixedSessionStore(context), ttsClient);
+                new UserSpeechStartedEventHandler(
+                        fixedSessionStore(context),
+                        ttsClient,
+                        runtimeUpdater,
+                        uiStateRefreshRequester);
 
         handler.handle(
                 new UserSpeechStartedEvent(

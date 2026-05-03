@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.core.handler.internal;
 
+import com.toteuch.tai.events.EventType;
 import com.toteuch.tai.orchestrator.core.EventHandler;
-import com.toteuch.tai.orchestrator.events.EventType;
 import com.toteuch.tai.orchestrator.events.internal.UserUtteranceAcceptedEvent;
 import com.toteuch.tai.orchestrator.services.llm.LlmClient;
 import com.toteuch.tai.orchestrator.services.llm.LlmMessage;
@@ -11,6 +11,9 @@ import com.toteuch.tai.orchestrator.session.SessionContext;
 import com.toteuch.tai.orchestrator.session.SessionStore;
 import com.toteuch.tai.orchestrator.session.ThinkingState;
 import com.toteuch.tai.orchestrator.support.ContextAssembler;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshReason;
+import com.toteuch.tai.orchestrator.ui.push.UiStateRefreshRequester;
+import com.toteuch.tai.orchestrator.ui.runtime.ModuleRuntimeUpdater;
 import java.time.Instant;
 import java.util.List;
 import org.slf4j.Logger;
@@ -24,12 +27,20 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
     private final SessionStore sessionStore;
     private final ContextAssembler contextAssembler;
     private final LlmClient llmClient;
+    private final ModuleRuntimeUpdater runtimeUpdater;
+    private final UiStateRefreshRequester uiStateRefreshRequester;
 
     public UserUtteranceAcceptedEventHandler(
-            SessionStore sessionStore, ContextAssembler contextAssembler, LlmClient llmClient) {
+            SessionStore sessionStore,
+            ContextAssembler contextAssembler,
+            LlmClient llmClient,
+            ModuleRuntimeUpdater runtimeUpdater,
+            UiStateRefreshRequester uiStateRefreshRequester) {
         this.sessionStore = sessionStore;
         this.contextAssembler = contextAssembler;
         this.llmClient = llmClient;
+        this.runtimeUpdater = runtimeUpdater;
+        this.uiStateRefreshRequester = uiStateRefreshRequester;
     }
 
     @Override
@@ -48,6 +59,10 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
         sessionContext
                 .getTurnMetrics(event.correlationId())
                 .setTranscriptDurationMs(event.transcriptDurationMs());
+        sessionContext
+                .getTurnMetrics(event.correlationId())
+                .setUserSpeechDurationMs(event.speechDurationMs());
+        runtimeUpdater.sttListenerListening();
 
         String normalizedText = normalizeTaiName(event.text());
 
@@ -60,6 +75,10 @@ public class UserUtteranceAcceptedEventHandler implements EventHandler<UserUtter
         sessionContext.setThinkingState(ThinkingState.GENERATING);
         perfLog.debug("LLM generation called | correlationId={}", event.correlationId());
         llmClient.generateReply(sessionContext.getActiveTurn().getCorrelationId(), messages);
+        runtimeUpdater.llmGenerating(event.correlationId());
+
+        uiStateRefreshRequester.requestRefresh(
+                UiStateRefreshReason.RUNTIME_EVENT, event.correlationId());
     }
 
     private String normalizeTaiName(String text) {

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.llm.transport;
 
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.llm.LlmResponseCompletedEvent;
+import com.toteuch.tai.events.llm.LlmResponseFailedEvent;
 import com.toteuch.tai.llm.config.LlmProperties;
 import com.toteuch.tai.llm.ollama.OllamaGenerationResult;
-import com.toteuch.tai.llm.transport.dto.LlmResponseCompletedEventRequest;
-import com.toteuch.tai.llm.transport.dto.LlmResponseFailedEventRequest;
-import com.toteuch.tai.llm.transport.dto.TransportEventSource;
 import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -29,19 +29,21 @@ public class OrchestratorLlmEventClient {
 
     public void sendCompleted(String correlationId, OllamaGenerationResult result) {
         try {
-            LlmResponseCompletedEventRequest r = new LlmResponseCompletedEventRequest();
-            r.setEventId(UUID.randomUUID().toString());
-            r.setCreatedAt(Instant.now());
-            r.setSource(TransportEventSource.LLM_SERVICE);
-            r.setCorrelationId(correlationId);
-            r.setResponseText(result.responseText());
-            r.setModelName(result.modelName());
-            r.setInputTokens(result.inputTokens());
-            r.setOutputTokens(result.outputTokens());
-            r.setGenerationDurationMs(result.generationDurationMs());
+            LlmResponseCompletedEvent event =
+                    new LlmResponseCompletedEvent(
+                            UUID.randomUUID().toString(),
+                            Instant.now(),
+                            correlationId,
+                            EventSource.LLM_SERVICE,
+                            result.responseText(),
+                            result.modelName(),
+                            result.inputTokens(),
+                            result.outputTokens(),
+                            result.generationDurationMs());
+
             client.post()
                     .uri(props.getOrchestrator().getCallbacks().getResponseCompletedPath())
-                    .body(r)
+                    .body(event)
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception ex) {
@@ -52,17 +54,20 @@ public class OrchestratorLlmEventClient {
 
     public void sendFailed(String correlationId, OllamaGenerationResult result) {
         try {
-            LlmResponseFailedEventRequest r = new LlmResponseFailedEventRequest();
-            r.setModelName(result.modelName());
-            r.setEventId(UUID.randomUUID().toString());
-            r.setCreatedAt(Instant.now());
-            r.setSource(TransportEventSource.LLM_SERVICE);
-            r.setCorrelationId(correlationId);
-            r.setErrorCode(result.errorCode());
-            r.setErrorMessage(result.errorMessage());
+            LlmResponseFailedEvent event =
+                    new LlmResponseFailedEvent(
+                            UUID.randomUUID().toString(),
+                            Instant.now(),
+                            correlationId,
+                            EventSource.LLM_SERVICE,
+                            result.modelName(),
+                            result.generationDurationMs(),
+                            result.errorCode(),
+                            result.errorMessage());
+
             client.post()
                     .uri(props.getOrchestrator().getCallbacks().getResponseFailedPath())
-                    .body(r)
+                    .body(event)
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception ex) {

@@ -36,6 +36,8 @@ public class ConversationTurn {
     private final String userMessage;
     private final boolean persistInHistory;
     private String assistantMessage;
+    private TurnOutcome outcome;
+    private Instant completedAt;
     private boolean assistantReplyGenerated;
     private boolean assistantPlaybackStarted;
     private boolean assistantPlaybackCompleted;
@@ -155,5 +157,21 @@ public class ConversationTurn {
 
     public boolean isPersistInHistory() {
         return persistInHistory;
+    }
+
+    public Instant getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Instant completedAt) {
+        this.completedAt = completedAt;
+    }
+
+    public TurnOutcome getOutcome() {
+        return outcome;
+    }
+
+    public void setOutcome(TurnOutcome outcome) {
+        this.outcome = outcome;
     }
 }

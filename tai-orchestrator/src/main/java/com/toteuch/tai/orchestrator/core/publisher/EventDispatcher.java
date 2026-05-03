@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package com.toteuch.tai.orchestrator.core.publisher;
 
+import com.toteuch.tai.events.EventType;
+import com.toteuch.tai.events.TaiEvent;
 import com.toteuch.tai.orchestrator.core.EventHandler;
-import com.toteuch.tai.orchestrator.events.EventType;
-import com.toteuch.tai.orchestrator.events.TaiEvent;
 import jakarta.annotation.PostConstruct;
 import java.util.EnumMap;
 import java.util.List;

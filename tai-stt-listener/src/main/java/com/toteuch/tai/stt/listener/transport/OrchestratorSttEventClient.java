@@ -2,16 +2,16 @@
 package com.toteuch.tai.stt.listener.transport;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.toteuch.tai.events.EventSource;
+import com.toteuch.tai.events.stt.SttSpeechStartedEvent;
+import com.toteuch.tai.events.stt.SttTranscriptAcceptedEvent;
+import com.toteuch.tai.events.stt.SttTranscriptNoiseEvent;
+import com.toteuch.tai.events.stt.SttTranscriptUnintelligibleEvent;
 import com.toteuch.tai.stt.listener.audio.SpeechSegment;
 import com.toteuch.tai.stt.listener.config.SttListenerProperties;
 import com.toteuch.tai.stt.listener.gatekeeper.GatekeeperDecision;
 import com.toteuch.tai.stt.listener.gatekeeper.RejectionCategory;
 import com.toteuch.tai.stt.listener.transcription.TranscriptionResult;
-import com.toteuch.tai.stt.listener.transport.dto.AbstractTransportEventRequest;
-import com.toteuch.tai.stt.listener.transport.dto.SttSpeechStartedEventRequest;
-import com.toteuch.tai.stt.listener.transport.dto.SttTranscriptAcceptedEventRequest;
-import com.toteuch.tai.stt.listener.transport.dto.SttTranscriptRejectedEventRequest;
-import com.toteuch.tai.stt.listener.transport.dto.TransportEventSource;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -54,7 +54,7 @@ public class OrchestratorSttEventClient {
         }
 
         if (decision.rejectionCategory() == RejectionCategory.UNINTELLIGIBLE) {
-            sendRejected(
+            sendUnintelligible(
                     properties.getOrchestrator().getCallbacks().getTranscriptUnintelligiblePath(),
                     correlationId,
                     segment,
@@ -63,7 +63,7 @@ public class OrchestratorSttEventClient {
             return;
         }
 
-        sendRejected(
+        sendNoise(
                 properties.getOrchestrator().getCallbacks().getTranscriptNoisePath(),
                 correlationId,
                 segment,
@@ -72,14 +72,18 @@ public class OrchestratorSttEventClient {
     }
 
     public void sendSpeechStarted(String correlationId, double averageEnergy, double peakEnergy) {
-        SttSpeechStartedEventRequest request = new SttSpeechStartedEventRequest();
-        fillCommon(request, correlationId);
-        request.setAverageEnergy(averageEnergy);
-        request.setPeakEnergy(peakEnergy);
+        SttSpeechStartedEvent event =
+                new SttSpeechStartedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        correlationId,
+                        EventSource.STT_SERVICE,
+                        averageEnergy,
+                        peakEnergy);
 
         post(
                 properties.getOrchestrator().getCallbacks().getSpeechStartedPath(),
-                request,
+                event,
                 correlationId);
     }
 
@@ -88,51 +92,66 @@ public class OrchestratorSttEventClient {
             SpeechSegment segment,
             TranscriptionResult transcription,
             GatekeeperDecision decision) {
-        SttTranscriptAcceptedEventRequest request = new SttTranscriptAcceptedEventRequest();
-        fillCommon(request, correlationId);
-        request.setText(transcription.text());
-        request.setLanguage(transcription.language());
-        request.setLanguageProbability(transcription.languageProbability());
-        request.setDurationMs(segment.durationMs());
-        request.setAverageEnergy(segment.averageEnergy());
-        request.setReason(decision.reason());
-        request.setSuspicionScore(decision.suspicionScore());
-        request.setTranscriptionDurationMs(transcription.transcriptionDurationMs());
+        SttTranscriptAcceptedEvent event =
+                new SttTranscriptAcceptedEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        correlationId,
+                        EventSource.STT_SERVICE,
+                        transcription.text(),
+                        transcription.language(),
+                        transcription.languageProbability(),
+                        segment.durationMs(),
+                        transcription.transcriptionDurationMs());
 
         post(
                 properties.getOrchestrator().getCallbacks().getTranscriptAcceptedPath(),
-                request,
+                event,
                 correlationId);
     }
 
-    private void sendRejected(
+    private void sendNoise(
             String path,
             String correlationId,
             SpeechSegment segment,
             TranscriptionResult transcription,
             GatekeeperDecision decision) {
-        SttTranscriptRejectedEventRequest request = new SttTranscriptRejectedEventRequest();
-        fillCommon(request, correlationId);
+        SttTranscriptNoiseEvent event =
+                new SttTranscriptNoiseEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        correlationId,
+                        EventSource.STT_SERVICE,
+                        segment.averageEnergy(),
+                        decision.reason(),
+                        decision.suspicionScore(),
+                        segment.durationMs(),
+                        transcription != null ? transcription.transcriptionDurationMs() : null);
 
-        if (transcription != null) {
-            request.setLanguage(transcription.language());
-            request.setLanguageProbability(transcription.languageProbability());
-            request.setTranscriptionDurationMs(transcription.transcriptionDurationMs());
-        }
-
-        request.setDurationMs(segment.durationMs());
-        request.setAverageEnergy(segment.averageEnergy());
-        request.setReason(decision.reason());
-        request.setSuspicionScore(decision.suspicionScore());
-
-        post(path, request, correlationId);
+        post(path, event, correlationId);
     }
 
-    private void fillCommon(AbstractTransportEventRequest request, String correlationId) {
-        request.setEventId(UUID.randomUUID().toString());
-        request.setCreatedAt(Instant.now());
-        request.setSource(TransportEventSource.STT_SERVICE);
-        request.setCorrelationId(correlationId);
+    private void sendUnintelligible(
+            String path,
+            String correlationId,
+            SpeechSegment segment,
+            TranscriptionResult transcription,
+            GatekeeperDecision decision) {
+        SttTranscriptUnintelligibleEvent event =
+                new SttTranscriptUnintelligibleEvent(
+                        UUID.randomUUID().toString(),
+                        Instant.now(),
+                        correlationId,
+                        EventSource.STT_SERVICE,
+                        transcription != null ? transcription.language() : null,
+                        transcription != null ? transcription.languageProbability() : null,
+                        segment.averageEnergy(),
+                        decision.reason(),
+                        decision.suspicionScore(),
+                        segment.durationMs(),
+                        transcription != null ? transcription.transcriptionDurationMs() : null);
+
+        post(path, event, correlationId);
     }
 
     private void post(String path, Object body, String correlationId) {
