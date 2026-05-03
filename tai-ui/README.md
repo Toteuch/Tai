@@ -13,7 +13,7 @@ Tai UI
   → GET /ui/modules/{module}
   → GET /ui/history?limit=20&cursor=...
   → POST /ui/manual-input
-  → optional Stop Speak endpoint when the orchestrator exposes it
+  → POST /events/ui/stop-speak
 ```
 
 The orchestrator remains the owner of the V2 live UI projection. The UI consumes that projection, keeps a small amount of local display state, and avoids duplicating conversation or module business rules.
@@ -89,14 +89,10 @@ Default values:
 
 ```text
 VITE_TAI_ORCHESTRATOR_BASE_URL=http://localhost:8080
-VITE_TAI_STOP_SPEAK_PATH=
+VITE_TAI_STOP_SPEAK_PATH=/events/ui/stop-speak
 ```
 
-`VITE_TAI_STOP_SPEAK_PATH` is intentionally empty by default because the orchestrator documentation marks the Stop Speak endpoint as planned. Once it exists, set the relative path, for example:
-
-```text
-VITE_TAI_STOP_SPEAK_PATH=/ui/stop-speak
-```
+`VITE_TAI_STOP_SPEAK_PATH` is the relative orchestrator path used by the Stop Speak control.
 
 ### Live state
 
@@ -140,6 +136,25 @@ Manual input is sent to:
 ```http
 POST /ui/manual-input
 ```
+
+Stop Speak events are sent to:
+
+```http
+POST /events/ui/stop-speak
+```
+
+Request:
+
+```json
+{
+  "eventId": "generated-uuid",
+  "occuredAt": "2026-05-02T14:41:35.824Z",
+  "correlationId": "string",
+  "source": "UI"
+}
+```
+
+The endpoint returns no response body. The resulting state change is reflected through the next UI snapshot.
 
 ---
 
@@ -203,12 +218,9 @@ The dashboard keeps the V2 layout fixed and panel-based rather than becoming a f
 
 The avatar panel already includes an expand action and avatar-scoped overflow actions. Entries that depend on a real avatar stream are disabled until the avatar module exists.
 
-The Stop Speak button is visible as a V2 control, but it stays disabled unless both conditions are true:
+The Stop Speak button is visible as a V2 control. It is enabled when Tai is in `SPEAKING` or `THINKING` state and the UI has the current active turn correlation id.
 
-1. Tai is in `SPEAKING` state.
-2. `VITE_TAI_STOP_SPEAK_PATH` is configured.
-
-This keeps the UI honest while preserving the expected V2 affordance.
+When Tai is `SPEAKING`, Stop Speak requests playback interruption through the orchestrator. When Tai is `THINKING`, it requests interruption of the current assistant generation flow. In both cases, the action does not create a new user turn.
 
 
 ### Development proxy and orchestrator connectivity
@@ -225,6 +237,7 @@ This makes UI calls same-origin from the browser perspective:
 ```text
 Browser → http://localhost:5173/tai-api/ui/state → Vite proxy → http://localhost:8080/ui/state
 Browser → http://localhost:5173/tai-api/ui/events → Vite proxy → http://localhost:8080/ui/events
+Browser → http://localhost:5173/tai-api/events/ui/stop-speak → Vite proxy → http://localhost:8080/events/ui/stop-speak
 ```
 
 Using the proxy avoids CORS issues while keeping the orchestrator unchanged. Restart `npm run dev` after changing `.env.local` or `vite.config.ts`.

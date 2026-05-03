@@ -631,5 +631,3 @@ Example stopped health state:
   }
 }
 ```
-
-The orchestrator UI health refresh treats this as a degraded but reachable module, not as a network failure. In the live UI projection, a stopped continuous listener is represented as a degraded module with an idle runtime activity rather than as actively listening.

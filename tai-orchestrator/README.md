@@ -102,25 +102,36 @@ Examples:
 | `TtsPlaybackCompletedEvent` | `AssistantSpeechCompletedEvent` | Complete assistant speech and finish turn |
 | `TtsPlaybackFailedEvent` | `AssistantSpeechFailedEvent` | Complete turn after TTS failure |
 | UI manual input | `UiManualTextInputReceivedEvent` | Accept typed user text and enter the normal user utterance flow |
+| UI stop speak | `UiStopSpeakReceivedEvent` | Validate the active turn and request assistant flow interruption |
 
 ---
 
-## Barge-in responsibility
+## Assistant interruption responsibility
 
-`UserSpeechStartedEvent` is the internal event responsible for barge-in.
+Tai has two explicit assistant interruption paths:
 
-It handles:
+- `UserSpeechStartedEvent` handles voice barge-in when the user starts speaking.
+- `AssistantStopSpeakReceivedEvent` handles UI-requested interruption from the Stop Speak control.
+
+They can handle:
 
 - interruption of the current assistant flow when needed
-- stopping TTS playback through `TtsClient` when needed
+- stopping TTS playback through `TtsClient` when speech is active
 - marking the interrupted or superseded turn consistently
 - updating the module runtime registry for UI rendering
 
-`UserUtteranceAcceptedEvent` and `ClarificationRequestEvent` do not handle barge-in. They focus on turn creation and LLM request orchestration.
+Neither `UserSpeechStartedEvent` nor `AssistantStopSpeakReceivedEvent` creates a new user turn. A new user turn is created later by `UserUtteranceAcceptedEvent` when accepted user text is available.
+
+`UserUtteranceAcceptedEvent` and `ClarificationRequestEvent` do not handle interruption. They focus on turn creation and LLM request orchestration.
 
 ```text
 speech started
   → barge-in / stop current assistant output
+  → wait for accepted transcript
+
+UI Stop Speak
+  → interrupt current assistant output or generation
+  → no new user turn
 
 accepted transcript
   → create user turn
@@ -310,7 +321,34 @@ Manual input publishes `UiManualTextInputReceivedEvent` through `TaiEventPublish
 
 ### Stop speak
 
-The V2 UI contains a Stop Speak control, but the orchestrator UI endpoint is not exposed yet. It will be added once the dedicated business flow is implemented.
+```http
+POST /events/ui/stop-speak
+```
+
+Request:
+
+```json
+{
+  "eventId": "generated-uuid",
+  "occuredAt": "2026-05-02T14:41:35.824Z",
+  "correlationId": "string",
+  "source": "UI"
+}
+```
+
+Response:
+
+```text
+No response body.
+```
+
+The endpoint receives a UI Stop Speak event. The handler validates that the requested `correlationId` matches the active turn before publishing `AssistantStopSpeakReceivedEvent`.
+
+If the active turn is speaking, the orchestrator stops playback through `TtsClient.stop(correlationId)`, finalizes the active turn as `INTERRUPTED`, moves TTS runtime state back to idle and refreshes the UI projection.
+
+If the active turn is thinking or generating, the orchestrator interrupts the active turn, moves LLM runtime state back to idle and refreshes the UI projection. No TTS stop request is sent in that case.
+
+If there is no active turn or the requested `correlationId` is stale, the event has no conversation effect.
 
 ---
 
@@ -558,6 +596,21 @@ Manual text input does not involve `SttSpeechStartedEvent`.
 
 ---
 
+## UI Stop Speak flow
+
+```text
+POST /events/ui/stop-speak
+  → UiStopSpeakReceivedEvent
+  → active turn correlation checked
+  → AssistantStopSpeakReceivedEvent when the active turn matches
+  → interrupt speaking or generating assistant flow
+  → UI state refresh requested
+```
+
+UI Stop Speak does not create a new user turn and does not enter the `UserUtteranceAcceptedEvent` flow.
+
+---
+
 ## LLM failure flow
 
 ```text
@@ -615,6 +668,26 @@ late first LlmResponseCompletedEvent
 Stale LLM responses are rejected by correlation id.
 
 Ollama generation is not cancelled from the client side. The runtime registry therefore keeps the LLM as generating until a later event gives a more accurate state.
+
+---
+
+## UI Stop Speak while LLM is generating
+
+```text
+first user utterance
+  → LLM generation starts
+
+POST /events/ui/stop-speak
+  → UiStopSpeakReceivedEvent
+  → AssistantStopSpeakReceivedEvent
+  → active turn interrupted
+  → LLM runtime state becomes idle
+
+late LlmResponseCompletedEvent
+  → ignored as stale
+```
+
+The UI interruption does not create a replacement user turn. It only stops the current assistant flow.
 
 ---
 
@@ -680,6 +753,7 @@ Noise does not create a conversation turn.
 | Phase | Event | State change |
 |---|---|---|
 | User speech starts | `UserSpeechStartedEvent` | interrupt active assistant flow if needed |
+| UI Stop Speak | `AssistantStopSpeakReceivedEvent` | interrupt active speaking or generating assistant flow if the active turn matches |
 | Accepted input | `UserUtteranceAcceptedEvent` | thinking → generating |
 | Clarification needed | `ClarificationRequestEvent` | thinking → generating |
 | LLM completed | `LlmResponseCompletedEvent` | thinking → idle |
@@ -790,7 +864,8 @@ A shutdown guard prevents late health refresh results from scheduling UI project
 - Inbound events reflect external service callbacks.
 - Internal events model orchestrator decisions.
 - Conversation state changes happen inside internal event handlers.
-- Barge-in is owned by `UserSpeechStartedEvent`.
+- Voice barge-in is owned by `UserSpeechStartedEvent`.
+- UI-requested assistant interruption is owned by `AssistantStopSpeakReceivedEvent`.
 - Conversation turns are persisted only on completion, interruption or failure.
 - The active turn is not part of completed history.
 - UI live state is a projection, not a source of truth.

@@ -442,7 +442,7 @@ Suggested character limit:
 
 ### Purpose
 
-Allow the user to interrupt Tai while she is speaking or preparing speech.
+Allow the user to interrupt Tai while she is speaking, preparing speech or thinking.
 
 ### Content
 
@@ -454,9 +454,28 @@ Stop Speak
 
 ### Behavior
 
-Clicking the button should request an interruption of the current assistant speech flow.
+Clicking the button should request an interruption of the current assistant flow.
 
-For V2.0.0, this maps conceptually to the same kind of interruption caused by user speech start, without creating a new conversation turn.
+For V2.0.0, this covers both active speech playback and active assistant generation. It maps conceptually to the same kind of interruption caused by user speech start, without creating a new conversation turn.
+
+The UI sends the request to:
+
+```http
+POST /events/ui/stop-speak
+```
+
+Request:
+
+```json
+{
+  "eventId": "generated-uuid",
+  "occuredAt": "2026-05-02T14:41:35.824Z",
+  "correlationId": "string",
+  "source": "UI"
+}
+```
+
+The endpoint returns no response body. The user-visible result is reflected through the next live UI state snapshot.
 
 ### Visual state
 
@@ -465,7 +484,7 @@ The button should be contextual:
 | Tai state | Button state |
 |---|---|
 | `SPEAKING` | enabled, red |
-| `THINKING` | optional / disabled |
+| `THINKING` | enabled, secondary or danger depending on final visual choice |
 | `LISTENING` | disabled or neutral |
 | `IDLE` | disabled or neutral |
 

@@ -329,9 +329,10 @@ GET  /ui/events
 GET  /ui/modules/{module}
 GET  /ui/history?limit=20&cursor=<correlationId>
 POST /ui/manual-input
+POST /events/ui/stop-speak
 ```
 
-The Stop Speak UI action is still planned. It will be exposed once the supporting orchestrator command flow is ready.
+The Stop Speak UI action is exposed as a UI event endpoint. It interrupts the current assistant speaking or generating flow without creating a new user turn.
 
 ---
 
@@ -412,12 +413,12 @@ Health and runtime state are exposed through service-level health endpoints and 
 - module details on demand
 - conversation history on demand
 - manual text input
+- Stop Speak UI event endpoint and assistant interruption flow
 - placeholder-ready avatar and resource areas
 
 Planned within V2:
 
 - `tai-ui` frontend module
-- Stop Speak endpoint once the business flow is ready
 - `tai-ui-gateway` to move UI projection ownership out of the orchestrator
 
 ---
